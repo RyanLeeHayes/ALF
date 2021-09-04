@@ -1,0 +1,3 @@
+Merged ~/56_TopologyChanges/2_SecondRound/2_newAngleRestr/pme_sch_sa2/1_149/run/1_run/template/
+and ~/46_ProteinMutation/pme/1_149/run/1_run/template/prep/T4L149F.inp
+(Removed extra angle scaling)

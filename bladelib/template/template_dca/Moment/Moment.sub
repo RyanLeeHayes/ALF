@@ -1,0 +1,20 @@
+#! /bin/bash
+
+OPTIONS="--nodes=1 --tasks-per-node=1 -p brooks -o $DATDIR/slurm-%j.out -e $DATDIR/slurm-%j.out"
+DEPEND="--dependency="
+
+for p in `seq 0 $(( $1 - 1 ))`
+do
+
+PID=`sbatch $OPTIONS ./ObservedMoments.sh $p $2 | awk '{print $4}'`
+echo $PID
+DEPEND="${DEPEND}afterany:$PID,"
+
+done
+
+DEPEND="${DEPEND}afterany:$PID"
+
+OPTIONS="--nodes=1 --tasks-per-node=1 -p brooks -o $DATDIR/slurm-%j.out -e $DATDIR/slurm-%j.out"
+sbatch $OPTIONS $DEPEND -W --wrap="sleep 30"
+
+./BootstrapMoments.py $1 $2

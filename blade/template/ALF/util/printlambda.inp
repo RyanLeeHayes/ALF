@@ -1,0 +1,33 @@
+* CHARMM input file for Multi-Site lambda-dynamics
+* MSLD references:
+*    J.L. Knight and C.L. Brooks III. Multi-site lambda-dynamics: 
+*       free energy method for simulating Structure-Activity Relationship 
+*       studies. J. Chem. Theory Comput. 7, 2728-2739 (2011). 
+*    J.L. Knight and C.L. Brooks III. Applying efficient 
+*       implicit non-geometric constraints in free energy simulations.
+*       J. Comput. Chem. 32, 3423-3432 (2011). 
+* Stream file for MSLD created by process.py
+* Written by Ryan Hayes 2016-06-18
+*
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!  REPD_Dynamics
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!----------------------------------------------------------------------------
+
+set NNUM = 0
+LABEL TRAJLOOP
+calc NU = @NNUM + 51
+
+open unit @NU read file name "@DIR/@{SYSNAME}_res0_prod.lmd_@NNUM"
+
+INCR NNUM by 1
+if @NNUM .LT. @NREPS GOTO TRAJLOOP
+! else continue...
+
+traj lamb refcom 1 print ctlo 0.8 cthi 0.95 first 51 nunit @NREPS
+
+stop
+

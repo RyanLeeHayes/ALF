@@ -1,0 +1,37 @@
+* CHARMM input file for Multi-Site lambda-dynamics
+* MSLD references:
+*    J.L. Knight and C.L. Brooks III. Multi-site lambda-dynamics: 
+*       free energy method for simulating Structure-Activity Relationship 
+*       studies. J. Chem. Theory Comput. 7, 2728-2739 (2011). 
+*    J.L. Knight and C.L. Brooks III. Applying efficient 
+*       implicit non-geometric constraints in free energy simulations.
+*       J. Comput. Chem. 32, 3423-3432 (2011). 
+* Stream file for MSLD created by process.py
+* Written by Ryan Hayes 2016-06-18
+*
+
+!----------------------------------------------------------------------------
+
+set nstep = 80000					! nstep/exch is the number of configs saved per replica.
+set exchfrq = 100
+calc nexchange = @nstep / @exchfrq
+calc nprt = 2 * @exchfrq
+
+set nreplica = 2 ! ?numnode
+
+set I = 0
+label sort						! Begining of the loop
+      calc in = 20 + @I
+      calc ou = 50 + @I
+
+      open unit @in read unform name "data/8der_1_heat.dcd_@I"
+      open unit @ou write unform name "data/8der_1_heat.@I.dcd"
+
+      incr I by 1
+if I lt @nreplica goto sort
+
+open unit 1 read form name "data/rex-8der.out_0"
+
+merge firstu 20 nunit @nreplica output 50 -
+      rtot excu 1 nrplica @nreplica nrepeat 1 nexchange @nexchange
+stop

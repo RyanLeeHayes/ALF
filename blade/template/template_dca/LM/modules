@@ -1,0 +1,2 @@
+module load intel/2019
+module load openmpi/3.1.2-intel_2019

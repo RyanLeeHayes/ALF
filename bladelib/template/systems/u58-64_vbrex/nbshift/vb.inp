@@ -1,0 +1,73 @@
+* File to apply different variable biases to different replicas
+* Only Use if using vb-rex, otherwise just have an empty file
+*
+
+bomlev -4
+
+BLOCK @blockplusone NREP @nreps
+
+   ! Check block.doc for functional form of these biasing potentials
+   calc nbiaspot = 5 * ( @nblocks * ( @nblocks - 1 ) ) / 2
+   ldbi @nbiaspot
+set ibias = 1
+set iblock = 0
+set si = 1
+label loop5_vb
+if @si .le. @nsites then
+   set jblock = @iblock
+   set sj = @si
+   label loop5b_vb
+   if @sj .le. @nsites then
+      set ii = 1
+      label loop6_vb
+      if @ii .le. @nsubs@@{si} then
+         calc ip1 = @ii + 1 + @iblock
+         set jj = 1
+         if @si .eq. @sj then
+            calc jj = @ii + 1
+         endif
+         label loop7_vb
+         if @jj .le. @nsubs@@{sj} then
+            calc jp1 = @jj + 1 + @jblock
+
+            set c_shift = 0.0
+            set x_shift = 0.0
+            set s_shift = 0.0
+            if @si .eq. @sj then
+               calc c_shift = 2.0 * (@myrep - @ncentral)
+               calc s_shift = 0.5 * (@myrep - @ncentral)
+            endif
+
+            calc coeff = @cs@@{si}s@@{ii}s@@{sj}s@@{jj} + @{c_shift}
+            ldbv @ibias @ip1 @jp1 6 0.0 @coeff 0
+            calc ibias = @ibias + 1
+            calc coeff = @xs@@{si}s@@{ii}s@@{sj}s@@{jj} + @{x_shift}
+            ldbv @ibias @ip1 @jp1 10 -5.56 @coeff 0
+            calc ibias = @ibias + 1
+            calc coeff = @ss@@{si}s@@{ii}s@@{sj}s@@{jj} + @{s_shift}
+            ldbv @ibias @ip1 @jp1 8 0.017 @coeff 0
+            calc ibias = @ibias + 1
+            calc coeff = @xs@@{sj}s@@{jj}s@@{si}s@@{ii} + @{x_shift}
+            ldbv @ibias @jp1 @ip1 10 -5.56 @coeff 0
+            calc ibias = @ibias + 1
+            calc coeff = @ss@@{sj}s@@{jj}s@@{si}s@@{ii} + @{s_shift}
+            ldbv @ibias @jp1 @ip1 8 0.017 @coeff 0
+            calc ibias = @ibias + 1
+            calc jj = @jj + 1
+            goto loop7_vb
+         endif
+         calc ii = @ii + 1
+         goto loop6_vb
+      endif
+      calc jblock = @jblock + @nsubs@@{sj}
+      calc sj = @sj + 1
+      goto loop5b_vb
+   endif
+   calc iblock = @iblock + @nsubs@@{si}
+   calc si = @si + 1
+   goto loop5_vb
+endif
+
+END
+
+bomlev 0

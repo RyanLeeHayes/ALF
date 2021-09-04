@@ -1,0 +1,20 @@
+#! /bin/bash
+
+module load anaconda/3.5.3.0
+
+OPTIONS="--nodes=1 --tasks-per-node=1 -p brooks -o $DATDIR/slurm-%j.out -e $DATDIR/slurm-%j.out"
+DEPEND="--dependency="
+COMMA=""
+
+for p in `seq 0 $(( $1 - 1 ))`
+do
+
+PID=`sbatch $OPTIONS ./Filter.sh $p $2 $3 $4 | awk '{print $4}'`
+echo $PID
+DEPEND="${DEPEND}${COMMA}afterany:$PID"
+COMMA=","
+
+done
+
+OPTIONS="--nodes=1 --tasks-per-node=1 -p brooks -o $DATDIR/slurm-%j.out -e $DATDIR/slurm-%j.out"
+sbatch $OPTIONS $DEPEND -W --wrap="sleep 30"

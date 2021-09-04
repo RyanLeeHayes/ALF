@@ -1,0 +1,29 @@
+#! /bin/bash
+
+source modules
+
+OPTIONS="--nodes=1 --tasks-per-node=8 -p brooks -o $DATDIR/slurm-%j.out -e $DATDIR/slurm-%j.out"
+DEPEND="--dependency="
+
+NB=50
+
+for p in `seq 0 $(( $NB - 1 ))`
+do
+
+ARG="$DATDIR/h.bs$p.LM.dat $DATDIR/J.bs$p.LM.dat $DATDIR/m1.bs$p.obs.dat $DATDIR/m2.bs$p.obs.dat"
+PID=`sbatch $OPTIONS ./LM.sh $ARG | awk '{print $4}'`
+echo $PID
+DEPEND="${DEPEND}afterany:$PID,"
+
+done
+
+ARG="$DATDIR/h.LM.dat $DATDIR/J.LM.dat $DATDIR/m1.obs.dat $DATDIR/m2.obs.dat"
+PID=`sbatch $OPTIONS ./LM.sh $ARG | awk '{print $4}'`
+echo $PID
+DEPEND="${DEPEND}afterany:$PID"
+
+OPTIONS="--nodes=1 --tasks-per-node=1 -p brooks -o $DATDIR/slurm-%j.out -e $DATDIR/slurm-%j.out"
+sbatch $OPTIONS $DEPEND -W --wrap="sleep 30"
+echo "Done with LM"
+
+

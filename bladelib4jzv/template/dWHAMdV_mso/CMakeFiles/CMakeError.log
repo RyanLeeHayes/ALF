@@ -1,0 +1,51 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_5397d/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_5397d.dir/build.make CMakeFiles/cmTC_5397d.dir/build
+gmake[1]: Entering directory `/home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5397d.dir/CheckSymbolExists.c.o
+/export/apps/CentOS7/gcc/6.4.0/bin/gcc   -fPIC    -o CMakeFiles/cmTC_5397d.dir/CheckSymbolExists.c.o   -c /home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_5397d
+/export/apps/CentOS7/cmake/3.13/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5397d.dir/link.txt --verbose=1
+/export/apps/CentOS7/gcc/6.4.0/bin/gcc -fPIC     -rdynamic CMakeFiles/cmTC_5397d.dir/CheckSymbolExists.c.o  -o cmTC_5397d 
+CMakeFiles/cmTC_5397d.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x1b): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [cmTC_5397d] Error 1
+gmake[1]: Leaving directory `/home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_5397d/fast] Error 2
+
+File /home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_6315e/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_6315e.dir/build.make CMakeFiles/cmTC_6315e.dir/build
+gmake[1]: Entering directory `/home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6315e.dir/CheckFunctionExists.c.o
+/export/apps/CentOS7/gcc/6.4.0/bin/gcc   -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_6315e.dir/CheckFunctionExists.c.o   -c /export/apps/CentOS7/cmake/3.13/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_6315e
+/export/apps/CentOS7/cmake/3.13/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6315e.dir/link.txt --verbose=1
+/export/apps/CentOS7/gcc/6.4.0/bin/gcc -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_6315e.dir/CheckFunctionExists.c.o  -o cmTC_6315e -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [cmTC_6315e] Error 1
+gmake[1]: Leaving directory `/home/rhaye/63_MSLD_Couplings/1_T4L/1_3site/run_CouplingALF2/folded/template/dWHAMdV_mso/CMakeFiles/CMakeTmp'
+gmake: *** [cmTC_6315e/fast] Error 2
+
+
