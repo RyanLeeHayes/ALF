@@ -1,0 +1,30 @@
+typedef double real;
+
+typedef struct struct_plmd {
+  int nblocks;
+  int nsites;
+  int *nsubs;
+  int *block0;
+  int *block2site;
+  real kh;
+  real kJ;
+  real *h;
+  real *J;
+  real *dLdh;
+  real *dLdJ;
+  // int *Seq;
+  // int B;
+  int Jend;
+  real *x;
+  real *dLdx;
+  real *Hinv;
+  real *hi;
+  real *x0;
+  real *dLdx0;
+  real *L;
+  real **Z;
+  real **m1;
+  real **m2;
+  real *m1obs;
+  real *m2obs;
+} struct_plmd;
