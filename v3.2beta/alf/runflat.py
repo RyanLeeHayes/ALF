@@ -38,8 +38,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm'):
         print('run%d started' % i)
         fpout=open('output','w')
         fperr=open('error','w')
-        if engine in ['charmm','bladelib']:
+        if engine in ['charmm']:
           subprocess.call(['mpirun','-np','1','-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+        elif engine in ['bladelib']:
+          subprocess.call(['mpirun','-np','1','-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['blade']:
           fpin=open('arguments.inp','w')
           fpin.write("variables set esteps %d\nvariables set nsteps %d" % (esteps,nsteps))
