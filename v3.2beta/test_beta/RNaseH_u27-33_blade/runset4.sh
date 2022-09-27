@@ -1,8 +1,6 @@
 #!/bin/bash
 
-export BLADEDIR=/home/rhaye/BLaDE
-source $BLADEDIR/modules
-export BLADEEXEC=$BLADEDIR/build/blade
+source env-blade
 source ../setupenv # python with alf module
 
 iend=$(( $SLURM_ARRAY_TASK_ID * $nitt ))

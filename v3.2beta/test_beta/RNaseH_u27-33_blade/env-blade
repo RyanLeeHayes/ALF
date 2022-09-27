@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export BLADEDIR=/home/rhaye/BLaDE
+source $BLADEDIR/modules
+export BLADEEXEC=$BLADEDIR/build/blade

@@ -8,7 +8,7 @@ def RunWham(nf,nts0,nts1):
     os.mkdir('multisite')
 
   # ../dWHAMdV_mso/wham $1 Energy Lambda $2 $3
-  whamlib = ctypes.CDLL('/home/rhaye/41_MSLD/51_ALF-3.1/v3.1.3/alf/alf/wham/libwham.so')
+  whamlib = ctypes.CDLL(os.path.dirname(__file__)+'/libwham.so')
   pywham = whamlib.main
   pywham.argtypes=[ctypes.c_int,ctypes.c_int,ctypes.c_int]
   pywham(nf,nts0,nts1)

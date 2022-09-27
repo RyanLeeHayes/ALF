@@ -1,6 +1,6 @@
 #! /bin/bash
 
-module load slurm
+source env-slurm
 
 # DEPEND="--dependency=afterok:"
-sbatch --time=2880 --ntasks=1 --tasks-per-node=1 --cpus-per-task=4 -p gpu --gres=gpu:1 --export=ALL $DEPEND ./runset2.sh
+sbatch --time=2880 --ntasks=1 --tasks-per-node=1 --cpus-per-task=4 $SLURMOPTS --export=ALL $DEPEND ./runset2.sh

@@ -1,0 +1,6 @@
+#! /bin/bash
+
+module load slurm
+
+export SLURMOPTS="-p gpu --gres=gpu:1"
+export SLURMOPTS0="-p gpu"
