@@ -19,7 +19,7 @@ setuptools.setup(
     ],
     # package_dir={"": "src"},
     # packages=setuptools.find_packages(where="src"),
-    install_requires=['numpy','scipy'],
+    install_requires=['numpy','scipy','MDAnalysis'],
     python_requires=">=2.7",
     # To add external library like wham:
     # https://stackoverflow.com/questions/47360113/compile-c-library-on-pip-install
