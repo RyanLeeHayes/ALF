@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 def GetVariance(alf_info,NF):
-  import sys, os
+  import sys, os, os.path
   import numpy as np
   import copy
 
@@ -11,6 +11,8 @@ def GetVariance(alf_info,NF):
   nlig=np.prod(nsubs)
 
   b=np.loadtxt('b_prev.dat')
+  if os.path.isfile('b_corr.dat'):
+    b=b+np.loadtxt('b_corr.dat')
   c=np.loadtxt('c_prev.dat')
   x=np.loadtxt('x_prev.dat')
   s=np.loadtxt('s_prev.dat')

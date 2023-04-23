@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
-  import sys, os
+  import sys, os, os.path
   import numpy as np
   # from subprocess import call
   from alf.GetVolume import GetVolume
@@ -25,6 +25,21 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
   nreps=alf_info['nreps']
   ncentral=alf_info['ncentral']
   name=alf_info['name']
+
+  if not os.path.isfile('../prep/q'):
+    print("No charge file prep/q")
+    return
+  else:
+    q=np.loadtxt('../prep/q')
+    ibuff=0
+    chargeChange=False
+    for i in range(len(nsubs)):
+      if not np.all(q[ibuff:(ibuff+nsubs[i])]==q[ibuff]):
+        chargeChange=True
+      ibuff=ibuff+nsubs[i]
+    if not chargeChange:
+      print("No charge change")
+      return
 
   if not os.path.isdir('data'):
     os.mkdir('data')
@@ -85,3 +100,8 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
     D[idupl]=np.loadtxt(DIR+("/Density.%d.%d.dat" % (idupl,ncentral)))
   Davg=1.0/np.mean(1.0/D)
   np.savetxt(DIR+"/Density.dat",np.reshape(Davg,(1,)),fmt="%12.8f")
+
+  gamma_S=0.76414
+  kelectric=332.0716
+  b_corr=-(2.0*np.pi/3.0)*kelectric*gamma_S*q*Davg
+  np.savetxt("b_corr.dat",[b_corr]) # Square brackets save as row vector

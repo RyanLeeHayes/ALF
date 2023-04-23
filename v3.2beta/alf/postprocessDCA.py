@@ -16,6 +16,8 @@ def SetupDCA(i,NF,FREQ,engine='charmm'):
   shutil.copy('analysis%d/x_sum.dat' % (i-1),'dca%d/x_prev.dat' % i)
   shutil.copy('analysis%d/s_sum.dat' % (i-1),'dca%d/s_prev.dat' % i)
   print("WARNING: Check whether analysis%d exists")
+  if os.path.isfile('analysis%d/b_corr.dat' % i):
+    shutil.copy('analysis%d/b_corr.dat' % i,'dca%d/b_corr.dat' % i)
   if not os.path.exists('dca%d/data' % i):
     os.mkdir('dca%d/data' % i)
   time.sleep(15)

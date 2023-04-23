@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import sys, os
+import sys, os, os.path
 import numpy as np
 import subprocess
 import copy
@@ -33,6 +33,8 @@ nlig_ng=np.prod(nsubs-1)
 # _ng stands for no gaps
 
 b=np.loadtxt('b_prev.dat')
+if os.path.isfile('b_corr.dat'):
+  b=b+np.loadtxt('b_corr.dat')
 c=np.loadtxt('c_prev.dat')
 x=np.loadtxt('x_prev.dat')
 s=np.loadtxt('s_prev.dat')

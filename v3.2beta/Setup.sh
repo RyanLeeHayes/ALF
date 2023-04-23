@@ -1,7 +1,6 @@
 #! /bin/bash
 
-module load cuda
-module load anaconda/3.5.3.0
+source modules
 
 # First time
 # From https://charmm-dev.org/wiki/index.php/Main_Page

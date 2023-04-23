@@ -36,6 +36,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm'):
     alf.GetFreeEnergy5(alf_info,0,0) # `cat ../ntersiteprod`
 
     alf.SetVars(alf_info,i+1)
+    alf.GetVolumes(alf_info,i,N,eqS,S)
     alf.GetVariance(alf_info,N)
   except Exception:
     sys.stdout.flush()
