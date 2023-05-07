@@ -15,6 +15,7 @@ EmidX,EmidY=np.meshgrid(Emid2,Emid2)
 # nsubs=alf_info['nsubs']
 # nblocks=alf_info['nblocks']
 nsubs=np.loadtxt('../prep/nsubs',dtype='int')
+nsubs = np.atleast_1d(nsubs)
 nblocks=np.sum(nsubs)
 
 ntersite=[0,0]
