@@ -27,7 +27,7 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
     delta4 = (fp.read_record(dtype=np.float32))
 
     # Title in trajectoory file 
-    title = (fp.read_record([('h',np.int32,1),('title',np.string_,80)]))[0][1]
+    title = (fp.read_record(dtype=[('h', np.int32), ('title', 'S80')])['title'][0].decode()) 
 
     # Unused in current processing
     nbiasv = (fp.read_record(dtype=np.int32))
