@@ -1,5 +1,5 @@
 
-def runflat(ni,nf,esteps,nsteps,engine='charmm'):
+def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf
@@ -38,6 +38,8 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm'):
         print('run%d started' % i)
         fpout=open('output','w')
         fperr=open('error','w')
+        if not os.path.exists('../msld_flat.inp'):
+          print("Error: msld_flat.inp does not exist.")
         if engine in ['charmm']:
           subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['bladelib']:
@@ -61,7 +63,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm'):
         shutil.copy('analysis%d/x_sum.dat' % (i-1),'analysis%d/x_prev.dat' % i)
         shutil.copy('analysis%d/s_sum.dat' % (i-1),'analysis%d/s_prev.dat' % i)
         if not os.path.exists('analysis%d/G_imp' % i):
-          G_imp_dir=os.path.dirname(os.path.abspath(__file__))+'/G_imp'
+          if not G_imp:
+            G_imp_dir=os.path.dirname(os.path.abspath(__file__))+'/G_imp'
+          else:
+            G_imp_dir=G_imp
           os.symlink(G_imp_dir,'analysis%d/G_imp' % i)
         os.chdir('analysis%d' % i)
 
@@ -70,10 +75,9 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm'):
         alf.GetEnergy(alf_info,im5,i)
         fpout=open('output','w')
         fperr=open('error','w')
-        subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,0,0)' % (N*alf_info['nreps'])],stdout=fpout,stderr=fperr) # `cat ../ntersiteflat`
-        print('Warning: coupling flags ignored')
-        alf.GetFreeEnergy5(alf_info,0,0) # `cat ../ntersiteflat`
-# 
+        subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%d,%d)' % (N*alf_info['nreps'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
+        alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
+
         alf.SetVars(alf_info,i+1)
         fp=open('../variables%d.inp' % (i+1),'a')
         if engine in ['charmm','bladelib']:

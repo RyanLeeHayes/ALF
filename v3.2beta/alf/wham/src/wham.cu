@@ -316,8 +316,10 @@ struct_data* readdata(int arg1, int arg2, int arg3)
       // data->jNij[i]=jN;
       if (s1==s2) {
         jN+=data->Nsubs[s1]+5*data->Nsubs[s1]*(data->Nsubs[s1]-1)/2;
-      } else if (data->ms) {
+      } else if (data->ms==1) {
         jN+=5*data->Nsubs[s1]*data->Nsubs[s2];
+      } else if (data->ms==2) {
+        jN+=data->Nsubs[s1]*data->Nsubs[s2];
       }
       // i++;
     }
@@ -733,7 +735,7 @@ void reactioncoord_all(struct_data *data,int i)
             i--;
           }
         }
-
+        if (data->ms==1) {
         for (j1=data->block0[s1]; j1<data->block0[s1+1]; j1++) {
           for (j2=data->block0[s2]; j2<data->block0[s2+1]; j2++) {
             if (i==0) {
@@ -759,7 +761,7 @@ void reactioncoord_all(struct_data *data,int i)
             i--;
           }
         }
-
+        }
       }
     }
   }

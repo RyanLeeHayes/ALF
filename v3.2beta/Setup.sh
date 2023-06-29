@@ -1,6 +1,7 @@
 #! /bin/bash
 
 source modules
+module load anaconda/2022.05
 
 # First time
 # From https://charmm-dev.org/wiki/index.php/Main_Page

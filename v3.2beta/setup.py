@@ -19,6 +19,7 @@ setuptools.setup(
     ],
     # package_dir={"": "src"},
     # packages=setuptools.find_packages(where="src"),
+    packages=['alf'],
     install_requires=['numpy','scipy','MDAnalysis'],
     python_requires=">=2.7",
     # To add external library like wham:

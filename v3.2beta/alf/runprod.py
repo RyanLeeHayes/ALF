@@ -48,6 +48,8 @@ def runprod(step,a,itt,engine='charmm'):
       try:
         fpout=open('output_%d' % i,'w')
         fperr=open('error_%d' % i,'w')
+        if not os.path.exists('../msld_prod.inp'):
+          print("Error: msld_prod.inp does not exist.")
         if engine in ['charmm']:
           subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['bladelib']:

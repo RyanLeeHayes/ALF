@@ -1,3 +1,2 @@
-# module load environments/gcc_10.2.0
-module load environments/gcc_6.4.0
-# module load gcc/10.2.0 cuda/11.4 cmake/3.21.0 openmpi/3.1.2-gcc-10.2.0
+module load cmake/3.22.1 cuda/11.7.1 gcc/11.2.0 openmpi/4.1.2/gcc.11.2.0 fftw/3.3.10/gcc.11.2.0-openmpi.4.1.2
+export FFTW_HOME=$FFTW_DIR

@@ -14,7 +14,7 @@ EmidX,EmidY=np.meshgrid(Emid2,Emid2)
 
 # nsubs=alf_info['nsubs']
 # nblocks=alf_info['nblocks']
-nsubs=np.loadtxt('../prep/nsubs',dtype='int')
+nsubs=np.loadtxt('../prep/nsubs',dtype='int',ndmin=1)
 nblocks=np.sum(nsubs)
 
 ntersite=[0,0]
@@ -77,8 +77,8 @@ for isite in range(len(nsubs)):
             # subplot(nsubs(isite)-1,nsubs(isite)-1,(i-1)*(nsubs(isite)-1)+(j-1))
             # hold off
             # surf(Emid2,Emid2,G2{i+iblock,j+iblock})
-            plt.subplot(nsubs[isite]-1,nsubs[isite]-1,i*(nsubs[isite]-1)+j)
-            plt.plot_surface(EmidX,EmidY,G2[i+iblock][j+iblock])
+            pltax=plt.subplot(nsubs[isite]-1,nsubs[isite]-1,i*(nsubs[isite]-1)+j,projection='3d')
+            pltax.plot_surface(EmidX,EmidY,G2[i+iblock][j+iblock])
 
     elif msprof:
 

@@ -3,10 +3,10 @@
 source env-slurm
 
 export i=211
-export eqS=25
-export S=100
+export eqS=1
+export S=5
 export N=5
-export skipE=10
+export skipE=1
 
 # DEPEND="--dependency=afterok:"
 # --mem=48G

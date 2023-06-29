@@ -5,9 +5,6 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   import sys
   import numpy as np
 
-  # ms=int(sys.argv[1])
-  # msprof=int(sys.argv[2])
-
   kT=0.001987*298
   krest=1
 
@@ -22,8 +19,6 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   Emid=np.arange(1.0/800,1,1.0/400)
   Emid2=np.arange(1.0/40,1,1.0/20)
 
-  # nsubs=np.loadtxt('../nsubs',dtype='int',ndmin=1)
-  # nblocks=np.loadtxt('../nblocks',dtype='int')
   nsubs=alf_info['nsubs']
   nblocks=alf_info['nblocks']
 
@@ -45,8 +40,10 @@ def GetFreeEnergy5(alf_info,ms,msprof):
       n3=nsubs[isite]*nsubs[jsite]
       if isite==jsite:
         nparm+=n1+5*n2
-      elif ms:
+      elif ms==1:
         nparm+=5*n3
+      elif ms==2:
+        nparm+=n3
 
   cutlist=np.zeros((nparm,))
   reglist=np.zeros((nparm,))
@@ -67,7 +64,7 @@ def GetFreeEnergy5(alf_info,ms,msprof):
         n0+=2*n2
         cutlist[n0:n0+2*n2]=cuts
         n0+=2*n2
-      elif ms:
+      elif ms==1:
         cutlist[n0:n0+n3]=cutc2
         n0+=n3
 
@@ -90,6 +87,9 @@ def GetFreeEnergy5(alf_info,ms,msprof):
             ind+=1
         cutlist[n0:n0+2*n3]=cuts2
         n0+=2*n3
+      elif ms==2:
+        cutlist[n0:n0+n3]=cutc
+        n0+=n3
       jblock+=nsubs[jsite]
     iblock+=nsubs[isite]
 
@@ -140,7 +140,7 @@ def GetFreeEnergy5(alf_info,ms,msprof):
             if i != j:
               s[iblock+i,jblock+j]=coeff[ind]
               ind+=1
-      elif ms:
+      elif ms==1:
         for i in range(0,nsubs[isite]):
           for j in range(0,nsubs[jsite]):
             c[iblock+i,jblock+j]=coeff[ind]
@@ -156,6 +156,11 @@ def GetFreeEnergy5(alf_info,ms,msprof):
             s[iblock+i,jblock+j]=coeff[ind]
             ind+=1
             s[jblock+j,iblock+i]=coeff[ind]
+            ind+=1
+      elif ms==2:
+        for i in range(0,nsubs[isite]):
+          for j in range(0,nsubs[jsite]):
+            c[iblock+i,jblock+j]=coeff[ind]
             ind+=1
       jblock+=nsubs[jsite]
     iblock+=nsubs[isite]

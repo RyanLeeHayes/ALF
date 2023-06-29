@@ -47,7 +47,7 @@ void atomic_logadd(double *p_lnA,double lnB)
   p_lnA[0]=lnC; // CXX
 }
 
-struct_data* readdata(int argc, char *argv[])
+struct_data* readdata(int arg1, int arg2, int arg3)
 {
   char *Edir,*Ddir;
   FILE *fp,*fpE,*fpQ;
@@ -74,7 +74,7 @@ struct_data* readdata(int argc, char *argv[])
   data=(struct_data*) malloc(sizeof(struct_data));
 
   // argv[0] is function name
-  if (argc>1) {
+  /*if (argc>1) {
     count=sscanf(argv[1],"%d",&(data->Nsim));
     if (count!=1) {
       fprintf(stderr,"Error, argument is not an integer\n");
@@ -83,21 +83,12 @@ struct_data* readdata(int argc, char *argv[])
   } else {
     fprintf(stderr,"Error, no input. How many potentials are you using?\n");
     exit(1);
-  }
+  }*/
+  data->Nsim=arg1;
 
-  fp=fopen("../nblocks","r");
+  fp=fopen("../prep/nsubs","r");
   if (fp==NULL) {
-    fprintf(stderr,"Error, ../nblocks does not exist\n");
-    exit(1);
-  }
-  if (fscanf(fp,"%d",&(data->Nblocks))==0) {
-    fprintf(stderr,"Error, could not read number of blocks from ../nblocks\n");
-    exit(1);
-  }
-  fclose(fp);
-  fp=fopen("../nsubs","r");
-  if (fp==NULL) {
-    fprintf(stderr,"Error, ../nsubs does not exist\n");
+    fprintf(stderr,"Error, ../prep/nsubs does not exist\n");
     exit(1);
   }
   data->Nsites=0;
@@ -107,35 +98,41 @@ struct_data* readdata(int argc, char *argv[])
   fclose(fp);
   data->Nsubs=(int*) malloc(data->Nsites*sizeof(int));
   data->block0=(int*) malloc((data->Nsites+1)*sizeof(int));
-  fp=fopen("../nsubs","r");
+  fp=fopen("../prep/nsubs","r");
+  data->Nblocks=0;
   data->block0[0]=0;
   for (i=0; i<data->Nsites; i++) {
     fscanf(fp,"%d",&(data->Nsubs[i]));
+    data->Nblocks+=data->Nsubs[i];
     data->block0[i+1]=data->block0[i]+data->Nsubs[i];
   }
   fclose(fp);
 
-  if (argc>3) {
+  /*if (argc>3) {
     Edir=argv[2];
     Ddir=argv[3];
   } else {
     fprintf(stderr,"Error, missing input and output directory.\n");
     exit(1);
-  }
+  }*/
+  Edir="Energy";
+  Ddir="Lambda";
 
-  if (argc>4) {
+  /*if (argc>4) {
     sscanf(argv[4],"%d",&(data->ms));
   } else {
     fprintf(stderr,"Error, 4th argument should indicate whether to use multisite parameters.\n");
     exit(1);
-  }
+  }*/
+  data->ms=arg2;
 
-  if (argc>5) {
+  /*if (argc>5) {
     sscanf(argv[5],"%d",&(data->msprof));
   } else {
     fprintf(stderr,"Error, 5th argument should indicate whether to use multisite profiles.\n");
     exit(1);
-  }
+  }*/
+  data->msprof=arg3;
 
   data->NL=data->Nblocks;
   data->NF=data->Nsim;
@@ -339,8 +336,10 @@ struct_data* readdata(int argc, char *argv[])
       // data->jNij[i]=jN;
       if (s1==s2) {
         jN+=data->Nsubs[s1]+5*data->Nsubs[s1]*(data->Nsubs[s1]-1)/2;
-      } else if (data->ms) {
+      } else if (data->ms==1) {
         jN+=5*data->Nsubs[s1]*data->Nsubs[s2];
+      } else if (data->ms==2) {
+        jN+=data->Nsubs[s1]*data->Nsubs[s2];
       }
       // i++;
     }
@@ -938,7 +937,7 @@ void reactioncoord_all(struct_data *data,int i)
             i--;
           }
         }
-
+        if (data->ms==1) {
         for (j1=data->block0[s1]; j1<data->block0[s1+1]; j1++) {
           for (j2=data->block0[s2]; j2<data->block0[s2+1]; j2++) {
             if (i==0) {
@@ -968,7 +967,7 @@ void reactioncoord_all(struct_data *data,int i)
             i--;
           }
         }
-
+        }
       }
     }
   }
@@ -1242,7 +1241,7 @@ void getfofq(struct_data *data,double beta)
     // cudaMemcpy(data->lnZ_h,data->lnZ_d,B_N*sizeof(double),cudaMemcpyDeviceToHost); // CUDA
     memcpy((void*)data->lnZ_h,(void*)data->lnZ_d,B_N*sizeof(double)); // CXX
 
-    sprintf(fnm,"G%d.dat",i+1);
+    sprintf(fnm,"multisite/G%d.dat",i+1);
     fp=fopen(fnm,"w");
     for (k=0; k<B_N; k++) {
       fprintf(fp,"%g\n",(-data->lnZ_h[k]-data->Gimp_h[k])/data->beta_t);
@@ -1322,8 +1321,8 @@ void getfofq(struct_data *data,double beta)
     }
   }
 
-  fpC=fopen("C.dat","w");
-  fpV=fopen("V.dat","w");
+  fpC=fopen("multisite/C.dat","w");
+  fpV=fopen("multisite/V.dat","w");
   for (j1=0; j1<(jN+iN); j1++) {
     for (j2=0; j2<(jN+iN); j2++) {
       fprintf(fpC," %f",C[j1*(jN+iN)+j2]);
@@ -1335,11 +1334,11 @@ void getfofq(struct_data *data,double beta)
   fclose(fpV);
 }
 
-int main(int argc, char *argv[])
+int main(int arg1, int arg2, int arg3)
 {
   struct_data *data;
   
-  data=readdata(argc,argv);
+  data=readdata(arg1,arg2,arg3);
 
   iteratedata(data);
 
