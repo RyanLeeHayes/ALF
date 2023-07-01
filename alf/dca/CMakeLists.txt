@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(Filter LANGUAGES C)
 project(Moment LANGUAGES C)
 project(LM LANGUAGES C)
-project(PLM LANGUAGES CUDA CXX)
+project(PLM LANGUAGES CXX)
 
 find_package(CUDA 9.0)
 
