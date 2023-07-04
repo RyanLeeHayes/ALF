@@ -9,6 +9,7 @@ def SetVarsCharmm(alf_info,Step):
   ncentral=alf_info['ncentral']
   name=alf_info['name']
   nnodes=alf_info['nnodes']
+  temp=alf_info['temp']
 
 
   fp=open('../variables'+str(Step)+'.inp','w')
@@ -94,6 +95,7 @@ def SetVarsCharmm(alf_info,Step):
   fp.write("set nsites = "+str(len(nsubs))+"\n")
   for i in range(0,len(nsubs)):
     fp.write("set nsubs"+str(i+1)+" = "+str(nsubs[i])+"\n")
+  fp.write("set temp = "+str(temp)+"\n")
   fp.close()
 
 
@@ -107,6 +109,7 @@ def SetVarsBlade(alf_info,Step):
   ncentral=alf_info['ncentral']
   name=alf_info['name']
   nnodes=alf_info['nnodes']
+  temp=alf_info['temp']
 
 
   fp=open('../variables'+str(Step)+'.inp','w')
@@ -191,6 +194,7 @@ def SetVarsBlade(alf_info,Step):
   fp.write("variables set nsites "+str(len(nsubs))+"\n")
   for i in range(0,len(nsubs)):
     fp.write("variables set nsubs"+str(i+1)+" "+str(nsubs[i])+"\n")
+  fp.write("variables set temp "+str(temp)+"\n")
   fp.close()
 
 

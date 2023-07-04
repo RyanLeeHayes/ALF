@@ -47,15 +47,14 @@ void atomic_logadd(double *p_lnA,double lnB)
   p_lnA[0]=lnC; // CXX
 }
 
-struct_data* readdata(int arg1, int arg2, int arg3)
+struct_data* readdata(int arg1, double arg2, int arg3, int arg4)
 {
-  char *Edir,*Ddir;
+  const char *Edir,*Ddir;
   FILE *fp,*fpE,*fpQ;
   int i;
   int s1,s2;
   int j,jN;
   int iN;
-  int count;
   // int iB0,iB1;
   int B_N;
   int iB0;
@@ -73,17 +72,6 @@ struct_data* readdata(int arg1, int arg2, int arg3)
 
   data=(struct_data*) malloc(sizeof(struct_data));
 
-  // argv[0] is function name
-  /*if (argc>1) {
-    count=sscanf(argv[1],"%d",&(data->Nsim));
-    if (count!=1) {
-      fprintf(stderr,"Error, argument is not an integer\n");
-      exit(1);
-    }
-  } else {
-    fprintf(stderr,"Error, no input. How many potentials are you using?\n");
-    exit(1);
-  }*/
   data->Nsim=arg1;
 
   fp=fopen("../prep/nsubs","r");
@@ -124,7 +112,7 @@ struct_data* readdata(int arg1, int arg2, int arg3)
     fprintf(stderr,"Error, 4th argument should indicate whether to use multisite parameters.\n");
     exit(1);
   }*/
-  data->ms=arg2;
+  data->ms=arg3;
 
   /*if (argc>5) {
     sscanf(argv[5],"%d",&(data->msprof));
@@ -132,7 +120,7 @@ struct_data* readdata(int arg1, int arg2, int arg3)
     fprintf(stderr,"Error, 5th argument should indicate whether to use multisite profiles.\n");
     exit(1);
   }*/
-  data->msprof=arg3;
+  data->msprof=arg4;
 
   data->NL=data->Nblocks;
   data->NF=data->Nsim;
@@ -145,13 +133,13 @@ struct_data* readdata(int arg1, int arg2, int arg3)
   data->beta_d=(double*) malloc(data->NF*sizeof(double)); // CXX
 
   for (i=0; i<data->NF; i++) {
-    data->T_h[i]=298.15;
+    data->T_h[i]=arg2;
     data->beta_h[i]=1.0/(kB*data->T_h[i]);
   }
   // cudaMemcpy(data->beta_d,data->beta_h,data->NF*sizeof(double),cudaMemcpyHostToDevice); // CUDA
   memcpy((void*)data->beta_d,(void*)data->beta_h,data->NF*sizeof(double)); // CXX
 
-  data->beta_t=1.0/(kB*298.15);
+  data->beta_t=1.0/(kB*arg2);
 
   data->B[0].dx=0.1;
   data->B[1].dx=0.002500025;
@@ -1334,14 +1322,17 @@ void getfofq(struct_data *data,double beta)
   fclose(fpV);
 }
 
-int main(int arg1, int arg2, int arg3)
+// Changed main to wham to prevent compiler warnings, since it is just being used as a library, not an executable
+extern "C" int wham(int arg1, double arg2, int arg3, int arg4)
 {
   struct_data *data;
   
-  data=readdata(arg1,arg2,arg3);
+  data=readdata(arg1,arg2,arg3,arg4);
 
   iteratedata(data);
 
   getfofq(data,data->beta_t);
+
+  return 0;
 }
 

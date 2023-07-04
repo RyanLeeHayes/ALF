@@ -25,7 +25,7 @@ def GetVariance(alf_info,NF):
 
   f=np.loadtxt('f.dat')
 
-  kT=0.001987*298
+  kT=0.001987*alf_info['temp']
 
   G=np.zeros((NF,nlig))
   ind=np.zeros((nlig,len(nsubs)),dtype='int')

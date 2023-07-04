@@ -1,3 +1,3 @@
 #! /bin/bash -l
 
-rm -r CMakeCache.txt  CMakeFiles  cmake_install.cmake Makefile wham libwham.so
+rm -r CMakeCache.txt  CMakeFiles  cmake_install.cmake Makefile libwham.so

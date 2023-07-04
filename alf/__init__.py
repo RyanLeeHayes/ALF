@@ -6,6 +6,8 @@ from alf.GetFreeEnergy5 import *
 from alf.wham.RunWham import *
 from alf.GetSteps import *
 from alf.GetVariance import *
+from alf.dca.GetVariance import *
+from alf.dca.GetModel import *
 
 from alf.initialize import *
 from alf.runflat import *

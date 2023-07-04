@@ -1,8 +1,5 @@
 #! /bin/bash
 
-source env-blade
-source ../setupenv # python with alf module
-
 if [ $PHASE == 1 ]; then
   python -c "import alf; alf.SetupDCA($i,$NF,$FREQ)"
 elif [ $PHASE == 2 ]; then

@@ -41,14 +41,14 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         if not os.path.exists('../msld_flat.inp'):
           print("Error: msld_flat.inp does not exist.")
         if engine in ['charmm']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['bladelib']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['blade']:
           fpin=open('arguments.inp','w')
           fpin.write("variables set esteps %d\nvariables set nsteps %d" % (esteps,nsteps))
           fpin.close()
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',os.environ['BLADEEXEC'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
         else:
           print("Error: unsupported engine type %s" % alf_info['engine'])
           quit()
@@ -75,7 +75,7 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         alf.GetEnergy(alf_info,im5,i)
         fpout=open('output','w')
         fperr=open('error','w')
-        subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%d,%d)' % (N*alf_info['nreps'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
+        subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%f,%d,%d)' % (N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
         alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
 
         alf.SetVars(alf_info,i+1)

@@ -34,8 +34,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
     alf.GetEnergy(alf_info,i,i,skipE)
     fpout=open('output','w')
     fperr=open('error','w')
-    subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%d,%d)' % (N*alf_info['nreps'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
-    print('Warning: coupling flags ignored')
+    subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%f,%d,%d)' % (N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
     alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
 
     alf.SetVars(alf_info,i+1)

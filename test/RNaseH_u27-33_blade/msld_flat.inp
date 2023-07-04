@@ -17,7 +17,6 @@ variables set restartfile null
 stream arguments.inp
 
 variables set fnex 5.5
-variables set temp 298.15
 
 stream variablesflat.inp
 

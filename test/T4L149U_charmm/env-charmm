@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export CHARMMDIR=/home/rhaye/CHARMM/chv1/charmm_exe
-source $CHARMMDIR/modules
-export CHARMMEXEC=$CHARMMDIR/gnu/charmm

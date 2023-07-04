@@ -10,5 +10,3 @@ def initialize(engine='charmm'):
 
   alf.InitVars(alf_info)
   os.chdir(home_dir)
-
-  print('Warning: Still need to minimize')

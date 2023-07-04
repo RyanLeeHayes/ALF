@@ -1,5 +1,5 @@
 
-def runprod(step,a,itt,engine='charmm'):
+def runprod(step,a,itt0,itt,engine='charmm'):
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf
@@ -11,7 +11,7 @@ def runprod(step,a,itt,engine='charmm'):
   run_dir=('run'+str(step)+a)
   nsteps=500000
 
-  for i in range(itt-1,0,-1):
+  for i in range(itt0,0,-1):
     fnm=(run_dir+'/res/%s_prod%d.lmd' % (alf_info['name'],i))
     if alf.GetSteps(alf_info,fnm)==50000:
       ibeg=i+1
@@ -51,14 +51,14 @@ def runprod(step,a,itt,engine='charmm'):
         if not os.path.exists('../msld_prod.inp'):
           print("Error: msld_prod.inp does not exist.")
         if engine in ['charmm']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',alf_info['enginepath'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['bladelib']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',os.environ['CHARMMEXEC'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['blade']:
           fpin=open('arguments.inp','w')
           fpin.write("variables set nsteps %d\nvariables set itt %d" % (nsteps,i))
           fpin.close()
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',os.environ['BLADEEXEC'],'../msld_prod.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'../msld_prod.inp'],stdout=fpout,stderr=fperr)
         else:
           print("Error: unsupported engine type %s" % alf_info['engine'])
           quit()

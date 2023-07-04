@@ -587,11 +587,11 @@ int sort(int i,int *sortBuffer)
     for (i2=i1; i2>0; i2/=2) {
       otherThreadIdx=(threadIdx.x^i2);
       if (i2<32) {
-        iother=__shfl_xor_sync(-1,itmp,i2);
+        iother=__shfl_xor_sync(0xFFFFFFFF,itmp,i2);
         bswitch=(((otherThreadIdx>threadIdx.x)==(iother>itmp))==direction);
         bswitch=(iother==itmp?0:bswitch);
-        itmp=__shfl_sync(-1,itmp,threadIdx.x^(i2*bswitch));
-        Ztmp=__shfl_sync(-1,Ztmp,threadIdx.x^(i2*bswitch));
+        itmp=__shfl_sync(0xFFFFFFFF,itmp,threadIdx.x^(i2*bswitch));
+        Ztmp=__shfl_sync(0xFFFFFFFF,Ztmp,threadIdx.x^(i2*bswitch));
       } else {
         sortBuffer[threadIdx.x]=itmp;
         __syncthreads();

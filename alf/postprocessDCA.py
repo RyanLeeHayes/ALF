@@ -141,7 +141,5 @@ def FinishDCA(i,NF,FREQ,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/GetVariance.py'
-  subprocess.call([exe,str(NF),'data'])
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/GetModel.py'
-  subprocess.call([exe,str(NF),'data'])
+  GetVarianceDCA(alf_info,NF,'data')
+  GetModelDCA(alf_info,NF,'data')

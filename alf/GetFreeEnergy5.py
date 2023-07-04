@@ -5,7 +5,7 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   import sys
   import numpy as np
 
-  kT=0.001987*298
+  kT=0.001987*alf_info['temp']
   krest=1
 
   cutb=2
