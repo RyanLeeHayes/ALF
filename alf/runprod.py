@@ -1,5 +1,5 @@
 
-def runprod(step,a,itt0,itt,engine='charmm'):
+def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf
@@ -9,11 +9,11 @@ def runprod(step,a,itt0,itt,engine='charmm'):
   home_dir=os.getcwd()
 
   run_dir=('run'+str(step)+a)
-  nsteps=500000
+  nlambdasteps=nsteps//10 # assume nsavl=10
 
   for i in range(itt0,-1,-1):
     fnm=(run_dir+'/res/%s_prod%d.lmd' % (alf_info['name'],i))
-    if i==0 or alf.GetSteps(alf_info,fnm)==50000:
+    if i==0 or alf.GetSteps(alf_info,fnm)==nlambdasteps:
       ibeg=i+1
       break
     else:
@@ -33,12 +33,12 @@ def runprod(step,a,itt0,itt,engine='charmm'):
       os.remove(run_dir+'/variablesprod.inp')
     shutil.copy('variables%d.inp' % step,run_dir+'/variablesprod.inp')
     if not os.path.exists(run_dir+'/prep'):
-      os.symlink('../prep',run_dir+'/prep' % i) # ../prep is relative to final path, not current directory
+      os.symlink('../prep',run_dir+'/prep') # ../prep is relative to final path, not current directory
   os.chdir(run_dir)
 
   for i in range(ibeg,itt+1):
     fnm=('res/%s_prod%d.lmd' % (alf_info['name'],i))
-    while alf.GetSteps(alf_info,fnm)!=50000:
+    while alf.GetSteps(alf_info,fnm)!=nlambdasteps:
       if os.path.exists('output_%d' % i):
         os.rename('output_%d' % i,'failed/output_%d' % i)
       if os.path.exists('error_%d' % i):
