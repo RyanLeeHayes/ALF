@@ -11,14 +11,13 @@ def runprod(step,a,itt0,itt,engine='charmm'):
   run_dir=('run'+str(step)+a)
   nsteps=500000
 
-  for i in range(itt0,0,-1):
+  for i in range(itt0,-1,-1):
     fnm=(run_dir+'/res/%s_prod%d.lmd' % (alf_info['name'],i))
-    if alf.GetSteps(alf_info,fnm)==50000:
+    if i==0 or alf.GetSteps(alf_info,fnm)==50000:
       ibeg=i+1
       break
     else:
       print("Error: Run %d incomplete. Going back one step" % i)
-      ibeg=i
 
   if ibeg==1:
     # Can't just remove run_dir and start over, because otherwise a scripting error might erase 100's of ns of sampling
@@ -34,7 +33,7 @@ def runprod(step,a,itt0,itt,engine='charmm'):
       os.remove(run_dir+'/variablesprod.inp')
     shutil.copy('variables%d.inp' % step,run_dir+'/variablesprod.inp')
     if not os.path.exists(run_dir+'/prep'):
-      os.symlink(os.path.abspath('prep'),run_dir+'/prep')
+      os.symlink('../prep',run_dir+'/prep' % i) # ../prep is relative to final path, not current directory
   os.chdir(run_dir)
 
   for i in range(ibeg,itt+1):

@@ -31,7 +31,7 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         os.mkdir('run%d/dcd' % i)
         os.mkdir('run%d/res' % i)
         shutil.copy('variables%d.inp' % i,'run%d/variablesflat.inp' % i)
-        os.symlink(os.path.abspath('prep'),'run%d/prep' % i)
+        os.symlink('../prep','run%d/prep' % i) # ../prep is relative to final path, not current directory
         os.chdir('run%d' % i)
 
         # Run the simulation
