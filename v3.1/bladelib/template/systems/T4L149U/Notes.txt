@@ -1,2 +1,0 @@
-Merged ~/56_TopologyChanges/2_SecondRound/2_newAngleRestr/pme_sch_sa2/1_149/run/2_run_5cap/template/
-and ~/46_ProteinMutation/pme/1_149/run/2_run_5cap/template/prep/T4L149U.inp

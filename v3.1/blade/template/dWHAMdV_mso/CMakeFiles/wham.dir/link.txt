@@ -1,1 +1,0 @@
-/export/apps/CentOS7/gcc/6.4.0/bin/g++    -rdynamic CMakeFiles/wham.dir/src/wham_generated_wham.cu.o  -o wham /export/apps/CentOS7/cuda/10.0/lib64/libcudart_static.a -lpthread -ldl -lrt 
