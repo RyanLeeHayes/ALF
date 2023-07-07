@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Set slurm options for cluster
-export SLURMOPTSMD="--time=1440 --ntasks=1 --tasks-per-node=1 --cpus-per-task=1 -p free-gpu --gres=gpu:1 --export=ALL"
+export SLURMOPTSMD="--time=1440 --ntasks=1 --tasks-per-node=1 --cpus-per-task=4 -p free-gpu --gres=gpu:1 --export=ALL"
 export SLURMOPTSPP="--time=1440 --ntasks=1 --tasks-per-node=1 --cpus-per-task=1 -p free-gpu --gres=gpu:1 --export=ALL"
 
 # Run flattening
