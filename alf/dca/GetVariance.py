@@ -16,8 +16,8 @@ def GetVarianceDCA(alf_info,NF,Path):
     print('Error: Neither h.LM.dat or h.PLM.dat found.')
     quit()
 
-  nblocks=alf_info['nblocks']
-  nsubs=alf_info['nsubs']
+  nblocks=alf_info['nblocks']+0 # Add 0 so python makes a copy
+  nsubs=alf_info['nsubs']+0 # Add 0 so python makes a copy
   # nreps=np.loadtxt('../nreps',dtype='int')
   # ncentral=np.loadtxt('../ncentral',dtype='int')
 

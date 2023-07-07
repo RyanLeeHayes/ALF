@@ -1,0 +1,25 @@
+Overview
+
+To try an ALF run, copy the appropriate template directory from the engines directory, and copy a prep directory from the systems directory into it. Ensure that environment variables are set correctly.
+
+Engines
+
+The engines directory contains
+charmm
+bladelib
+blade
+charmm_withPotts
+bladelib_withPotts
+blade_withPotts
+
+The directory charmm uses domdec-gpu-only, a GPU accelerated molecular dynamics engine in the CHARMM software package. The directory bladelib uses the blade plugin to the CHARMM software package, another GPU accelerated molecular dynamics engine that is faster, but with fewer features than domdec-gpu-only. Use of other molecular dynamics engines in CHARMM is possible, including engines that do not use GPUs, but will require writing your own versions of msld_flat.inp and msld_prod.inp (if absent these files are copied from standard versions in alf/default_scripts), as well as updating the commands to launch the molecular dynamics engine in alf/runflat.py and alf/runprod.py, and carefully compiling alf/wham using the CPU implementation rather than the standard GPU implementation. The directory blade uses the standalone BLaDE software package, rather than the blade plugin to CHARMM. For each engine, there is a _withPotts copy which allows one to perform the Potts analysis described in DOI: 10.1021/acs.jctc.1c00948 on systems with three or more mutating sites.
+
+To test one of these engines, make sure it is installed correctly, and copy the corresponding directory. You may need to add commands to the beginning of the .sh files like runflat.sh, runprod.sh, and postprocess.sh to load the appropriate environment, or conda environments for the molecular dynamics engine and the ALF software package. Also ensure that the slurm options in files like subsetAll.sh are set to appropriate partitions, accounts, and times for your cluster.
+
+Systems
+
+A variety of systems are available, copy one suited to your engine to a directory named prep inside the copy of the engine directory (systems ending in charmm are suitable for the charmm or bladelib engines, systems ending in blade should only be used with standalone blade). Each system will have a README describing it and the expected results obtained from running it. Be sure to edit the enginepath line in prep/alf_info.py to point to the pathway for the executable on your system.
+
+Running
+
+Once you have set up an engine template with a system prep directory inside, launch subsetAll.sh to submit all jobs to the queue on your cluster, or follow the steps in subsetAll.sh to manually launch runflat.sh, then several instances of runprod.sh, and finally postprocess.sh with appropriate variables on your local machine. Results will be in a file called analysis213/Result.txt. These are dG values in kcal/mol. Note these values have little meaning until compared to dG values in another ensemble to compute ddG.
