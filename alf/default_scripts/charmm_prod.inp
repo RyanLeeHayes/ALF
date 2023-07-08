@@ -1,14 +1,5 @@
-* CHARMM input file for Multi-Site lambda-dynamics
-* MSLD references:
-*    J.L. Knight and C.L. Brooks III. Multi-site lambda-dynamics: 
-*       free energy method for simulating Structure-Activity Relationship 
-*       studies. J. Chem. Theory Comput. 7, 2728-2739 (2011). 
-*    J.L. Knight and C.L. Brooks III. Applying efficient 
-*       implicit non-geometric constraints in free energy simulations.
-*       J. Comput. Chem. 32, 3423-3432 (2011). 
-* Stream file for MSLD created by process.py
-* Written by Ryan Hayes 2016-06-18
-*
+! CHARMM with DOMDEC input file for lambda dynamics
+!
 
 set fnex = 5.5
 
@@ -23,7 +14,11 @@ stream prep/nbond.str
 
 faster on
 
-! system "mkdir -p res dcd"
+if @itt .eq. 1 then ! usually done on step 1, do again, required for charge correction scripts
+   write psf card form name prep/minimized.psf 
+* after minimization psf
+*
+endif
 
 bomblev -1
 open unit 101 read unform name "prep/minimized.crd"
@@ -51,24 +46,23 @@ else
    set dph = 0.5
    calc sph = 7.0 - @dph*@ncentral
    repd nrep @nreps EXLM FREQuency 1000 MSPH SPH @sph DPH @dph unit 27
-   
+
    !! Direct output of replicas to their individual files
    set myrep = ?myrep
    open write form unit 28 name output_@{itt}
    outu 28
    system "cp ../nbshift/vb.inp ../nbshift/vb.inp_@MYREP"
+   stream "../nbshift/vb.inp"
 endif
 
-stream "../nbshift/vb.inp"
-
 shake fast bonh param
-scalar fbeta set 10.0 sele all end
+scalar fbeta set 0.1 sele all end
 
 domdec gpu only dlb off ndir 1 @nnodes 1
 
 calc ittm1 = @itt - 1
 
-!! Production run of 100 ps / 1 ns
+!! Production run
 open unit 21 write unform name "dcd/@{SYSNAME}_prod@{ITT}.dcd"
 open unit 22 write form name "res/@{SYSNAME}_prod@{ITT}.res"
 ! open unit 23 read form name "res/@{SYSNAME}_prod@{ITTM1}.res"
@@ -91,22 +85,22 @@ calc pmass = ?natom * 0.12
 dynamics cpt @resttoken -
   iseed @seed @seed @seed @seed -
   timestep 0.002 -      !!timestep interval
-  nstep  @nsteps -          !!no. of steps  (== 2 ns)
+  nstep  @nsteps -      !!no. of steps  (== 2 ns)
   nprint 1000 -         !!freq of printout
   iprfrq 1000 -         !!freq of calc avg/rms energy
-  nsavc @nsavc -          !!freq of writing coordinates
+  nsavc @nsavc -        !!freq of writing coordinates
   nsavl 10 -            !!freq of writing lambda histograms
-  isvfrq 10000 -        !!freq of writing out restart files
-  iunread @iurest -          !!read restart file
+  isvfrq @nsteps -      !!freq of writing out restart files
+  iunread @iurest -     !!read restart file
   iuncrd 21 -           !!write out coordinates
   iunwri 22 -           !!write out restart file
   iunldm 24 -           !!write out lambda histograms and biasing potential
-  firstt @temp -          !!initial temp
-  finalt @temp -          !!final temp
-  tstruc @temp -          !!temp at which starting structure has been equilibrated
-  tbath @temp -           !!temp of langevin bath
+  firstt @temp -        !!initial temp
+  finalt @temp -        !!final temp
+  tstruc @temp -        !!temp at which starting structure has been equilibrated
+  tbath @temp -         !!temp of langevin bath
   pconstant -           !! use constant pressure (pressure.doc recommendations)
-  pmass @pmass -         !! pressure "mass" 2% of mass or 400.0 amu
+  pmass @pmass -        !! pressure "mass" 2% of mass or 400.0 amu
   pref 1.0 -            !! pressure in atm
   pgamma 20.0 -         !! pressure collision frequency
   hoover -
@@ -127,13 +121,12 @@ dynamics cpt @resttoken -
 !----------------------------------------------------------------------------
 ! Write out structure after simulation
 !----------------------------------------------------------------------------
-
-write psf card form name "@{SYSNAME}_prod@{ITT}.psf"
-* after dynamics psf
-*
-write coor pdb form name "@{SYSNAME}_prod@{ITT}.pdb"
-* after dynamics pdb
-*
+! write psf card form name "@{SYSNAME}_prod@{ITT}.psf"
+! * after dynamics psf
+! *
+! write coor pdb form name "@{SYSNAME}_prod@{ITT}.pdb"
+! * after dynamics pdb
+! *
 
 !---------------------------------------------------------------------------
 ! Analyze l-dynamics output

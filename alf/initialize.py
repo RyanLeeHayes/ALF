@@ -1,5 +1,5 @@
 
-def initialize(engine='charmm'):
+def initialize(engine='charmm',minimize=True):
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf
@@ -8,5 +8,5 @@ def initialize(engine='charmm'):
 
   home_dir=os.getcwd()
 
-  alf.InitVars(alf_info)
+  alf.InitVars(alf_info,minimize=minimize)
   os.chdir(home_dir)

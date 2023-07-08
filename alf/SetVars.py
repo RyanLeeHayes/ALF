@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-def SetVarsCharmm(alf_info,Step):
+def SetVarsCharmm(alf_info,Step,minimize=False):
   import numpy as np
 
   nblocks=alf_info['nblocks']
@@ -96,11 +96,12 @@ def SetVarsCharmm(alf_info,Step):
   for i in range(0,len(nsubs)):
     fp.write("set nsubs"+str(i+1)+" = "+str(nsubs[i])+"\n")
   fp.write("set temp = "+str(temp)+"\n")
+  fp.write("set minimize = "+str(int(minimize==True))+"\n")
   fp.close()
 
 
 
-def SetVarsBlade(alf_info,Step):
+def SetVarsBlade(alf_info,Step,minimize=False):
   import numpy as np
 
   nblocks=alf_info['nblocks']
@@ -195,22 +196,24 @@ def SetVarsBlade(alf_info,Step):
   for i in range(0,len(nsubs)):
     fp.write("variables set nsubs"+str(i+1)+" "+str(nsubs[i])+"\n")
   fp.write("variables set temp "+str(temp)+"\n")
+  if minimize:
+    print("Warning: Implicitly or explicitly requested minimization with blade. Blade does not minimize. Set optional argument minimize=False in alf.initialize()\n")
   fp.close()
 
 
 
-def SetVars(alf_info,Step):
+def SetVars(alf_info,Step,minimize=False):
   if alf_info['engine'] in ['charmm','bladelib']:
-    SetVarsCharmm(alf_info,Step)
+    SetVarsCharmm(alf_info,Step,minimize=minimize)
   elif alf_info['engine'] in ['blade']:
-    SetVarsBlade(alf_info,Step)
+    SetVarsBlade(alf_info,Step,minimize=minimize)
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
     quit()
 
 
 
-def InitVars(alf_info):
+def InitVars(alf_info,minimize=True):
   import sys, os
   import numpy as np
   from subprocess import call
@@ -240,4 +243,4 @@ def InitVars(alf_info):
     np.savetxt('nbshift/s_shift.dat',c)
 
   os.chdir('analysis0')
-  SetVars(alf_info,1)
+  SetVars(alf_info,1,minimize=minimize)
