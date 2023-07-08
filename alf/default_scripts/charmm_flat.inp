@@ -1,5 +1,5 @@
-! CHARMM with DOMDEC input file for lambda dynamics
-!
+* CHARMM with DOMDEC input file for lambda dynamics
+*
 
 set fnex = 5.5
 
@@ -28,6 +28,7 @@ if ?nsel .eq. 0 then
 else
    echo "Error: cannot create prep/minimized.crd because some atoms have unitialized coordinates"
    stop
+endif
 endif
 
 bomblev -1

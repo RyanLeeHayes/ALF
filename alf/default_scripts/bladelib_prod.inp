@@ -1,5 +1,5 @@
-! CHARMM with BLaDE input file for lambda dynamics
-!
+* CHARMM with BLaDE input file for lambda dynamics
+*
 
 set fnex = 5.5
 

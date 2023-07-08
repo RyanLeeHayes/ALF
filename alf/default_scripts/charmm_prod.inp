@@ -1,5 +1,5 @@
-! CHARMM with DOMDEC input file for lambda dynamics
-!
+* CHARMM with DOMDEC input file for lambda dynamics
+*
 
 set fnex = 5.5
 
