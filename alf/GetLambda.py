@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 def GetLambdaCharmm(alf_info,fnmout,fnmsin):
-  import sys
+  import sys, os
   import numpy as np
   from scipy.io import FortranFile
 
@@ -9,6 +9,8 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
   Lambdas=np.zeros((0,nblocks))
 
   for fnmin in fnmsin:
+    if not os.path.exists(fnmin):
+      print('Error, %s does not exist, molecular dynamics probably failed, check run output and run error for clues' % (fnmin,))
     fp=FortranFile(fnmin,'r')
 
     # The header and icntrl array are read in as a single record
@@ -61,7 +63,7 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
 
 
 def GetLambdaBlade(alf_info,fnmout,fnmsin):
-  import sys
+  import sys, os
   import numpy as np
   from xdrlib import Unpacker
   from xdrlib import Packer
@@ -76,6 +78,8 @@ def GetLambdaBlade(alf_info,fnmout,fnmsin):
   linewidth=len(p.get_buffer())
 
   for fnmin in fnmsin:
+    if not os.path.exists(fnmin):
+      print('Error, %s does not exist, molecular dynamics probably failed, check run output and run error for clues' % (fnmin,))
     # Lambda=np.loadtxt(sys.argv[ifp])
     fp=open(fnmin,"rb")
     fpdata=fp.read()

@@ -2,7 +2,7 @@
 
 def GetFreeEnergy5(alf_info,ms,msprof):
 
-  import sys
+  import sys, os
   import numpy as np
 
   kT=0.001987*alf_info['temp']
@@ -93,6 +93,8 @@ def GetFreeEnergy5(alf_info,ms,msprof):
       jblock+=nsubs[jsite]
     iblock+=nsubs[isite]
 
+  if not os.path.exists('multisite/C.dat'):
+    print('Error, %s/multisite/C.dat does not exist, RunWham.py probably failed, check %s/output and %s/error for clues' % (os.getcwd(),os.getcwd(),os.getcwd()))
   C=np.loadtxt('multisite/C.dat')
   for i in range(0,n0):
     C[i,i]+=krest*cutlist[i]**-2
