@@ -82,6 +82,8 @@ MASS    80 OS    15.99940 ! ester oxygen
 MASS    81 S     32.06000 ! sulphur
 MASS    82 SM    32.06000 ! sulfur C-S-S-C type
 MASS    83 SS    32.06000 ! thiolate sulfur
+MASS    84 HT     1.00800 ! TIP3P water
+MASS    85 OT    15.99900 ! TIP3P water
 
 
 BONDS

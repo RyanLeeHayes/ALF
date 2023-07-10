@@ -14,8 +14,8 @@ set resid1 = 149
 
 read rtf card name prep/toppar/top_all36_msld.rtf
 read rtf card name "prep/toppar/top_all36_cgenff.rtf" append
-read param card name prep/toppar/par_all36_msld.prm
-read param card name "prep/toppar/par_all36_cgenff.prm" append
+read param card flex name prep/toppar/par_all36_msld.prm
+read param card flex name "prep/toppar/par_all36_cgenff.prm" append
 ! stream "LIG.str"
 
 stream prep/aa_stream/ca_ala.str
