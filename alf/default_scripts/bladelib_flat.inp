@@ -10,7 +10,13 @@ bomblev -1
 stream "prep/@{SYSNAME}.inp"
 
 ! Set nonbonded options
-stream prep/nbond.str
+open unit 101 read unform name prep/nbond.str
+if ?IOSTAT .eq. 1 then ! 1 if does exist, -1 if does not exist
+   stream prep/nbond.str
+else
+   echo "Error: cannot find prep/nbond.str"
+   stop
+endif
 
 faster on
 
