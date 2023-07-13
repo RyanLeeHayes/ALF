@@ -9,6 +9,7 @@ from alf.GetVariance import *
 from alf.dca.GetVariance import *
 from alf.dca.GetModel import *
 from alf.util.PlotFreeEnergy import *
+from alf.util.GetDCD import *
 
 from alf.initialize import *
 from alf.runflat import *
