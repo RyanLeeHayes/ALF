@@ -25,7 +25,7 @@ define uninitialized select .not. initialized end
 if ?nsel .eq. 0 then
    ! domdec gpu only dlb off ndir 1 @nnodes 1
    mini sd nstep 100 nprint 10 step 0.005                  !! Do min, Steepest-Decent
-   write psf card form name prep/minimized.psf 
+   write psf card name prep/minimized.psf 
 * after minimization psf
 *
    write coor card name "prep/minimized.crd"
@@ -182,10 +182,10 @@ dynamics cpt start -
 !----------------------------------------------------------------------------
 ! Write out structure after simulation
 !----------------------------------------------------------------------------
-! write psf card form name "@{SYSNAME}_flat.psf"
+! write psf card name "@{SYSNAME}_flat.psf"
 ! * after dynamics psf
 ! *
-! write coor pdb form name "@{SYSNAME}_flat.pdb"
+! write coor pdb name "@{SYSNAME}_flat.pdb"
 ! * after dynamics pdb
 ! *
 

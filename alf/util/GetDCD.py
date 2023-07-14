@@ -55,10 +55,7 @@ def GetDCD(istep,ndupl=None,begres=None,endres=None,firstE=0,skipE=1,engine='cha
         fnmsin.append(DDIR+'/dcd/'+name+'_flat.'+fmt+reptag)
         fnmout=(DDIR+'/dcdcat/'+name+'_flat_rep%d.%s' % (i,fmt))
 
-      fnmsinfmt=[]
-      for ixtc in range(len(fnmsin)):
-        fnmsinfmt.append((fnmsin[ixtc],fmt))
-      trajin=mda.Universe(fnmpsf,fnmsinfmt)
+      trajin=mda.Universe(fnmpsf,fnmsin,topology_format='psf',format=fmt)
       # trajin.write(fnmout,frames='all')
       system=trajin.select_atoms('all')
       with mda.Writer(fnmout, system.n_atoms) as w:

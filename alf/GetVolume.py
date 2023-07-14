@@ -22,8 +22,7 @@ def GetVolume(alf_info,fnmout,fnmsin,fnmpsf):
   Volumes=np.zeros((0,1))
 
   for ixtc in range(len(fnmsin)):
-    trajin=mda.Universe(fnmpsf,format="PSF")
-    trajin.load_new(fnmsin[ixtc],format=fmt)
+    trajin=mda.Universe(fnmpsf,[fnmsin[ixtc]],topology_format="psf",format=fmt)
 
     lines=trajin.trajectory.n_frames
     Volume=np.zeros((lines,1))

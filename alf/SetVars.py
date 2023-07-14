@@ -13,6 +13,7 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
 
 
   fp=open('../variables'+str(Step)+'.inp','w')
+  fp.write("* Variables from step %d of ALF\n*\n\n" % (Step,))
 
   b_prev=np.loadtxt('b_prev.dat')
   b=np.loadtxt('b.dat')
@@ -97,6 +98,7 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
     fp.write("set nsubs"+str(i+1)+" = "+str(nsubs[i])+"\n")
   fp.write("set temp = "+str(temp)+"\n")
   fp.write("set minimize = "+str(int(minimize==True))+"\n")
+  fp.write("\n")
   fp.close()
 
 

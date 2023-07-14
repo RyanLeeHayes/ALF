@@ -64,7 +64,7 @@ def GetVariance(alf_info,NF):
     Pkeep=np.zeros((NF,nlig))
     G=np.zeros((NF,nlig))
     for i in range(0,NF):
-      print(i)
+      # print(i) # Was useful for keeping track of progress on slow analysis runs
       L=np.loadtxt('data/Lambda.'+str(i)+'.'+str(irep)+'.dat')
       for j in range(0,nlig):
         P=np.sum(np.all(L[:,blk[j,:]]>0.99,axis=1))
@@ -93,11 +93,6 @@ def GetVariance(alf_info,NF):
 
     fp.close()
 
-  # WORKING
-  print(PkeepA)
-  print(Eall)
-  print(Eshift)
-  print(lndenom)
   # Pkeep=np.sum(PkeepA,axis=0)
   for i in range(0,NF):
     for j in range(0,nlig):

@@ -21,7 +21,7 @@ endif
 faster on
 
 if @itt .eq. 1 then ! usually done on step 1, do again, required for charge correction scripts
-   write psf card form name prep/minimized.psf 
+   write psf card name prep/minimized.psf 
 * after minimization psf
 *
 endif
@@ -127,10 +127,10 @@ dynamics cpt @resttoken -
 !----------------------------------------------------------------------------
 ! Write out structure after simulation
 !----------------------------------------------------------------------------
-! write psf card form name "@{SYSNAME}_prod@{ITT}.psf"
+! write psf card name "@{SYSNAME}_prod@{ITT}.psf"
 ! * after dynamics psf
 ! *
-! write coor pdb form name "@{SYSNAME}_prod@{ITT}.pdb"
+! write coor pdb name "@{SYSNAME}_prod@{ITT}.pdb"
 ! * after dynamics pdb
 ! *
 

@@ -29,7 +29,6 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
     os.chdir('analysis%d' % i)
 
     # Run the analysis
-    print('Warning, still using bash to call python')
     alf.GetLambdas(alf_info,i,N,eqS,S)
     alf.GetEnergy(alf_info,i,i,skipE)
     fpout=open('output','w')
