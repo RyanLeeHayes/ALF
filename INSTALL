@@ -1,0 +1,141 @@
+Overview
+
+In order to install ALF, you will need an environment with C, C++, MPI, and CUDA
+compilers as well as cmake and python and pip. You will need to compile ALF code
+in alf/wham and alf/dca, then use pip to install the python module in a virtual
+environment. You can achieve this manually or using conda as described below.
+Manual installation is preferred if you expect to have many versions of ALF or
+engage in ALF development. Conda installation is simpler if you expect to have a
+single version of ALF and use it out of the box as a fixed tool. Limited
+functionality is available without CUDA, as outlined below.
+
+
+
+Installing Manually
+
+Make sure paths to C, C++, MPI, CUDA, and cmake are in your environment. If you
+are working on a cluster, this might be achievable with appropriate module load
+commands. For example at hpc3.rcic.uci.edu the following modules work
+
+module load cmake/3.22.1 cuda/11.7.1 gcc/11.2.0 openmpi/4.1.2/gcc.11.2.0 fftw/3.3.10/gcc.11.2.0-openmpi.4.1.2
+export FFTW_HOME=$FFTW_DIR
+
+while at gollum.chem.lsa.umich.edu to following modules work
+
+module load cmake fftw/3.3.8_gcc_6.4.0 cuda/10.0 gcc/6.4.0 openmpi/3.1.2-gcc-6.4.0
+
+You may wish to save the appropriate commands to set up your environment in the
+ALF top level directory in a file called modules and source this file before or
+during compilation.
+
+To compile the ALF code in alf/wham and alf/dca, cd into each of those
+directories, run Clean.sh
+
+bash Clean.sh
+
+if you need to remove a previous installation attempt, and then run Compile.sh
+
+bash Compile.sh
+
+in each directory to compile the appropriate code. You may wish to add sourcing
+modules or setting up the environment directly to the Compile.sh script.
+
+After compiling these codes, you are ready to create a python virtual
+environment and install the alf module. This can be done using the commands
+in Setup.sh
+
+python -m venv env-alf
+source env-alf/bin/activate
+pip install -e .
+
+run from the alf top level directory. Again, you may need to adjust your
+environment to include appropriate versions of python and pip to successfully
+install the alf module. After this, the directory env-alf contains a python
+virtual environment that can run ALF. To activate it in the future and use ALF,
+you will need to source env-alf/bin/activate
+
+source env-alf/bin/activate
+
+Setup.sh creates a convenient/redundant shortcut to do this in the file
+setupenv.
+
+
+
+Installing with conda
+
+With conda, the first step is to use conda to create an environment with
+appropriate installations of the C, C++, MPI, and CUDA compilers and other
+helper programs like cmake. If you don't have conda available on your cluster
+you can install anaconda or miniconda following online instructions for those
+packages. miniconda is a lightweight alternative to anaconda that comes with
+only a minimal set of modules and takes up a smaller disk footprint. Once you
+have a working version of conda in your path execute the following commands:
+
+conda create -y -n env-alf python=3.9
+conda activate env-alf
+conda install -y -c conda-forge mamba
+
+You can choose a version of python other than 3.9 if you prefer, or name the
+environment something different than alf-env. mamba is a C++ based version of
+conda than can be used interchangeably with conda, and generally makes
+installation much faster. Next install cuda and the compilers. If you want to
+use the latest version of cuda, use
+
+mamba install -y -c nvidia cuda
+mamba install -y -c conda-forge gcc gxx gfortran make cmake binutils fftw openmpi openmm mpi4py sysroot_linux-64==2.17
+
+however, be warned that unless your system administrators are really fast, your
+nvidia gpu drivers will be incompatible with this version of cuda, and the code
+will compile fine, but will not run. To install the oldest version of cuda
+currently available to conda, run these commands instead. This will be
+compatible with all nvidia gpu drivers put out after this version of cuda and is
+therefore the most portable. This older version of cuda is incompatible with
+current versions of gcc, gxx, and gfortran, so you need to specify older
+versions of those programs.
+
+mamba install -y -c "nvidia/label/cuda-11.3.1" cuda
+mamba install -y -c conda-forge gcc==10.4 gxx==10.4 gfortran==10.4 make cmake binutils fftw openmpi openmm mpi4py sysroot_linux-64==2.17
+
+With your environment installed, you are now ready to begin installing ALF.
+From the alf top level directory, the following commands will compile the ALF
+executables, and add the alf module to your virtual environment.
+
+conda activate env-alf
+export ALF_SOURCE_DIR=`pwd` # bash syntax
+# Compile ALF executables in wham and dca
+cd $ALF_SOURCE_DIR/alf/wham
+bash Clean.sh
+cmake ./
+make wham
+cd $ALF_SOURCE_DIR/alf/dca
+bash Clean.sh
+cmake ./
+make all
+# Install pyALF in current conda virtual environment
+cd $ALF_SOURCE_DIR
+pip install -e .
+
+As a first test of whether this installation was successful, you can run
+
+python -c "import alf"
+
+
+
+Installing without CUDA
+
+If you don't have access to CUDA GPUs, you can still run ALF, it will just be
+slower, and the tools aren't as streamlined for this. When setting up your
+environment don't include cuda. When you compile alf/wham, the lack of a cuda
+compiler should signal to cmake to compile the CPU code instead. This code has
+not been tested for a while, so please contact the developers if you have problems compiling. Next, you can probably skip compiling alf/dca unless you plan to
+estimate free energies with the Potts estimator. If you want to estimate free
+energies with the Potts estimator, you will need to modify CMakeLists.txt to
+omit plm. lm uses likelihood maximization which is better for most chemical
+spaces, and plm uses pseudolikelihood maximization which is typically only
+required for massive chemical spaces, e.g. more than a million species.
+
+You will need to modify your CHARMM input scripts to not use GPUs (see the
+scripts in alf/default_scripts). Removing the BLaDE or DOMDEC options, or
+replacing "domdec gpu only" with "domdec gpu off" in the scripts should work.
+You may wish to edit the scripts and the CHARMM calls in alf/runflat.py and
+alf/runprod.py to use multiple CPUs in parallel to improve efficiency.
