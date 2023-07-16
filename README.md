@@ -153,3 +153,9 @@ Biasing potential replica exchange:
 Biasing Potential Replica Exchange Multisite λ-Dynamics for Efficient Free Energy Calculations 
 Journal of Chemical Theory and Computation, 2015, 11, 1267-1277
 DOI: 10.1021/ct500894k
+
+
+
+Other Items
+
+Consider describing wham here as well as the supported engines and expectations for the biases in name.inp

@@ -1,5 +1,35 @@
 
 def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
+  """
+  Run several cycles of short simulations followed by bias optimization
+
+  WORKING HERE
+
+  Parameters
+  ----------
+  ni : int
+      The starting cycle (1 if no previous runs have been performed)
+  nf : int
+      The final cycle
+  esteps : int
+      The number of time steps of molecular dynamics simulation to discard
+      for equilibration each cycle of flattening
+  nsteps : int
+      The number of time steps of molecular dynamics simulation to use for
+      sampling chemical space each cycle of flattening
+  engine : str, optional
+      The molecular dynamics engine string, see help(alf) for allowed
+      values. (default is 'charmm')
+  G_imp : str, optional
+      To use a G_imp directory other than the default one in alf/G_imp,
+      provide a path. (default is None)
+  ntersite : list of two ints, optional
+      Flags for whether to use intersite coupling (first element) and
+      intersite profiles (second element) in flattening. (default is [0,0]
+      for no coupling. If multiple sites are simulated and coupling is
+      expected, [0,1] is recommended)
+  """
+
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf
