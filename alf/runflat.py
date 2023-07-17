@@ -3,7 +3,40 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
   """
   Run several cycles of short simulations followed by bias optimization
 
-  WORKING HERE
+  runflat runs many short cycles of simulation followed by flattening. It
+  assumes the existence of a directory prep, described in the README.md
+  file, and that initialize has been run first to create the
+  variables1.inp and analysis0 directories (along with nbhift) equired to
+  start the first run. Each cycle [i] a run directory is created called
+  run[i], the MD engine is launched with the msld_flat.inp script (you
+  may write your own, otherwise a default script will be copied from
+  alf/default_scripts), and the alchemical trajectory is saved to
+  run[i]/res/[name]_flat.lmd, where [name] is the name of the system in
+  alf_info (if you write your own script, make sure the trajectory is
+  saved here, similar naming conventions apply for the spatial trajectory
+  if using charge change corrections). Next the simulation is analyzed
+  in analysis[i], and new biases are chosen using the GetLambdas,
+  GetEnergy, RunWham, GetFreeEnergy5, and SetVars routines. These biases
+  are saved in analysis[i]/b_sum.dat, analysis[i]/c_sum.dat,
+  analysis[i]/x_sum.dat, and analysis[i]/s_sum.dat, and are exported to a
+  format the MD engine can read in variables[i+1].inp. Then the [i+1]
+  cycle of dynamics is run, followed by its analysis, and so on.
+
+  runflat is designed to be fault-proof against MD crashes, slurm
+  cancellation, and other sources of crashes. Consequently, each cycle is
+  run repeatedly until it succeeds, and if a cycle has previously
+  succeeded, it is not run again. Whether cycle [i] succeeded is
+  determined by whether the file analysis[i]/b_sum.dat exists or not. If a
+  run is determined to have failed, the previous copy of run[i] is moved
+  to run[i]_failed, and the previous copy of run[i]_failed (if any) is
+  deleted. Examining run[i]_failed/output and run[i]_failed/error can give
+  insight into the causes of the failure. Thus if runflat is run from
+  cycle 1 to 100, but is killed in the middle of cycle 43, running runflat
+  again with the same arguments will not run cycles 1-42 again, but will
+  move the partially completed run43 to run43_failed, and start again at
+  cycle 43. If you wish to rerun cycles 1-42, you will need to delete
+  b_sum.dat from all the analysis directories, or better yet remove
+  analysis[1-43] and run[1-43].
 
   Parameters
   ----------
