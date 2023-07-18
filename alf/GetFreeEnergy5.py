@@ -88,7 +88,7 @@ def GetFreeEnergy5(alf_info,ms,msprof):
         cutlist[n0:n0+2*n3]=cuts2
         n0+=2*n3
       elif ms==2:
-        cutlist[n0:n0+n3]=cutc
+        cutlist[n0:n0+n3]=cutc2
         n0+=n3
       jblock+=nsubs[jsite]
     iblock+=nsubs[isite]
