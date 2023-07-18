@@ -1,6 +1,6 @@
 Package Description
 
-alf (the module) runs adaptive landscape flattening (ALF - the method) to optimize bias potentials in a lambda dynamics molecular dynamics simulation. These optimized bias potentials significantly improve the efficiency of lambda dynamics, and are required as a starting point for most modern lambda dynamics simulations. This README contains information on installation, examples, best practices, python routines, input specification, and citations.
+alf (the module) runs adaptive landscape flattening (ALF - the method) to optimize bias potentials in a lambda dynamics molecular dynamics simulation. These optimized bias potentials significantly improve the efficiency of lambda dynamics, and are required as a starting point for most modern lambda dynamics simulations. This README contains information on installation, examples, best practices, python routines, input specification, bug reporting, and citations.
 
 
 
@@ -123,6 +123,13 @@ to this directory.
 
 
 
+Bug Reporting
+
+Please report any bugs or desired new features to the authors at
+https://github.com/RyanLeeHayes/ALF/issues
+
+
+
 Citations
 
 Original ALF paper:
@@ -159,3 +166,5 @@ DOI: 10.1021/ct500894k
 Other Items
 
 Consider describing wham here as well as the supported engines and expectations for the biases in name.inp
+
+Mention profiles and biases

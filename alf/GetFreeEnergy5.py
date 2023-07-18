@@ -12,7 +12,7 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   cutc=8
   cutx=2
   cuts=1
-  cutc2=1.6
+  cutc2=2
   cutx2=0.5
   cuts2=0.5
 
