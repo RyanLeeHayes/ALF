@@ -104,7 +104,7 @@ functions important in the basic routines.
 
 initialize_alf_info : read prep/alf_info.py
 InitVars : set starting values for analysis0 and variables1.inp
-GetLambdas : for run i, convert binary lambda trajectories in runi/res
+GetLambdas : for run i, convert binary lambda trajectories in run[i]/res
     to human readable lambda trajectories in analysisi/data. Names of
     files are assumed to be those used in alf/default_scripts. Wraps the
     routine GetLambda to create directories and pass it default
@@ -141,10 +141,11 @@ SetVars : adds the old bias values like analysisi/b_prev.dat and the
     values like analysisi/b_sum.dat, and saves those bias values to
     variablesi+1.inp to be read in by the molecular dynamics engine in
     the next simulation
-GetVolumes : compute charge change corrections if a file prep/q exists.
-    The simulation volumes are read from default filenames in runi/dcd
-    to compute the discrete solvent correction. Wraps the routine
-    GetVolume which does not assume a particular filename convention
+GetVolumes : compute charge change corrections if a key 'q' exists in
+    alf_info. The simulation volumes are read from default filenames in
+    run[i]/dcd to compute the discrete solvent correction. Wraps the
+    routine GetVolume which does not assume a particular filename
+    convention
 GetVariance : compute free energies of various chemical states using the
     histogram-based estimator, use independent trials to produce
     bootstrap estimates of statistical uncertainty, and place results in

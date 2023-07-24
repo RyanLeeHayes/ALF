@@ -19,7 +19,7 @@ def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
 
   # nsubs=alf_info['nsubs']
   # nblocks=alf_info['nblocks']
-  nsubs=np.loadtxt('../prep/nsubs',dtype='int',ndmin=1)
+  nsubs=np.loadtxt('nsubs',dtype='int',ndmin=1)
   nblocks=np.sum(nsubs)
 
   msprof=ntersite[1]

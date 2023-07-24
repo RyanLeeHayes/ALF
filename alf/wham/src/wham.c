@@ -74,9 +74,9 @@ struct_data* readdata(int arg1, double arg2, int arg3, int arg4)
 
   data->Nsim=arg1;
 
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   if (fp==NULL) {
-    fprintf(stderr,"Error, ../prep/nsubs does not exist\n");
+    fprintf(stderr,"Error, nsubs does not exist\n");
     exit(1);
   }
   data->Nsites=0;
@@ -86,7 +86,7 @@ struct_data* readdata(int arg1, double arg2, int arg3, int arg4)
   fclose(fp);
   data->Nsubs=(int*) malloc(data->Nsites*sizeof(int));
   data->block0=(int*) malloc((data->Nsites+1)*sizeof(int));
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   data->Nblocks=0;
   data->block0[0]=0;
   for (i=0; i<data->Nsites; i++) {

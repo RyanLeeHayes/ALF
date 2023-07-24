@@ -3,7 +3,7 @@
 import numpy as np
 import sys, os
 
-nsubs=np.loadtxt('../prep/nsubs',dtype='int',ndmin=1)
+nsubs=np.loadtxt('nsubs',dtype='int',ndmin=1)
 nblocks=np.sum(nsubs)
 nsites=np.size(nsubs,0)
 

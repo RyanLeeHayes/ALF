@@ -1,7 +1,7 @@
 import numpy as np
 alf_info={}
 alf_info['name']='T4L149U'
-alf_info['nsubs']=np.loadtxt('prep/nsubs',dtype='int',ndmin=1)
+alf_info['nsubs']=[6]
 alf_info['nblocks']=np.sum(alf_info['nsubs'])
 alf_info['ncentral']=0
 alf_info['nreps']=1

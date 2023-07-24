@@ -26,11 +26,11 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
   ncentral=alf_info['ncentral']
   name=alf_info['name']
 
-  if not os.path.isfile('../prep/q'):
-    print("No charge file prep/q")
+  if not 'q' in alf_info:
+    print("No charge list 'q' in alf_info")
     return
   else:
-    q=np.loadtxt('../prep/q')
+    q=alf_info['q']
     ibuff=0
     chargeChange=False
     for i in range(len(nsubs)):

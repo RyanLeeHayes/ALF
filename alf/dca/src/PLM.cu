@@ -32,9 +32,9 @@ struct_plmd* setup(int argc, char *argv[])
 
   plmd=(struct_plmd*) malloc(sizeof(struct_plmd));
 
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   if (fp==NULL) {
-    fprintf(stderr,"Error, ../prep/nsubs does not exist\n");
+    fprintf(stderr,"Error, nsubs does not exist\n");
     exit(1);
   }
   plmd->nsites=0;
@@ -43,7 +43,7 @@ struct_plmd* setup(int argc, char *argv[])
   }
   fclose(fp);
 
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   i=0;
   plmd->nsubs=(int*) calloc(plmd->nsites,sizeof(int));
   plmd->nblocks=0;
