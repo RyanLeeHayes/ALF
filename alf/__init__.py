@@ -23,17 +23,15 @@ specifies the molecular dynamics engine in use. Currently supported MD
 engines are 'charmm' (CHARMM with DOMDEC GPU ONLY), 'bladelib' (CHARMM
 with BLaDE), and 'blade' (a standalone implementation of BLaDE). The
 routines also assume the existence of a directory called 'prep'. The
-prep directory should contain a file called nsubs, which is a vector of
-the integer number of substituents at each site, a file called
-alf_info.py, which creates a python dictionary also called alf_info
-containing information ALF needs to know about the system, a file
-called name.inp, where name is the name of the system given by a string
-in alf_info.py, which is a script to set up the system in the selected
-engine, a file called nbond.str that sets up nonbonded interaction
-parameters and cutoffs for the system, and any supporting files required
-by name.inp. Further specifications for the prep directory can be found
-in the alf README.md file. Example prep directories are available in
-examples/systems 
+prep directory should contain a file called alf_info.py, which creates a
+python dictionary also called alf_info containing information ALF needs
+to know about the system, a file called name.inp, where name is the name
+of the system given by a string in alf_info.py, which is a script to set
+up the system in the selected engine, a file called nbond.str that sets
+up nonbonded interaction parameters and cutoffs for the system, and any
+supporting files required by name.inp. Further specifications for the
+prep directory can be found in the alf README.md file. Example prep
+directories are available in examples/systems 
 
 initialize : sets up the analysis0 directory, variables1.inp file, and
     other objects that must be created before beginning ALF

@@ -260,7 +260,7 @@ alf and should include the following keys:
      multiple GPUs are generally modest so unless time is of the essence
      and GPUs are abundant, one GPU generally gives the best throughput.
      alf_info['nnodes']=1
- * q : a list of length nblocks containing the next charge of every
+ * q : a list of length nblocks containing the net charge of every
      alchemical group. This is used to compute the discrete solvent
      charge changing correction. If missing, no charge changing
      correction will be applied.

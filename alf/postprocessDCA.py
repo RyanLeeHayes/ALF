@@ -329,7 +329,9 @@ def FinishDCA(i,NF,FREQ,engine='charmm'):
   these bootstrapped h and J samples. The free energy of a sequence S is
   the sum of the h values for each site in it, plus 0.5*J for each pair of
   sites in the sequence (because each i,j site pair is counted twice, as
-  both i,j and j,i). This function should be called once.
+  both i,j and j,i). Includes the discrete solvent charge change
+  correction if it was computed correctly by postprocess. This function
+  should be called once.
 
   This is the final routine in the Potts model estimator. LMDCA or PLMDCA
   should be called before it.
