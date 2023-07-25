@@ -138,6 +138,8 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
           fpin.write("variables set nsteps %d\nvariables set itt %d" % (nsteps,i))
           fpin.close()
           subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'../msld_prod.inp'],stdout=fpout,stderr=fperr)
+        elif engine in ['pycharmm']:
+          subprocess.call(['python','../msld_prod.py'],stdout=fpout,stderr=fperr)
         else:
           print("Error: unsupported engine type %s" % alf_info['engine'])
           quit()

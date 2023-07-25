@@ -112,6 +112,8 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
           fpin.write("variables set esteps %d\nvariables set nsteps %d" % (esteps,nsteps))
           fpin.close()
           subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
+        elif engine in ['pycharmm']:
+          subprocess.call(['python','../msld_flat.py'],stdout=fpout,stderr=fperr)
         else:
           print("Error: unsupported engine type %s" % alf_info['engine'])
           quit()

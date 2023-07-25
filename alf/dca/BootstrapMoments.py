@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-def BootstrapMomentsDCA(alf_info,NF,Path,NBS=50)
+def BootstrapMomentsDCA(alf_info,NF,Path,NBS=50):
   """
   Bootstraps moments for Potts model analysis
 

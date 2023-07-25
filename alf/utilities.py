@@ -53,11 +53,21 @@ def initialize_alf_info(engine='charmm'):
     quit()
   alf_info['engine']=engine
 
-  if not os.path.exists('msld_flat.inp'):
-    shutil.copy(os.path.dirname(__file__)+'/default_scripts/%s_flat.inp' % engine,'msld_flat.inp')
-    print("Note: copied default script for msld_flat.inp\nIf you modify or replace this file, it will not be overwritten")
-  if not os.path.exists('msld_prod.inp'):
-    shutil.copy(os.path.dirname(__file__)+'/default_scripts/%s_prod.inp' % engine,'msld_prod.inp')
-    print("Note: copied default script for msld_prod.inp\nIf you modify or replace this file, it will not be overwritten")
+  # Get file extension to copy default flattening and production scripts
+  pyengines=['pycharmm']
+  csengines=['charmm','bladelib']
+  if engine in pyengines: # python script
+    fex='py'
+  elif engine in csengines: # charmm script
+    fex='inp'
+  else: # blade script
+    fex='inp'
+
+  if not os.path.exists('msld_flat.'+fex):
+    shutil.copy(os.path.dirname(__file__)+'/default_scripts/%s_flat.%s' % (engine,fex),'msld_flat.'+fex)
+    print("Note: copied default script for msld_flat.%s\nIf you modify or replace this file, it will not be overwritten" % (fex,))
+  if not os.path.exists('msld_prod.'+fex):
+    shutil.copy(os.path.dirname(__file__)+'/default_scripts/%s_prod.%s' % (engine,fex),'msld_prod.'+fex)
+    print("Note: copied default script for msld_prod.%s\nIf you modify or replace this file, it will not be overwritten" % (fex,))
 
   return alf_info

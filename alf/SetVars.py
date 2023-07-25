@@ -204,11 +204,20 @@ def SetVarsBlade(alf_info,Step,minimize=False):
 
 
 
+def SetVarsPycharmm(alf_info,Step,minimize=False):
+  import numpy as np
+  print('Oops')
+  quit()
+
+
+
 def SetVars(alf_info,Step,minimize=False):
   if alf_info['engine'] in ['charmm','bladelib']:
     SetVarsCharmm(alf_info,Step,minimize=minimize)
   elif alf_info['engine'] in ['blade']:
     SetVarsBlade(alf_info,Step,minimize=minimize)
+  elif alf_info['engine'] in ['pycharmm']:
+    SetVarsPycharmm(alf_info,Step,minimize=minimize)
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
     quit()
