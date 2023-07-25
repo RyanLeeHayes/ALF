@@ -40,7 +40,7 @@ def SetupDCA(i,NF,FREQ,engine='charmm'):
   shutil.copy('analysis%d/c_sum.dat' % (i-1),'dca%d/c_prev.dat' % i)
   shutil.copy('analysis%d/x_sum.dat' % (i-1),'dca%d/x_prev.dat' % i)
   shutil.copy('analysis%d/s_sum.dat' % (i-1),'dca%d/s_prev.dat' % i)
-  np.savetxt('analysis%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
+  np.savetxt('dca%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
   if not os.path.exists('analysis%d' % i):
     print("Error: analysis%d does not exist, run alf.postprocess first" % i)
     quit()
