@@ -45,7 +45,7 @@ def initialize_alf_info(engine='charmm'):
   if 'q' in alf_info:
     alf_info['q']=np.array(alf_info['q'])
 
-  engines=['charmm','bladelib','blade']
+  engines=['charmm','bladelib','blade','pycharmm']
   if not engine in engines:
     print('Error: unsupported engine')
     print('Supported engine types are:')
