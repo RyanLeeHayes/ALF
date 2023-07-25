@@ -1,12 +1,28 @@
 #! /usr/bin/env python
 
-def GetVarianceDCA(alf_info,NF,Path):
+def GetVarianceDCA(alf_info,NF,Path,NBS=50):
+  """
+  Computes free energies and places them in Results.txt
+
+  Will bail out if there are more than 2^20 alchemical states. Used in
+  alf.FinishDCA. See further documentation there.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  NF : int
+      Number of independent trials during production
+  Path : str
+      Path to a data directory for Potts model estimation, typically 'data'
+  NBS : int, optional
+      Number of bootstrap samples to take. (Default is 50)
+  """
+
   import sys, os, os.path
   import numpy as np
   import subprocess
   import copy
-
-  NB=50
 
   if os.path.exists(Path+'/h.LM.dat'):
     tag='LM'
@@ -81,13 +97,13 @@ def GetVarianceDCA(alf_info,NF,Path):
       G[jno0]=E-kT*Epotts
       jno0+=1
 
-  GS=np.zeros((NB,nlig_ng))
-  # GS=np.zeros((NB,))
+  GS=np.zeros((NBS,nlig_ng))
+  # GS=np.zeros((NBS,))
   Value=np.zeros((nlig_ng,))
   Error=np.zeros((nlig_ng,))
-  h=np.zeros((1,nblocks,NB))
-  J=np.zeros((nblocks,nblocks,NB))
-  for i in range(NB):
+  h=np.zeros((1,nblocks,NBS))
+  J=np.zeros((nblocks,nblocks,NBS))
+  for i in range(NBS):
     print(i)
     h_fnm=Path+'/h.bs'+str(i)+'.'+tag+'.dat'
     J_fnm=Path+'/J.bs'+str(i)+'.'+tag+'.dat'
@@ -100,7 +116,7 @@ def GetVarianceDCA(alf_info,NF,Path):
       LList=np.zeros((nblocks-len(nsubs),))
       LList[blk_ng[jno0,:]]=1
       E=np.dot(LList,b)+np.dot(np.dot(LList,c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),x),LList)+np.dot(np.dot(LList/(LList+0.017),s),LList)
-      for i in range(NB):
+      for i in range(NBS):
         # P=np.exp(np.sum(h[blk[j,:]])+0.5*np.sum(np.sum(J[blk[j,:],blk[j,:]])))
         Epotts=np.sum(h[0,blk[j,:],i])+0.5*np.sum(np.sum(J[blk[j,:]][:,blk[j,:],i]))
         GS[i,jno0]=E-kT*Epotts

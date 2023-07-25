@@ -1,6 +1,42 @@
 #! /usr/bin/env python
 
 def GetEnergy(alf_info,Fi,Ff,skipE=1):
+  """
+  Compute energies for wham/mbar reweighting
+
+  This routine selects several simulations for reweighting with wham/mbar
+  and computes the relative bias energy from each simulation on the
+  alchemical trajectory for each simulation. Different replicas in
+  replica exchange are considered different simulations. This routine
+  should be run inside analysis[Ff]. Biases are taken from the apropriate
+  analysis[i] directory and alchemical trajectories are taken from the
+  output of the routine alf.GetLambdas in analysis[i]/data. Copies
+  alchemical trajectories from data directories analysis[Fi]/data to
+  analysis[Ff]/data into analysis[Ff]/Lambda/Lambda[*].dat and copies
+  bias energies into analysis[Ff]/Energy/ESim[*].dat . Energies are
+  computed relative to the central replica bias in the [Ff] cycle.
+
+  This routine can be called during flattening or production. During
+  flattening, Ff-Fi=4 is recommended (include 5 cycles in analysis),
+  during production Ff-Fi=0 is recommended (include 1 cycle in analysis).
+  Flattening versus production is detected by the presence of the run[Ff]
+  directory. During production this directory does not exist, instead,
+  run[Ff]a, and the other independent trial directories exist.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  Fi : int
+      The first cycle of alf to include in analysis (inclusive)
+  Ff : int
+      The final cycle of alf to include in analysis (inclusive)
+  skipE : int, optional
+      In longer production runs the number of lambda samples may require
+      significant amounts of memory to store and analyze. Only alchemical
+      frames with index modulus skipE equal to skipE-1 are analyzed.
+      (default is 1 to analyze all frames) 
+  """
 
   import sys, os
   import numpy as np

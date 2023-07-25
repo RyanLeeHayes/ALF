@@ -1,12 +1,27 @@
 #! /usr/bin/env python
 
-def GetModelDCA(alf_info,NF,Path):
+def GetModelDCA(alf_info,NF,Path,NBS=50):
+  """
+  Computes the h and J fields and couplings from Potts model estimator
+
+  Used in alf.FinishDCA. See further documentation there.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  NF : int
+      Number of independent trials during production
+  Path : str
+      Path to a data directory for Potts model estimation, typically 'data'
+  NBS : int, optional
+      Number of bootstrap samples to take. (Default is 50)
+  """
+
   import sys, os
   import numpy as np
   import subprocess
   import copy
-
-  NB=50
 
   if os.path.exists(Path+'/h.LM.dat'):
     tag='LM'
@@ -72,7 +87,7 @@ def GetModelDCA(alf_info,NF,Path):
   np.savetxt(Path+'/h.model.dat',h+h_bias,fmt=' %10.6f')
   np.savetxt(Path+'/J.model.dat',J+J_bias,fmt=' %10.6f')
 
-  for iB in range(NB):
+  for iB in range(NBS):
     print(iB)
     h_fnm=Path+'/h.bs'+str(iB)+'.'+tag+'.dat'
     J_fnm=Path+'/J.bs'+str(iB)+'.'+tag+'.dat'

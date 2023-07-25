@@ -1,0 +1,16 @@
+Remaining files here that need documentation:
+default_scripts
+GetLambda.py
+GetLambdas.py
+GetSteps.py
+GetVariance.py
+GetVolume.py
+GetVolumes.py
+G_imp
+initialize.py
+postprocessDCA.py
+postvolume.py
+SetVars.py
+util
+utilities.py
+wham

@@ -153,15 +153,15 @@ def MomentDCA(i,iNF,NF,FREQ,engine='charmm'):
   print("WARNING: direct standard error somewhere")
   time.sleep(15)
 
-def BSMomentDCA(i,NF,FREQ,engine='charmm'):
+def BSMomentDCA(i,NF,FREQ,NBS=50,engine='charmm'):
   """
   Sets up bootstrapping for calculation of uncertainty in Potts model
 
   Bootstraps the 1D and 2D moments calculated previously, whether (LM) or
   not (PLM) they are needed. Also creates a randomized bootstrapping list
-  of which independent trials to combine that is used by PLM. The number
-  of bootstrapping samples is hardcoded at 50. This function should be
-  called once.
+  of which independent trials to combine that is used by PLM. 50 is
+  recommended for the number of bootstrapping samples. This function
+  should be called once.
 
   This is the fourth routine in the Potts model estimator. MomentDCA
   should be called before it and either LMDCA (few sites) or PLMDCA
@@ -178,6 +178,8 @@ def BSMomentDCA(i,NF,FREQ,engine='charmm'):
       significant amounts of memory to store and analyze. Only alchemical
       frames with index modulus FREQ equal to FREQ-1 are analyzed. 1
       analyzes all frames.
+  NBS : int, optional
+      The number of bootstrap samples to take (default is 50)
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
@@ -193,17 +195,16 @@ def BSMomentDCA(i,NF,FREQ,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/BootstrapMoments.py'
-  subprocess.call([exe,str(NF),'data'])
+  alf.BootstrapMomentsDCA(alf_info,NF,'data',NBS=NBS)
   time.sleep(15)
 
-def LMDCA(i,iBS,NF,FREQ,engine='charmm'):
+def LMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
   """
   Performs likelihood maximization for Potts model estimator
 
   Performs likelihood maximization for either the original data or one of
-  the bootstrap samples. The number of bootstrapping samples [BS] is
-  hardcoded at 50. This function should be called [BS+1] times.
+  the bootstrap samples. NBS=50 is recommended for the number of
+  bootstrapping samples. This function should be called [NBS+1] times.
 
   This is the fifth routine in the Potts model estimator. BSMomentDCA
   should be called before it and FinishDCA should be called after it.
@@ -223,6 +224,8 @@ def LMDCA(i,iBS,NF,FREQ,engine='charmm'):
       significant amounts of memory to store and analyze. Only alchemical
       frames with index modulus FREQ equal to FREQ-1 are analyzed. 1
       analyzes all frames.
+  NBS : int, optional
+      The number of bootstrap samples to take (default is 50)
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
@@ -238,10 +241,8 @@ def LMDCA(i,iBS,NF,FREQ,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  print("Warning, BS is hardcoded")
-  BS=50
   exe=os.path.dirname(os.path.abspath(__file__))+'/dca/LM'
-  if iBS==BS:
+  if iBS==NBS:
     fnmout1='data/h.LM.dat'
     fnmout2='data/J.LM.dat'
     fnmin1='data/m1.obs.dat' 
@@ -254,13 +255,13 @@ def LMDCA(i,iBS,NF,FREQ,engine='charmm'):
   subprocess.call(['mpirun','-n','1','-bynode','--bind-to','none','-x','OMP_NUM_THREADS=8',exe,fnmout1,fnmout2,fnmin1,fnmin2])
   time.sleep(15)
 
-def PLMDCA(i,iBS,NF,FREQ,engine='charmm'):
+def PLMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
   """
   Performs psuedolikelihood maximization for Potts model estimator
 
   Performs pseudolikelihood maximization for either the original data or
-  one of the bootstrap samples. The number of bootstrapping samples [BS]
-  is hardcoded at 50. This function should be called [BS+1] times.
+  one of the bootstrap samples. NBS=50 is recommended for the number of
+  bootstrapping samples. This function should be called [BS+1] times.
 
   This is the fifth routine in the Potts model estimator. BSMomentDCA
   should be called before it and FinishDCA should be called after it.
@@ -280,6 +281,8 @@ def PLMDCA(i,iBS,NF,FREQ,engine='charmm'):
       significant amounts of memory to store and analyze. Only alchemical
       frames with index modulus FREQ equal to FREQ-1 are analyzed. 1
       analyzes all frames.
+  NBS : int, optional
+      The number of bootstrap samples to take (default is 50)
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
@@ -295,10 +298,8 @@ def PLMDCA(i,iBS,NF,FREQ,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  print("Warning, BS is hardcoded")
-  BS=50
   exe=os.path.dirname(os.path.abspath(__file__))+'/dca/PLM'
-  if iBS==BS:
+  if iBS==NBS:
     fnmout1='data/h.PLM.dat'
     fnmout2='data/J.PLM.dat'
     bsindices=np.arrange(NF,dtype='int')
@@ -313,7 +314,7 @@ def PLMDCA(i,iBS,NF,FREQ,engine='charmm'):
   subprocess.call(['mpirun','-n','1','-bynode','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,fnmout1,fnmout2]+fnmsin)
   time.sleep(15)
 
-def FinishDCA(i,NF,FREQ,engine='charmm'):
+def FinishDCA(i,NF,FREQ,NBS=50,engine='charmm'):
   """
   Gives the results of the Potts model estimator
 
@@ -347,6 +348,8 @@ def FinishDCA(i,NF,FREQ,engine='charmm'):
       significant amounts of memory to store and analyze. Only alchemical
       frames with index modulus FREQ equal to FREQ-1 are analyzed. 1
       analyzes all frames.
+  NBS : int, optional
+      The number of bootstrap samples to take (default is 50)
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
@@ -362,5 +365,5 @@ def FinishDCA(i,NF,FREQ,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  alf.GetVarianceDCA(alf_info,NF,'data')
-  alf.GetModelDCA(alf_info,NF,'data')
+  alf.GetVarianceDCA(alf_info,NF,'data',NBS=NBS)
+  alf.GetModelDCA(alf_info,NF,'data',NBS=NBS)

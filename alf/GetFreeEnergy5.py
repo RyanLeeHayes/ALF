@@ -1,6 +1,39 @@
 #! /usr/bin/env python
 
 def GetFreeEnergy5(alf_info,ms,msprof):
+  """
+  Perform the matrix inversion to solve for optimal bias changes
+
+  The alf.RunWham routine computes profiles and linear changes to those
+  profiles in response to changes in bias parameters. It also computes a
+  quadratic penalty function that penalizes deviations of the profiles
+  from their average values. The second derivatives of the penalty
+  function with respect to changes in the bias potential are saved as a
+  matrix in analysis[i]/multisite/C.dat and the first derivatives are
+  saved in analysis[i]/multisite/V.dat. This routine should be run in
+  analysis[i]. This routine adds an additional regularization term to the
+  C.dat matrix and inverts the matrix to solve the linear equation
+  dictating the optimal solution. Because this represents a linear
+  approximation, and because unsampled states may become dominant as
+  biases change, there are caps in the changes to any particular bias
+  parameter. If these caps are exceed, all changes are scaled down to
+  bring the largest change below these caps. The scaling is printed every
+  cycle of ALF, and will be 1 or less. Smaller values indicate poorly
+  converged biases. Changes to the b, c, x, and s parameters are saved to
+  b.dat, c.dat, x.dat, and s.dat in the analysis[i] directory.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  ms : int
+      Flag for whether to include intersite biases. 0 for no, 1 for c, x,
+      and s biases, 2 for just c biases. Typically taken from the first
+      element of ntersite list.
+  msprof : int
+      Flag for whether to include intersite profiles. 0 for no, 1 for yes.
+      Typically taken from the second element of ntersite list.
+  """
 
   import sys, os
   import numpy as np

@@ -6,7 +6,7 @@ export SLURMOPTSCPU8="--time=1440 --ntasks=1 --tasks-per-node=8 --cpus-per-task=
 
 export i=213
 export NF=5
-export BS=50
+export NBS=50
 export FREQ=10
 
 export PHASE=1
@@ -23,7 +23,7 @@ PID=`sbatch --parsable $SLURMOPTSCPU1 $DEPEND ./postprocessLM.sh`
 
 export PHASE=4
 DEPEND="--dependency=afterok:$PID"
-PID=`sbatch --parsable $SLURMOPTSCPU8 --array=0-$BS $DEPEND ./postprocessLM.sh`
+PID=`sbatch --parsable $SLURMOPTSCPU8 --array=0-$NBS $DEPEND ./postprocessLM.sh`
 
 export PHASE=5
 DEPEND="--dependency=afterok:$PID"

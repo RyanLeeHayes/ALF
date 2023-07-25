@@ -160,6 +160,7 @@ from alf.GetSteps import *
 from alf.GetVariance import *
 from alf.dca.GetVariance import *
 from alf.dca.GetModel import *
+from ald.dca.BootstrapMoments import *
 from alf.util.PlotFreeEnergy import *
 from alf.util.GetDCD import *
 
