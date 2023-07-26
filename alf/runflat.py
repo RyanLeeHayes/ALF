@@ -93,7 +93,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         os.mkdir('run%d' % i)
         os.mkdir('run%d/dcd' % i)
         os.mkdir('run%d/res' % i)
-        shutil.copy('variables%d.inp' % i,'run%d/variablesflat.inp' % i)
+        fex='inp'
+        if engine in ['pycharmm']:
+          fex='py'
+        shutil.copy('variables%d.%s' % (i,fex),'run%d/variablesflat.%s' % (i,fex))
         os.symlink('../prep','run%d/prep' % i) # ../prep is relative to final path, not current directory
         os.chdir('run%d' % i)
 
@@ -101,8 +104,8 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         print('run%d started' % i)
         fpout=open('output','w')
         fperr=open('error','w')
-        if not os.path.exists('../msld_flat.inp'):
-          print("Error: msld_flat.inp does not exist.")
+        if not os.path.exists('../msld_flat.'+fex):
+          print("Error: msld_flat.%s does not exist." % fex)
         if engine in ['charmm']:
           subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['bladelib']:
@@ -113,6 +116,9 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
           fpin.close()
           subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['pycharmm']:
+          fpin=open('arguments.py','w')
+          fpin.write("esteps=%d\nnsteps=%d" % (esteps,nsteps))
+          fpin.close()
           subprocess.call(['python','../msld_flat.py'],stdout=fpout,stderr=fperr)
         else:
           print("Error: unsupported engine type %s" % alf_info['engine'])
@@ -146,11 +152,13 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
 
         alf.SetVars(alf_info,i+1)
-        fp=open('../variables%d.inp' % (i+1),'a')
+        fp=open('../variables%d.%s' % (i+1,fex),'a')
         if engine in ['charmm','bladelib']:
           fp.write('set restartfile = "../run%d/res/%s_flat.res\ntrim restartfile from 2\n' % (ir,alf_info['name']))
         elif engine in ['blade']:
           fp.write('variables set restartfile ../run%d/res/%s_flat.res' % (ir,alf_info['name']))
+        elif engine in ['pycharmm']:
+          fp.write('restartfile=\'../run%d/res/%s_flat.res\'\n' % (ir,alf_info['name']))
         fp.close()
       except Exception:
         sys.stdout.flush()

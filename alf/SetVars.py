@@ -206,8 +206,158 @@ def SetVarsBlade(alf_info,Step,minimize=False):
 
 def SetVarsPycharmm(alf_info,Step,minimize=False):
   import numpy as np
-  print('Oops')
-  quit()
+  import yaml
+  import copy
+
+  fp=open('../variables'+str(Step)+'.py','w')
+
+  fp.write("import yaml\n")
+  fp.write("import numpy as np\n")
+
+  bias={}
+
+  b_prev=np.loadtxt('b_prev.dat')
+  b=np.loadtxt('b.dat')
+  b_sum=b_prev+b
+  b_sum=np.reshape(b_sum,(1,-1))
+  np.round(b_sum,decimals=2)
+  np.savetxt('b_sum.dat',b_sum,fmt=' %7.2f')
+
+  bias['b']=b_sum.tolist()
+
+  c_prev=np.loadtxt('c_prev.dat')
+  c=np.loadtxt('c.dat')
+  c_sum=c_prev+c
+  np.round(c_sum,decimals=2)
+  np.savetxt('c_sum.dat',c_sum,fmt=' %7.2f')
+
+  bias['c']=c_sum.tolist()
+
+  x_prev=np.loadtxt('x_prev.dat')
+  x=np.loadtxt('x.dat')
+  x_sum=x_prev+x
+  np.round(x_sum,decimals=2)
+  np.savetxt('x_sum.dat',x_sum,fmt=' %7.2f')
+
+  bias['x']=x_sum.tolist()
+
+  s_prev=np.loadtxt('s_prev.dat')
+  s=np.loadtxt('s.dat')
+  s_sum=s_prev+s
+  np.round(s_sum,decimals=2)
+  np.savetxt('s_sum.dat',s_sum,fmt=' %7.2f')
+
+  bias['s']=s_sum.tolist()
+
+  fp.write("bias_string=\"\"\"\n")
+  yaml.dump(bias,fp)
+  fp.write("\"\"\"\n")
+  fp.write("bias=yaml.load(bias_string,Loader=yaml.Loader)\n")
+  fp.write("bias['b']=np.array(bias['b'])\n")
+  fp.write("bias['c']=np.array(bias['c'])\n")
+  fp.write("bias['x']=np.array(bias['x'])\n")
+  fp.write("bias['s']=np.array(bias['s'])\n")
+
+  nsubs=alf_info['nsubs']
+
+  ibuff=0
+  lamss={}
+  for i in range(0,len(nsubs)):
+    lamss[i]={}
+    for j in range(0,nsubs[i]):
+      lamss[i][j]=b_sum[0,ibuff+j].tolist()
+    ibuff+=nsubs[i]
+
+  ibuff=0
+  cssss={}
+  for si in range(0,len(nsubs)):
+    jbuff=ibuff
+    cssss[si]={}
+    for sj in range(si,len(nsubs)):
+      cssss[si][sj]={}
+      for i in range(0,nsubs[si]):
+        ii=i+ibuff
+        cssss[si][sj][i]={}
+        j0=0
+        if si==sj:
+          j0=i+1
+        for j in range(j0,nsubs[sj]):
+          jj=j+jbuff
+          cssss[si][sj][i][j]=-c_sum[ii,jj].tolist()
+      jbuff+=nsubs[sj]
+    ibuff+=nsubs[si]
+
+  ibuff=0
+  xssss={}
+  for si in range(0,len(nsubs)):
+    xssss[si]={}
+    jbuff=0
+    for sj in range(0,len(nsubs)):
+      xssss[si][sj]={}
+      for i in range(0,nsubs[si]):
+        ii=i+ibuff
+        xssss[si][sj][i]={}
+        for j in range(0,nsubs[sj]):
+          jj=j+jbuff
+          if ii!=jj:
+            xssss[si][sj][i][j]=-x_sum[ii,jj].tolist()
+      jbuff+=nsubs[sj]
+    ibuff+=nsubs[si]
+
+  ibuff=0
+  sssss={}
+  for si in range(0,len(nsubs)):
+    sssss[si]={}
+    jbuff=0
+    for sj in range(0,len(nsubs)):
+      sssss[si][sj]={}
+      for i in range(0,nsubs[si]):
+        ii=i+ibuff
+        sssss[si][sj][i]={}
+        for j in range(0,nsubs[sj]):
+          jj=j+jbuff
+          if ii!=jj:
+            sssss[si][sj][i][j]=-s_sum[ii,jj].tolist()
+      jbuff+=nsubs[sj]
+    ibuff+=nsubs[si]
+
+  fp.write("lamss_string=\"\"\"\n")
+  yaml.dump(lamss,fp)
+  fp.write("\"\"\"\n")
+  fp.write("lamss=yaml.load(lamss_string,Loader=yaml.Loader)\n")
+  fp.write("cssss_string=\"\"\"\n")
+  yaml.dump(cssss,fp)
+  fp.write("\"\"\"\n")
+  fp.write("cssss=yaml.load(cssss_string,Loader=yaml.Loader)\n")
+  fp.write("xssss_string=\"\"\"\n")
+  yaml.dump(xssss,fp)
+  fp.write("\"\"\"\n")
+  fp.write("xssss=yaml.load(xssss_string,Loader=yaml.Loader)\n")
+  fp.write("sssss_string=\"\"\"\n")
+  yaml.dump(sssss,fp)
+  fp.write("\"\"\"\n")
+  fp.write("sssss=yaml.load(sssss_string,Loader=yaml.Loader)\n")
+
+  alf_info_copy=copy.deepcopy(alf_info)
+  alf_info_copy['nsubs']=alf_info_copy['nsubs'].tolist()
+  alf_info_copy['nblocks']=alf_info_copy['nblocks'].tolist()
+  if 'q' in alf_info_copy:
+    alf_info_copy['q']=alf_info_copy['q'].tolist()
+
+  fp.write("alf_info_string=\"\"\"\n")
+  yaml.dump(alf_info_copy,fp)
+  fp.write("\"\"\"\n")
+  fp.write("alf_info=yaml.load(alf_info_string,Loader=yaml.Loader)\n")
+  fp.write("alf_info['nsubs']=np.array(alf_info['nsubs'])\n")
+  fp.write("if 'q' in alf_info:\n")
+  fp.write("  alf_info['q']=np.array(alf_info['q'])\n")
+
+  if minimize==True:
+    fp.write("minimizeflag=True\n")
+  else:
+    fp.write("minimizeflag=False\n")
+
+  fp.close()
 
 
 

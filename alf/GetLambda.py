@@ -98,7 +98,7 @@ def GetLambdaBlade(alf_info,fnmout,fnmsin):
 
 
 def GetLambda(alf_info,fnmout,fnmsin):
-  if alf_info['engine'] in ['charmm','bladelib']:
+  if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     GetLambdaCharmm(alf_info,fnmout,fnmsin)
   elif alf_info['engine'] in ['blade']:
     GetLambdaBlade(alf_info,fnmout,fnmsin)
