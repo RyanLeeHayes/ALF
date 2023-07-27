@@ -123,19 +123,23 @@ python -c "import alf"
 
 Installing without CUDA
 
-If you don't have access to CUDA GPUs, you can still run ALF, it will just be
-slower, and the tools aren't as streamlined for this. When setting up your
-environment don't include cuda. When you compile alf/wham, the lack of a cuda
-compiler should signal to cmake to compile the CPU code instead. This code has
-not been tested for a while, so please contact the developers if you have problems compiling. Next, you can probably skip compiling alf/dca unless you plan to
-estimate free energies with the Potts estimator. If you want to estimate free
-energies with the Potts estimator, you will need to modify CMakeLists.txt to
-omit plm. lm uses likelihood maximization which is better for most chemical
-spaces, and plm uses pseudolikelihood maximization which is typically only
-required for massive chemical spaces, e.g. more than a million species.
+If you don't have access to CUDA GPUs, you can still run ALF, it will
+just be slower, and the tools aren't as streamlined for this. When
+setting up your environment don't include cuda. When you compile
+alf/wham, the lack of a cuda compiler should signal to cmake to compile
+the CPU code instead. This code has not been tested for a while, so
+please contact the developers if you have problems compiling. Next, you
+can probably skip compiling alf/dca unless you plan to estimate free
+energies with the Potts estimator. If you want to estimate free energies
+with the Potts estimator, you will need to modify CMakeLists.txt to omit
+plm. lm uses likelihood maximization which is better for most chemical
+spaces, and plm uses pseudolikelihood maximization which is typically
+only required for massive chemical spaces, e.g. more than a million
+species.
 
-You will need to modify your CHARMM input scripts to not use GPUs (see the
-scripts in alf/default_scripts). Removing the BLaDE or DOMDEC options, or
-replacing "domdec gpu only" with "domdec gpu off" in the scripts should work.
-You may wish to edit the scripts and the CHARMM calls in alf/runflat.py and
-alf/runprod.py to use multiple CPUs in parallel to improve efficiency.
+You will need to modify your CHARMM input scripts to not use GPUs (see
+the scripts in alf/default_scripts). Removing the BLaDE or DOMDEC
+options, or replacing "domdec gpu only" with "domdec gpu off" in the
+scripts should work. You may wish to edit the scripts and the CHARMM
+calls in alf/runflat.py and alf/runprod.py to use multiple CPUs in
+parallel to improve efficiency.

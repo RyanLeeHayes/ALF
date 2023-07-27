@@ -27,7 +27,7 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
   name=alf_info['name']
 
   if not 'q' in alf_info:
-    print("No charge list 'q' in alf_info")
+    print("No charge list 'q' in alf_info - no charge changing correction will be applied")
     return
   else:
     q=alf_info['q']

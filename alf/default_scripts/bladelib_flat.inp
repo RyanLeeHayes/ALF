@@ -1,6 +1,13 @@
 * CHARMM with BLaDE input file for lambda dynamics
 *
 
+! This script expects esteps (equilibration steps), nsteps (production
+! steps), and seed (random number seed) to be set by the calling process
+!
+! Other important variables such as minimizeflag (whether or not to
+! minimize), temp (the system temperature), and sysname (the system name
+! in the prep directory) are set by variablesflat.inp
+
 set fnex = 5.5
 
 stream "variablesflat.inp"
@@ -20,7 +27,7 @@ endif
 
 faster on
 
-if @minimize .eq. 1 then ! only defined in variables1.inp
+if @minimizeflag .eq. 1 then ! only defined in variables1.inp
 define uninitialized select .not. initialized end
 if ?nsel .eq. 0 then
    ! domdec gpu only dlb off ndir 1 @nnodes 1

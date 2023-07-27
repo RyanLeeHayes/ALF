@@ -1,5 +1,5 @@
 Remaining files here that need documentation:
-default_scripts
+default_scripts/pycharmm_*
 GetLambda.py
 GetLambdas.py
 GetSteps.py
@@ -14,3 +14,4 @@ SetVars.py
 util
 utilities.py
 wham
+examples/systems

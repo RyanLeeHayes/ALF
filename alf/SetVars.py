@@ -11,7 +11,6 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
   nnodes=alf_info['nnodes']
   temp=alf_info['temp']
 
-
   fp=open('../variables'+str(Step)+'.inp','w')
   fp.write("* Variables from step %d of ALF\n*\n\n" % (Step,))
 
@@ -97,7 +96,7 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
   for i in range(0,len(nsubs)):
     fp.write("set nsubs"+str(i+1)+" = "+str(nsubs[i])+"\n")
   fp.write("set temp = "+str(temp)+"\n")
-  fp.write("set minimize = "+str(int(minimize==True))+"\n")
+  fp.write("set minimizeflag = "+str(int(minimize==True))+"\n")
   fp.write("\n")
   fp.close()
 
@@ -113,7 +112,6 @@ def SetVarsBlade(alf_info,Step,minimize=False):
   name=alf_info['name']
   nnodes=alf_info['nnodes']
   temp=alf_info['temp']
-
 
   fp=open('../variables'+str(Step)+'.inp','w')
 
@@ -209,12 +207,22 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   import yaml
   import copy
 
+  nblocks=alf_info['nblocks']
+  nsubs=alf_info['nsubs']
+  nreps=alf_info['nreps']
+  ncentral=alf_info['ncentral']
+  name=alf_info['name']
+  nnodes=alf_info['nnodes']
+  temp=alf_info['temp']
+
   fp=open('../variables'+str(Step)+'.py','w')
 
   fp.write("import yaml\n")
   fp.write("import numpy as np\n")
 
   bias={}
+
+  sub0=np.cumsum(nsubs)-nsubs
 
   b_prev=np.loadtxt('b_prev.dat')
   b=np.loadtxt('b.dat')
@@ -223,7 +231,10 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   np.round(b_sum,decimals=2)
   np.savetxt('b_sum.dat',b_sum,fmt=' %7.2f')
 
-  bias['b']=b_sum.tolist()
+  for i in range(0,len(nsubs)):
+    for j in range(0,nsubs[i]):
+      key=f'lams{i+1}s{j+1}'
+      bias[key]=b_sum[0,sub0[i]+j].tolist()
 
   c_prev=np.loadtxt('c_prev.dat')
   c=np.loadtxt('c.dat')
@@ -231,7 +242,13 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   np.round(c_sum,decimals=2)
   np.savetxt('c_sum.dat',c_sum,fmt=' %7.2f')
 
-  bias['c']=c_sum.tolist()
+  for si in range(0,len(nsubs)):
+    for sj in range(si,len(nsubs)):
+      for i in range(0,nsubs[si]):
+        j0=(i+1 if si==sj else 0)
+        for j in range(j0,nsubs[sj]):
+          key=f'cs{si+1}s{i+1}s{sj+1}s{j+1}'
+          bias[key]=-c_sum[sub0[si]+i,sub0[sj]+j].tolist()
 
   x_prev=np.loadtxt('x_prev.dat')
   x=np.loadtxt('x.dat')
@@ -239,7 +256,13 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   np.round(x_sum,decimals=2)
   np.savetxt('x_sum.dat',x_sum,fmt=' %7.2f')
 
-  bias['x']=x_sum.tolist()
+  for si in range(0,len(nsubs)):
+    for sj in range(0,len(nsubs)):
+      for i in range(0,nsubs[si]):
+        for j in range(0,nsubs[sj]):
+          if sub0[si]+i!=sub0[sj]+j:
+            key=f'xs{si+1}s{i+1}s{sj+1}s{j+1}'
+            bias[key]=-x_sum[sub0[si]+i,sub0[sj]+j].tolist()
 
   s_prev=np.loadtxt('s_prev.dat')
   s=np.loadtxt('s.dat')
@@ -247,6 +270,17 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   np.round(s_sum,decimals=2)
   np.savetxt('s_sum.dat',s_sum,fmt=' %7.2f')
 
+  for si in range(0,len(nsubs)):
+    for sj in range(0,len(nsubs)):
+      for i in range(0,nsubs[si]):
+        for j in range(0,nsubs[sj]):
+          if sub0[si]+i!=sub0[sj]+j:
+            key=f'ss{si+1}s{i+1}s{sj+1}s{j+1}'
+            bias[key]=-s_sum[sub0[si]+i,sub0[sj]+j].tolist()
+
+  bias['b']=b_sum.tolist()
+  bias['c']=c_sum.tolist()
+  bias['x']=x_sum.tolist()
   bias['s']=s_sum.tolist()
 
   fp.write("bias_string=\"\"\"\n")
@@ -257,86 +291,6 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   fp.write("bias['c']=np.array(bias['c'])\n")
   fp.write("bias['x']=np.array(bias['x'])\n")
   fp.write("bias['s']=np.array(bias['s'])\n")
-
-  nsubs=alf_info['nsubs']
-
-  ibuff=0
-  lamss={}
-  for i in range(0,len(nsubs)):
-    lamss[i]={}
-    for j in range(0,nsubs[i]):
-      lamss[i][j]=b_sum[0,ibuff+j].tolist()
-    ibuff+=nsubs[i]
-
-  ibuff=0
-  cssss={}
-  for si in range(0,len(nsubs)):
-    jbuff=ibuff
-    cssss[si]={}
-    for sj in range(si,len(nsubs)):
-      cssss[si][sj]={}
-      for i in range(0,nsubs[si]):
-        ii=i+ibuff
-        cssss[si][sj][i]={}
-        j0=0
-        if si==sj:
-          j0=i+1
-        for j in range(j0,nsubs[sj]):
-          jj=j+jbuff
-          cssss[si][sj][i][j]=-c_sum[ii,jj].tolist()
-      jbuff+=nsubs[sj]
-    ibuff+=nsubs[si]
-
-  ibuff=0
-  xssss={}
-  for si in range(0,len(nsubs)):
-    xssss[si]={}
-    jbuff=0
-    for sj in range(0,len(nsubs)):
-      xssss[si][sj]={}
-      for i in range(0,nsubs[si]):
-        ii=i+ibuff
-        xssss[si][sj][i]={}
-        for j in range(0,nsubs[sj]):
-          jj=j+jbuff
-          if ii!=jj:
-            xssss[si][sj][i][j]=-x_sum[ii,jj].tolist()
-      jbuff+=nsubs[sj]
-    ibuff+=nsubs[si]
-
-  ibuff=0
-  sssss={}
-  for si in range(0,len(nsubs)):
-    sssss[si]={}
-    jbuff=0
-    for sj in range(0,len(nsubs)):
-      sssss[si][sj]={}
-      for i in range(0,nsubs[si]):
-        ii=i+ibuff
-        sssss[si][sj][i]={}
-        for j in range(0,nsubs[sj]):
-          jj=j+jbuff
-          if ii!=jj:
-            sssss[si][sj][i][j]=-s_sum[ii,jj].tolist()
-      jbuff+=nsubs[sj]
-    ibuff+=nsubs[si]
-
-  fp.write("lamss_string=\"\"\"\n")
-  yaml.dump(lamss,fp)
-  fp.write("\"\"\"\n")
-  fp.write("lamss=yaml.load(lamss_string,Loader=yaml.Loader)\n")
-  fp.write("cssss_string=\"\"\"\n")
-  yaml.dump(cssss,fp)
-  fp.write("\"\"\"\n")
-  fp.write("cssss=yaml.load(cssss_string,Loader=yaml.Loader)\n")
-  fp.write("xssss_string=\"\"\"\n")
-  yaml.dump(xssss,fp)
-  fp.write("\"\"\"\n")
-  fp.write("xssss=yaml.load(xssss_string,Loader=yaml.Loader)\n")
-  fp.write("sssss_string=\"\"\"\n")
-  yaml.dump(sssss,fp)
-  fp.write("\"\"\"\n")
-  fp.write("sssss=yaml.load(sssss_string,Loader=yaml.Loader)\n")
 
   alf_info_copy=copy.deepcopy(alf_info)
   alf_info_copy['nsubs']=alf_info_copy['nsubs'].tolist()
@@ -351,6 +305,17 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   fp.write("alf_info['nsubs']=np.array(alf_info['nsubs'])\n")
   fp.write("if 'q' in alf_info:\n")
   fp.write("  alf_info['q']=np.array(alf_info['q'])\n")
+
+  fp.write("sysname='"+name+"'\n")
+  fp.write("nnodes="+str(nnodes)+"\n")
+  fp.write("nreps="+str(nreps)+"\n")
+  fp.write("ncentral="+str(ncentral)+"\n")
+  fp.write("nblocks="+str(nblocks)+"\n")
+  fp.write("nsites="+str(len(nsubs))+"\n")
+  fp.write("nsubs="+str(nsubs)+"\n")
+  for i in range(0,len(nsubs)):
+    fp.write("nsubs"+str(i+1)+"="+str(nsubs[i])+"\n")
+  fp.write("temp="+str(temp)+"\n")
 
   if minimize==True:
     fp.write("minimizeflag=True\n")

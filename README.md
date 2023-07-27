@@ -36,11 +36,18 @@ Molecular dynamics in the alf software is performed by an external
 molecular dynamics engine which must be compiled and installed
 independently. The currently supported engines are:
  * charmm : the CHARMM software package utilizing the DOMDEC GPU ONLY
-   command
+   command for GPU acceleration
  * bladelib : the CHARMM software package utilizing the BLaDE library
+   for GPU acceleration. BLaDE is faster that DOMDEC, but has fewer
+   features
  * blade : the standalone BLaDE software package
+ * pycharmm : the python pyCHARMM package using CHARMM as a library to
+   call BLaDE
 These engines may be passed to alf routines to specify the engine,
 because some routines have slight differences based on the engine used.
+Use of other molecular dynamics engines in CHARMM is possible, including
+engines that do not use GPUs, see instructions at the end of INSTALL.
+Use of other engines will require more extensive modification of alf.
 
 Sampling will be optimal when the free energy landscape is flat, so
 flattening seeks to identify the biases that give flat free energy
@@ -168,11 +175,11 @@ higher order terms are assumed to be zero. This approximation is
 reasonable in many systems and significantly reduces sampling
 requirements, making it possible to estimate free energies for tens of
 thousands of sequences. To use the Potts model estimator, run
-alf.postprocess first, then see the examples in examples/engines with
-the _withPotts suffix. SubsetLM.sh uses likelihood maximization, best
-for systems with less than a million chemical end states, and
-SubsetPLM.sh uses pseudolikelihood maximization, best for systems with
-more than a million chemical end states. These use routines defined in
+alf.postprocess first, then see the examples in examples/engines/PottsLM
+and examples/engines/PottsPLM. PottsLM uses likelihood maximization,
+best for systems with less than a million chemical end states, and
+PottsPLM uses pseudolikelihood maximization, best for systems with more
+than a million chemical end states. These use routines defined in
 alf/dca.
 
 Coupling between sites: if you have multiple sites, it is possible these

@@ -1,6 +1,13 @@
 ! BLaDE input file for lambda dynamics
 !
 
+! This script expects nsteps (production steps) and itt (chunk of
+! production) to be set by the calling process in arguments.inp
+!
+! Other important variables such as temp (the system temperature) and
+! sysname (the system name in the prep directory) are set by
+! variablesflat.inp
+
 verbose 0
 
 stream arguments.inp

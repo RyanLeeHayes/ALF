@@ -1,6 +1,14 @@
 * CHARMM with BLaDE input file for lambda dynamics
 *
 
+! This script expects nsteps (production steps), itt (chunk of
+! production), seed (random number seed), and nsavc (frequency to write
+! dcd files) to be set by the calling process
+!
+! Other important variables such as temp (the system temperature) and
+! sysname (the system name in the prep directory) are set by
+! variablesflat.inp
+
 set fnex = 5.5
 
 stream "variablesprod.inp"

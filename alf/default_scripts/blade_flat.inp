@@ -1,6 +1,14 @@
 ! BLaDE input file for lambda dynamics
 !
 
+! This script expects esteps (equilibration steps) and nsteps
+! (production steps) to be set by the calling process in
+! arguments.inp
+!
+! Other important variables such as temp (the system temperature), and
+! sysname (the system name in the prep directory) are set by
+! variablesflat.inp. minimizeflag is unused in blade
+
 verbose 0
 
 variables set restartfile null
