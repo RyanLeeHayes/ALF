@@ -48,7 +48,7 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
   # PSF="../prep/"+name+".psf"
   PSF="../prep/minimized.psf"
 
-  if alf_info['engine'] in ['charmm','bladelib']:
+  if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     fmt="dcd"
   elif alf_info['engine'] in ['blade']:
     fmt="xtc"

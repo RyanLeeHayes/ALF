@@ -11,7 +11,7 @@ def GetVolume(alf_info,fnmout,fnmsin,fnmpsf):
 
   # See alse https://www.mdanalysis.org/docs/documentation_pages/coordinates/init.html
 
-  if alf_info['engine'] in ['charmm','bladelib']:
+  if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     fmt="DCD"
   elif alf_info['engine'] in ['blade']:
     fmt="XTC"

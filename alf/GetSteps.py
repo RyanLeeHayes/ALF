@@ -101,7 +101,7 @@ def GetStepsBlade(alf_info,fnm):
 
 
 def GetSteps(alf_info,fnm):
-  if alf_info['engine'] in ['charmm','bladelib']:
+  if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     return GetStepsCharmm(alf_info,fnm)
   elif alf_info['engine'] in ['blade']:
     return GetStepsBlade(alf_info,fnm)
