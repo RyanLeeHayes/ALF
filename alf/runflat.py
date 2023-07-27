@@ -73,6 +73,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
 
   iri=max(ni-5,1)
 
+  fex='inp'
+  if engine in ['pycharmm']:
+    fex='py'
+
   for i in range(ni,nf+1):
     im5=max(i-4,1)
     N=i-im5+1
@@ -93,9 +97,6 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         os.mkdir('run%d' % i)
         os.mkdir('run%d/dcd' % i)
         os.mkdir('run%d/res' % i)
-        fex='inp'
-        if engine in ['pycharmm']:
-          fex='py'
         shutil.copy('variables%d.%s' % (i,fex),'run%d/variablesflat.%s' % (i,fex))
         os.symlink('../prep','run%d/prep' % i) # ../prep is relative to final path, not current directory
         os.chdir('run%d' % i)

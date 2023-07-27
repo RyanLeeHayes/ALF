@@ -99,6 +99,10 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
     else:
       print("Error: Run %d incomplete. Going back one step" % i)
 
+  fex='inp'
+  if engine in ['pycharmm']:
+    fex='py'
+
   if ibeg==1:
     # Can't just remove run_dir and start over, because otherwise a scripting error might erase 100's of ns of sampling
     if not os.path.exists(run_dir):
@@ -109,9 +113,6 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
       os.mkdir(run_dir+'/res')
     if not os.path.exists(run_dir+'/failed'):
       os.mkdir(run_dir+'/failed')
-    fex='inp'
-    if engine in ['pycharmm']:
-      fex='py'
     if os.path.exists(run_dir+'/variablesprod.'+fex):
       os.remove(run_dir+'/variablesprod.'+fex)
     shutil.copy('variables%d.%s' % (step,fex),run_dir+'/variablesprod.'+fex)
