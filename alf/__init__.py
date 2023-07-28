@@ -90,6 +90,8 @@ PlotFreeEnergy5 : plot the free energy profiles as a function of lambda
     unsampled lambda values
 GetDCD : concatenate the many DCD files from a long production run into
     a single DCD file for each independent trial
+GetTrans : calculate alchemical transitions at each site, useful for
+    assessing convergence of production simulations
 
 Lower Level Routines
 --------------------
@@ -163,11 +165,11 @@ from alf.dca.GetModel import *
 from alf.dca.BootstrapMoments import *
 from alf.util.PlotFreeEnergy import *
 from alf.util.GetDCD import *
+from alf.util.GetTrans import *
 
 from alf.initialize import *
 from alf.runflat import *
 from alf.runprod import *
 from alf.postprocess import *
-from alf.postvolume import *
 from alf.postprocessDCA import *
 from alf.utilities import *

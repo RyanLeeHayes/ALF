@@ -1,0 +1,20 @@
+These G_imp values are subtracted from the free energy profiles before
+flattening. This is done because the implicit constraints focus sampling
+on the alchemical endpoints without adding barriers in alchemical space,
+and we desire to preserve this feature rather than flatten it out too.
+
+This directory contains the free energy for the implicit constraints (in
+units of kT) under standard conditions so that the casual user does not
+need to calculate it, and these values are used by default, unless the
+user passes the path for another G_imp directory to runflat and
+postprocess.
+
+The standard conditions under which the free energy of the implicit
+constraints were calculated was for 2-10 substituents with the standard
+implicit constraint fnex value of 5.5. If you have more than 10
+substituents, or if you add a barrier to increase your fraction physical
+ligand, or raise fnex to increase fraction physical ligand, or do
+anything else to perturb the sampling distribution you are targeting in
+a "flat" landscape, you will need to recalculate these G_imp values
+yourself in a new directory and pass the appropriate path to runflat and
+postprocess. 

@@ -1,6 +1,26 @@
 #! /usr/bin/env python
 
 def GetStepsCharmm(alf_info,fnm):
+  """
+  Counts the steps in alchemical trajectories in CHARMM binary format
+
+  This routine is called by the routine GetSteps to count the number of
+  steps in CHARMM binary alchemical trajectories and return the integer
+  result.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnm : str
+      The filename for the binary input file
+
+  Returns
+  -------
+  int
+      The number of steps actually contained in the trajectory
+  """
+
   import numpy as np
   from scipy.io import FortranFile
 
@@ -70,6 +90,26 @@ def GetStepsCharmm(alf_info,fnm):
 
 
 def GetStepsBlade(alf_info,fnm):
+  """
+  Counts the steps in alchemical trajectories in BLaDE binary format
+
+  This routine is called by the routine GetSteps to count the number of
+  steps in standalone BLaDE binary alchemical trajectories and return the
+  integer result.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnm : str
+      The filename for the binary input file
+
+  Returns
+  -------
+  int
+      The number of steps actually contained in the trajectory
+  """
+
   import numpy as np
   from xdrlib import Unpacker
   from xdrlib import Packer
@@ -101,6 +141,29 @@ def GetStepsBlade(alf_info,fnm):
 
 
 def GetSteps(alf_info,fnm):
+  """
+  Counts the steps in alchemical trajectories in CHARMM binary format
+
+  This routine counts the number of steps in binary alchemical
+  trajectories and returns the integer result, primarily to ensure that
+  production chunks ran successfully. Based on the contents of
+  alf_info['engine'], this routine either wraps the GetStepsCharmm routine
+  for reading CHARMM binary alchemical trajectories or the GetStepsBlade
+  routine for reading standalone BLaDE binary alchemical trajectories.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnm : str
+      The filename for the binary input file
+
+  Returns
+  -------
+  int
+      The number of steps actually contained in the trajectory
+  """
+
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     return GetStepsCharmm(alf_info,fnm)
   elif alf_info['engine'] in ['blade']:

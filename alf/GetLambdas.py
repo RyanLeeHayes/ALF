@@ -17,6 +17,9 @@ def GetLambdas(alf_info,istep,ndupl=None,begres=None,endres=None):
   versus production is detected by the absence or presence, respectively
   of the three optional parameters.
 
+  This routine formats the filenames appropriately and then passes them to
+  the routine GetLambda which does the reading.
+
   Parameters
   ----------
   alf_info : dict
@@ -26,14 +29,12 @@ def GetLambdas(alf_info,istep,ndupl=None,begres=None,endres=None):
   ndupl : int, optional
       The number of independent trials run in production. Leave empty to
       signal this is flattening. (defaul is None)
-WORKING
-  Ff : int
-      The final cycle of alf to include in analysis (inclusive)
-  skipE : int, optional
-      In longer production runs the number of lambda samples may require
-      significant amounts of memory to store and analyze. Only alchemical
-      frames with index modulus skipE equal to skipE-1 are analyzed.
-      (default is 1 to analyze all frames) 
+  begres : int, optional
+      The number of chunks of production to discard for equilibration.
+      Leave empty for flattening. (default is None)
+  endres : int, optional
+      The final chunks of production to use for analysis. Leave empty for
+      flattening. (default is None)
   """
 
   import sys, os

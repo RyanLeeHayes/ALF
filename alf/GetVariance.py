@@ -1,6 +1,41 @@
 #! /usr/bin/env python
 
-def GetVariance(alf_info,NF):
+def GetVariance(alf_info,NF,NBS=50):
+  """
+  Calculates the free energy change upon alchemical mutation
+
+  Estimates free energy changes using the histogram based estimator and
+  alchemical trajectories in analysis[i]/data/Lambda.[idupl].[irep].dat,
+  where [i] is the cycle of alf, [idupl] is the numerical index for each
+  of the indepdendent trials, and [irep] is the replica index for replica
+  exchange. The histogram based estimator uses a hard-coded lambda cutoff
+  of 0.99. The free energies are computed as -kT*log(P), where P is the
+  number of times an alchemical state occurs in the trajectory. The energy
+  of the biases at the endpoints is added back in. Uncertainty is
+  estimated by bootstrapping from the independent trials [NBS] times.
+  The default/recommended value for NBS is 50, which strikes a balance
+  between computational expense and accuracy. Bootstrapped uncertainties
+  tend to be slightly low becaause rerunning the entire alf workflow will
+  result in different biases, which allow different levels of convergence,
+  whereas all samples bootstrapped by GetVariance were run with the same
+  bias. Results are written to analysis[i]/Result.txt. If the are multiple
+  replicas, each replica will contribute to analysis[i]/Result.txt, but
+  the result for each isolated replica is also written to
+  analysis[i]/Result.[irep].txt.
+
+  This routine is called by the routine alf.postprocess, and should be run
+  from the analysis[i] directory.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  NF : int
+      The number of independent trials run by runprod
+  NBS : int, optional
+      The number of bootstrap samples to take (default is 50)
+  """
+
   import sys, os, os.path
   import numpy as np
   import copy
@@ -79,8 +114,8 @@ def GetVariance(alf_info,NF):
     Value-=Value[0]
 
     np.random.seed(2401)
-    GS=np.zeros((50,nlig))
-    for i in range(0,50):
+    GS=np.zeros((NBS,nlig))
+    for i in range(0,NBS):
       GS[i,:]=Gmin-kT*np.log(np.mean(np.exp(-(G[np.random.randint(0,NF,(NF,1)),:]-Gmin)/kT),axis=0))
     Error=np.std(GS,axis=0)
 
@@ -108,8 +143,8 @@ def GetVariance(alf_info,NF):
   Value-=Value[0]
 
   np.random.seed(2401)
-  GS=np.zeros((50,nlig))
-  for i in range(0,50):
+  GS=np.zeros((NBS,nlig))
+  for i in range(0,NBS):
     GS[i,:]=Gmin-kT*np.log(np.mean(np.exp(-(G[np.random.randint(0,NF,(NF,1)),:]-Gmin)/kT),axis=0))
   Error=np.std(GS,axis=0)
 

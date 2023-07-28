@@ -1,5 +1,25 @@
 
 def initialize_alf_info(engine='charmm'):
+  """
+  Wrapper function to read prep/alf_info.py
+
+  Reads prep/alf_info.py to initialize alf_info dictionary. Ensures
+  necessary fields are present and formatted correctly. See alf README.md
+  for details on a correctly formatted prep/alf_info.py file.
+
+  Parameters
+  ----------
+  engine : str, optional
+      An optional string for the molecular dynamics engine to be used. See
+      alf README.md for supported engine strings. (default is 'charmm')
+
+  Returns
+  -------
+  alf_info : dict
+      The alf_info dictionary with parameters most alf routines need to
+      run
+  """
+
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf

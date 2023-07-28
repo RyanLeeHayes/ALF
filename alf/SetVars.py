@@ -1,6 +1,23 @@
 #! /usr/bin/env python
 
 def SetVarsCharmm(alf_info,Step,minimize=False):
+  """
+  Writes out a variables[Step].inp file to read biases into MD engine
+
+  For the charmm (and bladelib) engine. Called by alf.SetVars.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run. alf_info['engine']
+      determines the format of the variables[Step].inp file
+  Step : int
+      The next cycle of alf for which the new biases are being written
+  minimize : bool, optional
+      A boolean flag indicating whether or not to run minimization on this
+      cycle of alf. (default is False)
+  """
+
   import numpy as np
 
   nblocks=alf_info['nblocks']
@@ -103,6 +120,23 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
 
 
 def SetVarsBlade(alf_info,Step,minimize=False):
+  """
+  Writes out a variables[Step].inp file to read biases into MD engine
+
+  For the blade engine. Called by alf.SetVars.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run. alf_info['engine']
+      determines the format of the variables[Step].inp file
+  Step : int
+      The next cycle of alf for which the new biases are being written
+  minimize : bool, optional
+      A boolean flag indicating whether or not to run minimization on this
+      cycle of alf. (default is False)
+  """
+
   import numpy as np
 
   nblocks=alf_info['nblocks']
@@ -203,6 +237,23 @@ def SetVarsBlade(alf_info,Step,minimize=False):
 
 
 def SetVarsPycharmm(alf_info,Step,minimize=False):
+  """
+  Writes out a variables[Step].inp file to read biases into MD engine
+
+  For the pycharmm engine. Called by alf.SetVars.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run. alf_info['engine']
+      determines the format of the variables[Step].inp file
+  Step : int
+      The next cycle of alf for which the new biases are being written
+  minimize : bool, optional
+      A boolean flag indicating whether or not to run minimization on this
+      cycle of alf. (default is False)
+  """
+
   import numpy as np
   import yaml
   import copy
@@ -327,6 +378,27 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
 
 
 def SetVars(alf_info,Step,minimize=False):
+  """
+  Writes out a variables[Step].inp file to read biases into MD engine
+
+  Creates a variables[Step].inp file containing bias parameters, for the
+  molecular dynamics engine to read in on the [Step] cycle of alf. This
+  routine should be called from analysis[Step-1]. This is a wrapper
+  routine, and based on the value of alf_info['engine'], either
+  SetVarsCharmm, SetVarsBlade, or SetVarsPycharmm will be called.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run. alf_info['engine']
+      determines the format of the variables[Step].inp file
+  Step : int
+      The next cycle of alf for which the new biases are being written
+  minimize : bool, optional
+      A boolean flag indicating whether or not to run minimization on this
+      cycle of alf. (default is False)
+  """
+
   if alf_info['engine'] in ['charmm','bladelib']:
     SetVarsCharmm(alf_info,Step,minimize=minimize)
   elif alf_info['engine'] in ['blade']:
@@ -340,6 +412,23 @@ def SetVars(alf_info,Step,minimize=False):
 
 
 def InitVars(alf_info,minimize=True):
+  """
+  Prepares directory for first cycle of ALF
+
+  Creates the analysis0 directory containing initial bias parameters, as
+  well as nbshift for replica exchange. Calls alf.SetVars to create
+  variables1.inp to input these bias parameters to the molecular dynamics
+  engine. Called by alf.initialize.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  minimize : bool, optional
+      A boolean flag indicating whether or not to run minimization on the
+      first cycle of alf. (default is True)
+  """
+
   import sys, os
   import numpy as np
   from subprocess import call

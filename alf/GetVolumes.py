@@ -1,6 +1,41 @@
 #! /usr/bin/env python
 
 def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
+  """
+  Calculate the discrete solvent charge change correction from box volume
+
+  The discrete solvent correction is calculated by reading the box volume
+  from trajectory files in run[istep][a]/dcd/[name]_prod[itt].dcd where
+  [istep] is the cycle of alf, [a] is the letter index for the [ndupl]
+  independent trials, [name] is the name of the system and [itt] is the
+  production chunk ranging from [begres+1] to [endres]. The number of
+  water molecules from prep/minimized.psf. This routine should be run from
+  analysis[istep]. Intermediate files are written to analysis[istep]/data
+  and the final correction for each substituent is written to
+  analysis[iste]/b_coff.dat based on the charges in alf_info['q']. If
+  alf_info['q'] is all zero or is missing, no correction is calculated.
+  This correction is automatically added to free energy estimates by
+  GetVariance and GetVarianceDCA. This routine passes the conventional
+  names of files to the routine alf.GetVolume, which actually reads the
+  box size from the trajectory.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  istep : int
+      The current cycle of alf being analyzed
+  ndupl : int, optional
+      The number of independent trials run in production. Leave empty to
+      signal this is flattening. (defaul is None)
+  begres : int, optional
+      The number of chunks of production to discard for equilibration.
+      Leave empty for flattening. (default is None)
+  endres : int, optional
+      The final chunks of production to use for analysis. Leave empty for
+      flattening. (default is None)
+  """
+
   import sys, os, os.path
   import numpy as np
   # from subprocess import call

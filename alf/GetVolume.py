@@ -1,6 +1,26 @@
 #! /usr/bin/env python
 
 def GetVolume(alf_info,fnmout,fnmsin,fnmpsf):
+  """
+  Reads box volume and number of waters from the given files
+
+  This routine is called by the routine GetVolumes to aid in computing the
+  discrete solvent charge change correction.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnmout : str
+      The filename for the volume time series. The number of waters is
+      written to this same file, suffixed by '_NH2O'
+  fnmsin : list of str
+      A list of the filenames of the spatial trajectories from which the
+      volume is read
+  fnmpsf : list of str
+      The filename of the psf from which the number of waters is read
+  """
+
   import sys
   import numpy as np
 

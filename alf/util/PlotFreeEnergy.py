@@ -1,6 +1,24 @@
 #! /usr/bin/env python
 
 def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
+  """
+  Plots free energy profiles for a cycle of alf
+
+  This should be run after alf.postprocess has completed because it
+  displays the free energy profiles computed by alf.RunWham
+
+  Parameters
+  ----------
+  directory : str, optional
+      A string for the analysis directory of the cycle of interest. If
+      blank, analysis will be performed in this directory. (default is
+      None)
+  ntersite : list of int, optional
+      The ntersite list used during postprocessing on this cycle of alf.
+      If the second element of the list is incorrect, multisite systems
+      will not display correctly. (default is [0,0])
+  """
+
   import sys, os
   import numpy as np
   import matplotlib.pyplot as plt

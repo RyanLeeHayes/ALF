@@ -1,6 +1,22 @@
 #! /usr/bin/env python
 
 def GetLambdaCharmm(alf_info,fnmout,fnmsin):
+  """
+  Reads alchemical trajectories from CHARMM binary format
+
+  This routine is called by the routine GetLambda to read CHARMM binary
+  alchemical trajectories and write them to human readable format.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnmout : str
+      The filename for the human readable output
+  fnmsin : list of str
+      A list of the filenames of the binary input files
+  """
+
   import sys, os
   import numpy as np
   from scipy.io import FortranFile
@@ -63,6 +79,22 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
 
 
 def GetLambdaBlade(alf_info,fnmout,fnmsin):
+  """
+  Reads alchemical trajectories from BLaDE binary format
+
+  This routine is called by the routine GetLambda to read standalone BLaDE
+  binary alchemical trajectories and write them to human readable format.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnmout : str
+      The filename for the human readable output
+  fnmsin : list of str
+      A list of the filenames of the binary input files
+  """
+
   import sys, os
   import numpy as np
   from xdrlib import Unpacker
@@ -98,6 +130,26 @@ def GetLambdaBlade(alf_info,fnmout,fnmsin):
 
 
 def GetLambda(alf_info,fnmout,fnmsin):
+  """
+  Reads alchemical trajectories from binary format
+
+  This routine is called by the routine GetLambdas to read binary
+  alchemical trajectories and write them to human readable format. Based
+  on the contents of alf_info['engine'], this routine either wraps the
+  GetLambdaCharmm routine for reading CHARMM binary alchemical
+  trajectories or the GetLambdaBlade routine for reading standalone BLaDE
+  binary alchemical trajectories.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnmout : str
+      The filename for the human readable output
+  fnmsin : list of str
+      A list of the filenames of the binary input files
+  """
+
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     GetLambdaCharmm(alf_info,fnmout,fnmsin)
   elif alf_info['engine'] in ['blade']:
