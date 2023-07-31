@@ -283,6 +283,8 @@ potential, otherwise alf will keep adjusting the biases, but sampling
 will not improve. The following code will read the biases set by
 alf.SetVars in the BLOCK section of charmm and bladelib engine input
 files.
+
+```
 calc nbiaspot = 5 * ( @nblocks * ( @nblocks - 1 ) ) / 2
 ldbi @nbiaspot
 set ibias = 1
@@ -333,6 +335,7 @@ if @si .le. @nsites then
    calc si = @si + 1
    goto loop5
 endif
+```
 
 nbond.str: this is a stream file in prep that sets up the nonbonded
 parameters. PME is recommended for electrostatics with an interpolation
