@@ -1,4 +1,4 @@
-Package Description
+# Package Description
 
 alf (the module) runs adaptive landscape flattening (ALF - the method)
 to optimize bias potentials in a lambda dynamics molecular dynamics
@@ -10,7 +10,7 @@ python routines, input specification, bug reporting, and citations.
 
 
 
-Installation
+# Installation
 
 Detailed installation instructions are available in INSTALL. Briefly,
 you will need to compile code in alf/wham and alf/dca, and then use pip
@@ -18,7 +18,7 @@ install to install the alf module into a python virtual environment.
 
 
 
-Examples
+# Examples
 
 Detailed instructions for how to run examples are available in
 examples/INSTRUCTIONS. Briefly, you should copy a directory with scripts
@@ -27,7 +27,7 @@ directory from examples/systems into that directory and rename it prep.
 
 
 
-Algorithms
+# Algorithms
 
 ALF runs cycles of molecular dynamics followed by flattening to
 itteratively improve biasing potentials.
@@ -69,7 +69,7 @@ the next round of molecular dynamics.
 
 
 
-Best Practices
+# Best Practices
 
 An ideal workflow is shown in the file subsetAll.sh within the
 examples/engines directory.
@@ -208,7 +208,7 @@ is run.
 
 
 
-Python Routines
+# Python Routines
 
 Python routines and the alf module are documented using docstrings. To
 read this documentation for the entire module, after installation run
@@ -224,7 +224,7 @@ and where the routine is defined in alf/runflat.py, respectively.
 
 
 
-Input Specification
+# Input Specification
 
 alf routines assume the existence of several files within a directory
 called prep. This directory contains all the system specific infomation
@@ -385,14 +385,14 @@ and pass alf.runflat and alf.postprocess the path to this directory.
 
 
 
-Bug Reporting
+# Bug Reporting
 
 Please report any bugs or desired new features to the authors at
 https://github.com/RyanLeeHayes/ALF/issues
 
 
 
-Citations
+# Citations
 
 Original ALF paper:
 Hayes, R. L.; Armacost, K. A.; Vilseck, J. Z. & Brooks III, C. L.
