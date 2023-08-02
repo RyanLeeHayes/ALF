@@ -363,7 +363,8 @@ def SetVarsPycharmm(alf_info,Step,minimize=False):
   fp.write("ncentral="+str(ncentral)+"\n")
   fp.write("nblocks="+str(nblocks)+"\n")
   fp.write("nsites="+str(len(nsubs))+"\n")
-  fp.write("nsubs="+str(nsubs)+"\n")
+  fp.write("nsubs="+str(nsubs.tolist())+"\n")
+  fp.write("nsubs=np.array(nsubs)\n")
   for i in range(0,len(nsubs)):
     fp.write("nsubs"+str(i+1)+"="+str(nsubs[i])+"\n")
   fp.write("temp="+str(temp)+"\n")
