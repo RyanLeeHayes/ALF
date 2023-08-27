@@ -66,6 +66,7 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
   import os, sys, shutil, traceback, time, subprocess, random
   import numpy as np
   import alf
+  import datetime #DEBUG
 
   alf_info=alf.initialize_alf_info(engine)
 
@@ -149,8 +150,29 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         alf.GetEnergy(alf_info,im5,i)
         fpout=open('output','w')
         fperr=open('error','w')
-        subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%f,%d,%d)' % (N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
-        alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
+        if 'lmalf' in alf_info:
+          print("Warning, LMALF is not polished yet")
+          # subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,0,0)' % (N*alf_info['nreps'])],stdout=fpout,stderr=fperr) # `cat ../ntersiteflat`
+          t1=datetime.datetime.now()
+          subprocess.call([os.path.dirname(__file__)+'/lmalf/RunWham.sh',str(N*alf_info['nreps']),'0','0'],stdout=fpout,stderr=fperr)
+          t2=datetime.datetime.now()
+          print("RunWham"+str(t2-t1))
+          lambdafiles=[]
+          for fileindex in range(N*alf_info['nreps']):
+            lambdafiles.append('Lambda/Lambda%d.dat' % (fileindex+1))
+          fpcat=open('Lambda/Lambda.dat','w')
+          subprocess.call(['cat']+lambdafiles,stdout=fpcat)
+          fpcat.close()
+          t1=datetime.datetime.now()
+          subprocess.call([os.path.dirname(__file__)+'/lmalf/RunLMALF.sh','0','0','Lambda/Lambda.dat','weight.dat','OUT.dat'],stdout=fpout,stderr=fperr)
+          t2=datetime.datetime.now()
+          print("RunLMALF"+str(t2-t1))
+          print('Warning: coupling flags ignored')
+          # alf.GetFreeEnergy5(alf_info,0,0) # `cat ../ntersiteflat`
+          alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
+        else:
+          subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%f,%d,%d)' % (N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
+          alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
 
         alf.SetVars(alf_info,i+1)
         fp=open('../variables%d.%s' % (i+1,fex),'a')

@@ -5,6 +5,10 @@ project(wham CXX)
 
 find_package(CUDA 9.0)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif(NOT CMAKE_BUILD_TYPE)
+
 if (CUDA_FOUND)
 
 file(GLOB_RECURSE sources src/*.cu src/*.h)

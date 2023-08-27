@@ -157,6 +157,7 @@ from alf.GetLambdas import *
 from alf.GetVolumes import *
 from alf.GetEnergy import *
 from alf.GetFreeEnergy5 import *
+from alf.GetFreeEnergyLM import * # undocumented
 from alf.wham.RunWham import *
 from alf.GetSteps import *
 from alf.GetVariance import *
