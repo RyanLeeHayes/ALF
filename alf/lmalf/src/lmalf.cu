@@ -225,6 +225,14 @@ struct_plmd* setup(int argc, char *argv[])
   }
   fclose(fp);
 
+  double criteria;
+  i=sscanf(argv[6],"%lg",&criteria);
+  if (i!=1) {
+    fprintf(stderr,"Error, sixth argument should indicate halting criteria.\n");
+    exit(1);
+  }
+  plmd->criteria=criteria;
+
   cudaMalloc(&(plmd->lambda_d),plmd->B*plmd->nblocks*sizeof(real));
   cudaMalloc(&(plmd->mc_lambda_d),plmd->B*plmd->nblocks*sizeof(real));
   cudaMalloc(&(plmd->ensweight_d),plmd->B*sizeof(real));
@@ -1063,7 +1071,7 @@ void evaluateL(struct_plmd *plmd)
 
   cudaMemcpy(plmd->L,plmd->L_d,sizeof(real),cudaMemcpyDeviceToHost);
 
-  fprintf(stderr,"New      L=%lg\n",plmd->L[0]);
+  fprintf(stdout,"New      L=%lg\n",plmd->L[0]);
 }
 
 void evaluateL_line(real s,struct_plmd *plmd)
@@ -1340,8 +1348,10 @@ void update_line(int step,struct_plmd *plmd)
   L1=plmd->L[0];
   dLds1=plmd->dLds[0];
   if (dLds1>0) {
-    fprintf(stderr,"Error, hi is pointing wrong way\n");
-    exit(1);
+    fprintf(stdout,"Error, hi is pointing wrong way - halting\n");
+    plmd->done=true;
+    return;
+    // exit(1);
   }
   
   s3=1.0;
@@ -1375,7 +1385,7 @@ void update_line(int step,struct_plmd *plmd)
   L2=plmd->L[0];
   dLds2=plmd->dLds[0];
 
-  fprintf(stderr,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
+  fprintf(stdout,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
           step,(double) s1,(double) s2,(double) s3,
           (double) L1,(double) L2,(double) L3,
           (double) dLds1,(double) dLds2,(double) dLds3);
@@ -1419,13 +1429,13 @@ void update_line(int step,struct_plmd *plmd)
     L2=plmd->L[0];
     dLds2=plmd->dLds[0];
 
-    fprintf(stderr,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
+    fprintf(stdout,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
             step,(double) s1,(double) s2,(double) s3,
             (double) L1,(double) L2,(double) L3,
             (double) dLds1,(double) dLds2,(double) dLds3);
   }
 
-  fprintf(stderr,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
+  fprintf(stdout,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
           step,(double) s1,(double) s2,(double) s3,
           (double) L1,(double) L2,(double) L3,
           (double) dLds1,(double) dLds2,(double) dLds3);
@@ -1440,12 +1450,12 @@ void update_line(int step,struct_plmd *plmd)
   }
 
   // fprintf(stderr,"Step %d smid1 %lg smid2 %lg L=%lg -> L1=%lg L2=%lg\n",step,(double) smid1,(double) smid2,(double) L0,(double) Lmid1,(double) Lmid2);
-  fprintf(stderr,"Step %4d L=%24.16lf -> L2=%24.16lf, dL=%lg, step length=%lg\n",step,(double)L0,(double)L2,(double)(L2-L0),(double) sqrt(stepLength2));
+  fprintf(stdout,"Step %4d L=%24.16lf -> L2=%24.16lf, dL=%lg, step length=%lg\n",step,(double)L0,(double)L2,(double)(L2-L0),(double) sqrt(stepLength2));
 
   fprintf(plmd->fplog,"%24.16lf %24.16lf %lg %lg\n",(double)L0,(double)L2,(double)sqrt(initGrad2),(double)sqrt(stepLength2));
 
   if (sqrt(stepLength2)<5e-7) plmd->done=true;
-  if (sqrt(stepLength2)<1e-2) {
+  if (sqrt(stepLength2)<plmd->criteria) { // criteria was 1e-2
     plmd->doneCount+=1;
     if (plmd->doneCount==2) plmd->done=true;
   } else {

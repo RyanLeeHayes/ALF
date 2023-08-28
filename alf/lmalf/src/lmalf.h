@@ -66,6 +66,7 @@ typedef struct struct_plmd {
   real *dxds_d;
   int doneCount;
   bool done;
+  real criteria;
   // real *Hinv;
   int Nmem;
   int Nmemax;

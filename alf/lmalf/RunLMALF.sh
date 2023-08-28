@@ -1,3 +1,3 @@
 #! /bin/bash -l
 
-$( dirname -- "${BASH_SOURCE[0]}" )/lmalf $1 $2 $3 $4 $5
+time $( dirname -- "${BASH_SOURCE[0]}" )/lmalf $1 $2 $3 $4 $5 $CRITERIA
