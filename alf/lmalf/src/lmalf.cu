@@ -1455,7 +1455,7 @@ void update_line(int step,struct_plmd *plmd)
   fprintf(plmd->fplog,"%24.16lf %24.16lf %lg %lg\n",(double)L0,(double)L2,(double)sqrt(initGrad2),(double)sqrt(stepLength2));
 
   if (sqrt(stepLength2)<5e-7) plmd->done=true;
-  if (sqrt(stepLength2)<plmd->criteria) { // criteria was 1e-2
+  if (sqrt(stepLength2/plmd->nx)<plmd->criteria) { // criteria was 1e-2
     plmd->doneCount+=1;
     if (plmd->doneCount==2) plmd->done=true;
   } else {

@@ -9,6 +9,12 @@ alf/dca/Moment
 alf/dca/PLM
 alf/dca/__pycache__
 alf/dca/cmake_install.cmake
+alf/lmalf/CMakeCache.txt
+alf/lmalf/CMakeFiles/
+alf/lmalf/Makefile
+alf/lmalf/cmake_install.cmake
+alf/lmalf/lmalf
+alf/lmalf/whamweight
 alf/util/__pycache__
 alf/wham/CMakeCache.txt
 alf/wham/CMakeFiles
