@@ -2,7 +2,7 @@
 
 def GetFreeEnergyLM(alf_info,ms,msprof):
   """
-  Undocumented
+  WORKING - Undocumented
   """
 
   import sys
@@ -20,13 +20,6 @@ def GetFreeEnergyLM(alf_info,ms,msprof):
 
   nsubs=alf_info['nsubs']
   nblocks=alf_info['nblocks']
-
-  if len(nsubs)>1:
-    print("error: not yet set up for more than one substituent")
-    quit()
-  if ms==1:
-    print("error: especially not set up for ms==1")
-    quit()
 
   b_prev=np.loadtxt('b_prev.dat')
   c_prev=np.loadtxt('c_prev.dat')
@@ -46,7 +39,9 @@ def GetFreeEnergyLM(alf_info,ms,msprof):
       n3=nsubs[isite]*nsubs[jsite]
       if isite==jsite:
         nparm+=n1+5*n2
-      elif ms:
+      elif ms==1:
+        nparm+=5*n3
+      elif ms==2:
         nparm+=n3
 
   cutlist=np.zeros((nparm,))
@@ -59,19 +54,26 @@ def GetFreeEnergyLM(alf_info,ms,msprof):
     for jsite in range(isite,len(nsubs)):
       n3=nsubs[isite]*nsubs[jsite]
       if isite==jsite:
-        for i in range(nsubs[isite]):
-          cutlist[n0]=cutb
+        for i in range(0,nsubs[isite]):
+          cutlist[n0:n0+1]=cutb
           n0+=1
-          for j in range(i+1,nsubs[jsite]):
-            cutlist[n0]=cutc
+          for j in range(i+1,nsubs[isite]):
+            cutlist[n0:n0+1]=cutc
             n0+=1
             cutlist[n0:n0+2]=cutx
             n0+=2
             cutlist[n0:n0+2]=cuts
             n0+=2
-      elif ms:
-        cutlist[n0:n0+n3]=cutc2
-        n0+=n3
+      elif ms>0:
+        for i in range(0,nsubs[isite]):
+          for j in range(0,nsubs[jsite]):
+            cutlist[n0:n0+1]=cutc2
+            n0+=1
+            if ms==1:
+              cutlist[n0:n0+2]=cutx2
+              n0+=2
+              cutlist[n0:n0+2]=cuts2
+              n0+=2
       jblock+=nsubs[jsite]
     iblock+=nsubs[isite]
 
@@ -108,11 +110,20 @@ def GetFreeEnergyLM(alf_info,ms,msprof):
             ind+=1
             s[jblock+j,iblock+i]=coeff[ind]
             ind+=1
-      elif ms:
+      elif ms>0:
         for i in range(0,nsubs[isite]):
           for j in range(0,nsubs[jsite]):
             c[iblock+i,jblock+j]=coeff[ind]
             ind+=1
+            if ms==1:
+              x[iblock+i,jblock+j]=coeff[ind]
+              ind+=1
+              x[jblock+j,iblock+i]=coeff[ind]
+              ind+=1
+              s[iblock+i,jblock+j]=coeff[ind]
+              ind+=1
+              s[jblock+j,iblock+i]=coeff[ind]
+              ind+=1
       jblock+=nsubs[jsite]
     iblock+=nsubs[isite]
 

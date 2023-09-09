@@ -93,18 +93,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
     fpout=open('output','w')
     fperr=open('error','w')
     if 'lmalf' in alf_info:
-      print("Warning, LMALF is not polished yet")
-      # subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,0,0)' % (N*alf_info['nreps'])],stdout=fpout,stderr=fperr) # `cat ../ntersiteflat`
-      subprocess.call([os.path.dirname(__file__)+'/lmalf/RunWham.sh',str(N*alf_info['nreps']),'0','0'],stdout=fpout,stderr=fperr)
-      lambdafiles=[]
-      for fileindex in range(N*alf_info['nreps']):
-        lambdafiles.append('Lambda/Lambda%d.dat' % (fileindex+1))
-      fpcat=open('Lambda/Lambda.dat','w')
-      subprocess.call(['cat']+lambdafiles,stdout=fpcat)
-      fpcat.close()
-      subprocess.call([os.path.dirname(__file__)+'/lmalf/RunLMALF.sh','0','0','Lambda/Lambda.dat','weight.dat','OUT.dat'])
-      print('Warning: coupling flags ignored')
-      # alf.GetFreeEnergy5(alf_info,0,0) # `cat ../ntersiteflat`
+      subprocess.call([os.path.dirname(__file__)+'/lmalf/RunLMALF.sh',str(N*alf_info['nreps']),str(alf_info['temp']),str(ntersite[0]),str(ntersite[1])],stdout=fpout,stderr=fperr)
       alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
     else:
       subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%f,%d,%d)' % (N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)

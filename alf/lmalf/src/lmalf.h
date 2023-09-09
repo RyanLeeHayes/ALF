@@ -13,6 +13,8 @@ typedef struct struct_plmd {
   real kT;
   real *kx; // Regularization constants
   real *kx_d;
+  real *xr; // Regularization constants
+  real *xr_d;
   real *kprofile;
   real *kprofile_d;
   int ms; // multisite coupling flag
