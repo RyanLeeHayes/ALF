@@ -72,7 +72,7 @@ void monte_carlo_Z(struct_plmd plmd)
   int Nmc=plmd.B;
   real *theta;
   int s,i,j;
-  real nHigh,nLow,nHighSelf,nLowSelf,norm;
+  real b, st, norm;
   real thetaNew,eOld,eNew;
 
   theta=(real*) calloc(plmd.nblocks,sizeof(real));
@@ -81,6 +81,13 @@ void monte_carlo_Z(struct_plmd plmd)
     ibeg=plmd.block0[s];
     iend=plmd.block0[s+1];
     Ns=iend-ibeg;
+
+    b=1;
+    for (i=0; i<50; i++) {
+      b=0.5*log(0.25*b*Ns*Ns*M_PI/2);
+      if (!(b>0)) b=0;
+    }
+
     theta[ibeg]=M_PI/2;
     for (i=ibeg+1; i<iend; i++) {
       theta[i]=3*M_PI/2;
@@ -91,31 +98,17 @@ void monte_carlo_Z(struct_plmd plmd)
         fprintf(stdout,"Partition Function Sample Step %d\n",i);
       }
 
-      nHigh=0;
-      nLow=0;
       for (j=ibeg; j<iend; j++) {
-        nHigh+=(0.5*sin(theta[j])+0.5)*(0.5*sin(theta[j])+0.5);
-        nLow+=(-0.5*sin(theta[j])+0.5)*(-0.5*sin(theta[j])+0.5);
-      }
-
-      for (j=ibeg; j<iend; j++) {
-        nHighSelf=(0.5*sin(theta[j])+0.5)*(0.5*sin(theta[j])+0.5);
-        nLowSelf=(-0.5*sin(theta[j])+0.5)*(-0.5*sin(theta[j])+0.5);
-        nHigh-=nHighSelf;
-        nLow-=nLowSelf;
-        eOld=0.5*(2*nHighSelf*(nHigh-1)+2*nLowSelf*(nLow-Ns+1)+nHighSelf*nHighSelf+nLowSelf*nLowSelf);
+        st=(-0.5*sin(theta[j])+0.5);
+        eOld=-b*st*st*st*st;
 
         thetaNew=2*M_PI*randDouble();
-        nHighSelf=(0.5*sin(thetaNew)+0.5)*(0.5*sin(thetaNew)+0.5);
-        nLowSelf=(-0.5*sin(thetaNew)+0.5)*(-0.5*sin(thetaNew)+0.5);
-        eNew=0.5*(2*nHighSelf*(nHigh-1)+2*nLowSelf*(nLow-Ns+1)+nHighSelf*nHighSelf+nLowSelf*nLowSelf);
+        st=(-0.5*sin(thetaNew)+0.5);
+        eNew=-b*st*st*st*st;
 
         if (exp(eOld-eNew)>randDouble()) {
           theta[j]=thetaNew;
         }
-      
-        nHigh+=(0.5*sin(theta[j])+0.5)*(0.5*sin(theta[j])+0.5);
-        nLow+=(-0.5*sin(theta[j])+0.5)*(-0.5*sin(theta[j])+0.5);
       }
 
       if (i>=0) {
