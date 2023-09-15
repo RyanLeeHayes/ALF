@@ -134,7 +134,7 @@ struct_plmd* setup(int argc, char *argv[])
   FILE *fp;
   char line[MAXLENGTH];
 
-  if (argc<8) {
+  if (argc<7) {
     fprintf(stderr,"Error: not enough input arguments\n");
     exit(1);
   }
@@ -218,13 +218,18 @@ struct_plmd* setup(int argc, char *argv[])
   }
   fclose(fp);
 
-  double criteria;
-  i=sscanf(argv[7],"%lg",&criteria);
-  if (i!=1) {
-    fprintf(stderr,"Error, sixth argument should indicate halting criteria.\n");
-    exit(1);
+  if (argc>=8) {
+    double criteria;
+    i=sscanf(argv[7],"%lg",&criteria);
+    fprintf(stdout,"Note, found seventh argument indicating halting criteria. Overwriting default value of 1.25e-3\n");
+    if (i!=1) {
+      fprintf(stderr,"Error, seventh argument should indicate halting criteria.\n");
+      exit(1);
+    }
+    plmd->criteria=criteria;
+  } else {
+    plmd->critetia=1.25e-3;
   }
-  plmd->criteria=criteria;
 
   cudaMalloc(&(plmd->lambda_d),plmd->B*plmd->nblocks*sizeof(real));
   cudaMalloc(&(plmd->mc_lambda_d),plmd->B*plmd->nblocks*sizeof(real));

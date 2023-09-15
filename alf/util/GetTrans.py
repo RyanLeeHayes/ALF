@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-def GetTrans(istep,ndupl=None,engine='charmm'):
+def GetTrans(istep,ndupl=None,engine='charmm',lc=0.8):
   """
   Count transitions in alchemical trajectories
 
@@ -18,6 +18,11 @@ def GetTrans(istep,ndupl=None,engine='charmm'):
       will be treated as a flattening run. (default is None)
   engine : str, optional
       The engine used to run molecular dynamics. (defaul is 'charmm')
+  lc : float, optional
+      The lambda cutoff above which lambda must rise for a transition to
+      count. 0.8 is a common value, another common value is 0.99, which
+      is a more stringent lambda cutoff that results in transition rates a
+      factor of two or three lower
   """
 
   import numpy as np
@@ -44,7 +49,7 @@ def GetTrans(istep,ndupl=None,engine='charmm'):
       for t in range(0,data.shape[0]): # row in data:
         i_prev=i_curr
         for j in range(0,nsubs[i]):
-          if data[t,j+ibuff]>0.8:
+          if data[t,j+ibuff]>lc:
             i_curr=j;
         if i_prev>=0 and i_prev!=i_curr:
           trans[i_prev,i_curr]+=1

@@ -9,4 +9,5 @@ do
   cat Lambda/Lambda$i.dat >> Lambda/Lambda.dat
 done
 
-time $( dirname -- "${BASH_SOURCE[0]}" )/lmalf $2 $3 $4 Lambda/Lambda.dat weight.dat OUT.dat $CRITERIA
+# time $( dirname -- "${BASH_SOURCE[0]}" )/lmalf $2 $3 $4 Lambda/Lambda.dat weight.dat OUT.dat $CRITERIA
+time $( dirname -- "${BASH_SOURCE[0]}" )/lmalf $2 $3 $4 Lambda/Lambda.dat weight.dat OUT.dat
