@@ -228,7 +228,7 @@ struct_plmd* setup(int argc, char *argv[])
     }
     plmd->criteria=criteria;
   } else {
-    plmd->critetia=1.25e-3;
+    plmd->criteria=1.25e-3;
   }
 
   cudaMalloc(&(plmd->lambda_d),plmd->B*plmd->nblocks*sizeof(real));
