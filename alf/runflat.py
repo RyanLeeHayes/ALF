@@ -109,14 +109,14 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
         if not os.path.exists('../msld_flat.'+fex):
           print("Error: msld_flat.%s does not exist." % fex)
         if engine in ['charmm']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--bynode',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--map-by','node',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['bladelib']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['blade']:
           fpin=open('arguments.inp','w')
           fpin.write("variables set esteps %d\nvariables set nsteps %d" % (esteps,nsteps))
           fpin.close()
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--bynode',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
         elif engine in ['pycharmm']:
           fpin=open('arguments.py','w')
           fpin.write("esteps=%d\nnsteps=%d" % (esteps,nsteps))
