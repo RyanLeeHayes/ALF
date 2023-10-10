@@ -96,7 +96,7 @@ def FilterDCA(i,iNF,NF,FREQ,engine='charmm'):
   exe=os.path.dirname(os.path.abspath(__file__))+'/dca/Filter'
   fnmin=('../analysis%d/data/Lambda.%d.%d.dat' % (i,iNF,alf_info['ncentral']))
   fnmout=('data/Filter.%d.dat' % iNF)
-  subprocess.call(['mpirun','-n','1','-bynode','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,str(FREQ),fnmin,fnmout])
+  subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,str(FREQ),fnmin,fnmout])
   print("WARNING: direct standard error somewhere")
   time.sleep(15)
 
@@ -149,7 +149,7 @@ def MomentDCA(i,iNF,NF,FREQ,engine='charmm'):
   fnmin=('data/Filter.%d.dat' % iNF)
   fnmout1=('data/m1.%d.obs.dat' % iNF)
   fnmout2=('data/m2.%d.obs.dat' % iNF)
-  subprocess.call(['mpirun','-n','1','-bynode','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,fnmin,fnmout1,fnmout2])
+  subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,fnmin,fnmout1,fnmout2])
   print("WARNING: direct standard error somewhere")
   time.sleep(15)
 
@@ -252,7 +252,7 @@ def LMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
     fnmout2=('data/J.bs%d.LM.dat' % iBS)
     fnmin1=('data/m1.bs%d.obs.dat' % iBS)
     fnmin2=('data/m2.bs%d.obs.dat' % iBS)
-  subprocess.call(['mpirun','-n','1','-bynode','--bind-to','none','-x','OMP_NUM_THREADS=8',exe,fnmout1,fnmout2,fnmin1,fnmin2])
+  subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=8',exe,fnmout1,fnmout2,fnmin1,fnmin2])
   time.sleep(15)
 
 def PLMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
@@ -311,7 +311,7 @@ def PLMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
   for bsindex in bsindices:
     fnmsin.append('data/Filter.%d.dat' % bsindex)
   print(fnmsin)
-  subprocess.call(['mpirun','-n','1','-bynode','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,fnmout1,fnmout2]+fnmsin)
+  subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,fnmout1,fnmout2]+fnmsin)
   time.sleep(15)
 
 def FinishDCA(i,NF,FREQ,NBS=50,engine='charmm'):
