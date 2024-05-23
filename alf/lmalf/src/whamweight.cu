@@ -44,7 +44,7 @@ void atomic_logadd(double *p_lnA,double lnB)
 
 struct_data* readdata(int argc, char *argv[])
 {
-  char *Edir,*Ddir;
+  const char *Edir,*Ddir;
   FILE *fp,*fpE,*fpQ;
   int i;
   int s1,s2;
@@ -80,9 +80,9 @@ struct_data* readdata(int argc, char *argv[])
     exit(1);
   }
 
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   if (fp==NULL) {
-    fprintf(stderr,"Error, ../prep/nsubs does not exist\n");
+    fprintf(stderr,"Error, nsubs does not exist\n");
     exit(1);
   }
   data->Nsites=0;
@@ -92,7 +92,7 @@ struct_data* readdata(int argc, char *argv[])
   fclose(fp);
   data->Nsubs=(int*) malloc(data->Nsites*sizeof(int));
   data->block0=(int*) malloc((data->Nsites+1)*sizeof(int));
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   data->block0[0]=0;
   for (i=0; i<data->Nsites; i++) {
     fscanf(fp,"%d",&(data->Nsubs[i]));
@@ -101,27 +101,31 @@ struct_data* readdata(int argc, char *argv[])
   fclose(fp);
   data->Nblocks=data->block0[data->Nsites];
 
-  if (argc>3) {
+  /*if (argc>3) {
     Edir=argv[2];
     Ddir=argv[3];
   } else {
     fprintf(stderr,"Error, missing input and output directory.\n");
     exit(1);
-  }
+  }*/
+  Edir="Energy";
+  Ddir="Lambda";
 
-  if (argc>4) {
+  /*if (argc>4) {
     sscanf(argv[4],"%d",&(data->ms));
   } else {
     fprintf(stderr,"Error, 4th argument should indicate whether to use multisite parameters.\n");
     exit(1);
-  }
+  }*/
+  sscanf(argv[3],"%d",&(data->ms));
 
-  if (argc>5) {
+  /*if (argc>5) {
     sscanf(argv[5],"%d",&(data->msprof));
   } else {
     fprintf(stderr,"Error, 5th argument should indicate whether to use multisite profiles.\n");
     exit(1);
-  }
+  }*/
+  sscanf(argv[4],"%d",&(data->msprof));
 
   data->NL=data->Nblocks;
   data->NF=data->Nsim;
@@ -132,13 +136,15 @@ struct_data* readdata(int argc, char *argv[])
   data->beta_h=(double*) malloc(data->NF*sizeof(double));
   cudaMalloc(&(data->beta_d),data->NF*sizeof(double));
 
+  double temperature;
+  sscanf(argv[2],"%lg",&temperature);
   for (i=0; i<data->NF; i++) {
-    data->T_h[i]=298.15;
+    data->T_h[i]=temperature;
     data->beta_h[i]=1.0/(kB*data->T_h[i]);
   }
   cudaMemcpy(data->beta_d,data->beta_h,data->NF*sizeof(double),cudaMemcpyHostToDevice);
 
-  data->beta_t=1.0/(kB*298.15);
+  data->beta_t=1.0/(kB*temperature);
 
   data->B[0].dx=0.1;
   data->B[1].dx=0.002500025;
@@ -313,7 +319,9 @@ struct_data* readdata(int argc, char *argv[])
       // data->jNij[i]=jN;
       if (s1==s2) {
         jN+=data->Nsubs[s1]+5*data->Nsubs[s1]*(data->Nsubs[s1]-1)/2;
-      } else if (data->ms) {
+      } else if (data->ms==1) {
+        jN+=5*data->Nsubs[s1]*data->Nsubs[s2];
+      } else if (data->ms==2) {
         jN+=data->Nsubs[s1]*data->Nsubs[s2];
       }
       // i++;
@@ -571,7 +579,7 @@ double bin_all(struct_data *data,int *ptype,int i)
             fprintf(stderr,"1D Profile %d\n",i1);
             wnorm=1.0;
             bin1 <<< (data->ND+BLOCK-1)/BLOCK, BLOCK >>> (data[0],i1);
-            sprintf(fnm,"../G_imp/G1_%d.dat",data->Nsubs[s1]);
+            sprintf(fnm,"G_imp/G1_%d.dat",data->Nsubs[s1]);
             B_N=data->B[1].N;
             ptype[0]=0;
           }
@@ -584,7 +592,7 @@ double bin_all(struct_data *data,int *ptype,int i)
               fprintf(stderr,"1D Profile %d,%d\n",i1,i2);
               wnorm=1.0/((data->Nsubs[s1]-1)/2.0);
               bin12 <<< (data->ND+BLOCK-1)/BLOCK, BLOCK >>> (data[0],i1,i2);
-              sprintf(fnm,"../G_imp/G12_%d.dat",data->Nsubs[s1]);
+              sprintf(fnm,"G_imp/G12_%d.dat",data->Nsubs[s1]);
               B_N=data->B2d[1].N*data->B2d[2].N;
               ptype[0]=1;
             }
@@ -599,7 +607,7 @@ double bin_all(struct_data *data,int *ptype,int i)
                 fprintf(stderr,"2D Profile %d,%d\n",i1,i2);
                 wnorm=1.0/((data->Nsubs[s1]-1)/2.0);
                 bin2 <<< (data->ND+BLOCK-1)/BLOCK, BLOCK >>> (data[0],i1,i2);
-                sprintf(fnm,"../G_imp/G2_%d.dat",data->Nsubs[s1]);
+                sprintf(fnm,"G_imp/G2_%d.dat",data->Nsubs[s1]);
                 B_N=data->B2d[1].N*data->B2d[2].N;
                 ptype[0]=2;
               }
@@ -616,7 +624,7 @@ double bin_all(struct_data *data,int *ptype,int i)
               fprintf(stderr,"2D SS Profile %d,%d\n",i1,i2);
               wnorm=1.0/(data->Nsubs[s1]*data->Nsubs[s2]);
               bin2 <<< (data->ND+BLOCK-1)/BLOCK, BLOCK >>> (data[0],i1,i2);
-              sprintf(fnm,"../G_imp/G1_%d_%d.dat",data->Nsubs[s1],data->Nsubs[s2]);
+              sprintf(fnm,"G_imp/G1_%d_%d.dat",data->Nsubs[s1],data->Nsubs[s2]);
               B_N=data->B2d[1].N*data->B2d[2].N;
               ptype[0]=3;
             }
@@ -760,8 +768,8 @@ void reactioncoord_all(struct_data *data,int i)
             i--;
           }
         }
-
-        /*for (j1=data->block0[s1]; j1<data->block0[s1+1]; j1++) {
+        if (data->ms==1) {
+        for (j1=data->block0[s1]; j1<data->block0[s1+1]; j1++) {
           for (j2=data->block0[s2]; j2<data->block0[s2+1]; j2++) {
             if (i==0) {
               reactioncoord_chi <<< (data->ND+BLOCK-1)/BLOCK, BLOCK >>> (data[0],j1,j2);
@@ -785,8 +793,8 @@ void reactioncoord_all(struct_data *data,int i)
             }
             i--;
           }
-        }*/
-
+        }
+        }
       }
     }
   }
@@ -955,7 +963,7 @@ void getfofq(struct_data *data,double beta)
     get_lnZ <<< (data->ND+(100*SBLOCK)-1)/(100*SBLOCK), 100 >>> (data[0],data->beta_t);
     cudaMemcpy(data->lnZ_h,data->lnZ_d,B_N*sizeof(double),cudaMemcpyDeviceToHost);
 
-    sprintf(fnm,"G%d.dat",i+1);
+    sprintf(fnm,"multisite/G%d.dat",i+1);
     fp=fopen(fnm,"w");
     for (k=0; k<B_N; k++) {
       fprintf(fp,"%g\n",(-data->lnZ_h[k]-data->Gimp_h[k])/data->beta_t);
@@ -1030,8 +1038,8 @@ void getfofq(struct_data *data,double beta)
     }
   }
 
-  fpC=fopen("C.dat","w");
-  fpV=fopen("V.dat","w");
+  fpC=fopen("multisite/C.dat","w");
+  fpV=fopen("multisite/V.dat","w");
   for (j1=0; j1<(jN+iN); j1++) {
     for (j2=0; j2<(jN+iN); j2++) {
       fprintf(fpC," %f",C[j1*(jN+iN)+j2]);

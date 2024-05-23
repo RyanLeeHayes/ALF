@@ -72,7 +72,7 @@ void monte_carlo_Z(struct_plmd plmd)
   int Nmc=plmd.B;
   real *theta;
   int s,i,j;
-  real nHigh,nLow,nHighSelf,nLowSelf,norm;
+  real b, st, norm;
   real thetaNew,eOld,eNew;
 
   theta=(real*) calloc(plmd.nblocks,sizeof(real));
@@ -81,6 +81,13 @@ void monte_carlo_Z(struct_plmd plmd)
     ibeg=plmd.block0[s];
     iend=plmd.block0[s+1];
     Ns=iend-ibeg;
+
+    b=1;
+    for (i=0; i<50; i++) {
+      b=0.5*log(0.25*b*Ns*Ns*M_PI/2);
+      if (!(b>0)) b=0;
+    }
+
     theta[ibeg]=M_PI/2;
     for (i=ibeg+1; i<iend; i++) {
       theta[i]=3*M_PI/2;
@@ -91,31 +98,17 @@ void monte_carlo_Z(struct_plmd plmd)
         fprintf(stdout,"Partition Function Sample Step %d\n",i);
       }
 
-      nHigh=0;
-      nLow=0;
       for (j=ibeg; j<iend; j++) {
-        nHigh+=(0.5*sin(theta[j])+0.5)*(0.5*sin(theta[j])+0.5);
-        nLow+=(-0.5*sin(theta[j])+0.5)*(-0.5*sin(theta[j])+0.5);
-      }
-
-      for (j=ibeg; j<iend; j++) {
-        nHighSelf=(0.5*sin(theta[j])+0.5)*(0.5*sin(theta[j])+0.5);
-        nLowSelf=(-0.5*sin(theta[j])+0.5)*(-0.5*sin(theta[j])+0.5);
-        nHigh-=nHighSelf;
-        nLow-=nLowSelf;
-        eOld=0.5*(2*nHighSelf*(nHigh-1)+2*nLowSelf*(nLow-Ns+1)+nHighSelf*nHighSelf+nLowSelf*nLowSelf);
+        st=(-0.5*sin(theta[j])+0.5);
+        eOld=-b*st*st*st*st;
 
         thetaNew=2*M_PI*randDouble();
-        nHighSelf=(0.5*sin(thetaNew)+0.5)*(0.5*sin(thetaNew)+0.5);
-        nLowSelf=(-0.5*sin(thetaNew)+0.5)*(-0.5*sin(thetaNew)+0.5);
-        eNew=0.5*(2*nHighSelf*(nHigh-1)+2*nLowSelf*(nLow-Ns+1)+nHighSelf*nHighSelf+nLowSelf*nLowSelf);
+        st=(-0.5*sin(thetaNew)+0.5);
+        eNew=-b*st*st*st*st;
 
         if (exp(eOld-eNew)>randDouble()) {
           theta[j]=thetaNew;
         }
-      
-        nHigh+=(0.5*sin(theta[j])+0.5)*(0.5*sin(theta[j])+0.5);
-        nLow+=(-0.5*sin(theta[j])+0.5)*(-0.5*sin(theta[j])+0.5);
       }
 
       if (i>=0) {
@@ -141,21 +134,21 @@ struct_plmd* setup(int argc, char *argv[])
   FILE *fp;
   char line[MAXLENGTH];
 
-  if (argc<6) {
+  if (argc<7) {
     fprintf(stderr,"Error: not enough input arguments\n");
     exit(1);
   }
 
   plmd=(struct_plmd*) malloc(sizeof(struct_plmd));
 
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   plmd->nsites=0;
   while (fscanf(fp,"%d",&i)==1) {
     plmd->nsites++;
   }
   fclose(fp);
 
-  fp=fopen("../prep/nsubs","r");
+  fp=fopen("nsubs","r");
   i=0;
   plmd->nblocks=0;
   plmd->nsubs=(int*) calloc(plmd->nsites,sizeof(int));
@@ -180,19 +173,19 @@ struct_plmd* setup(int argc, char *argv[])
   cudaMalloc(&(plmd->block0_d),(plmd->nsites+1)*sizeof(int));
   cudaMemcpy(plmd->block0_d,plmd->block0,(plmd->nsites+1)*sizeof(int),cudaMemcpyHostToDevice);
 
-  i=sscanf(argv[1],"%d",&plmd->ms);
+  i=sscanf(argv[2],"%d",&plmd->ms);
   if (i!=1) {
     fprintf(stderr,"Error, first argument must be a boolean flag for whether to use multisite coupling\n");
     exit(1);
   }
 
-  i=sscanf(argv[2],"%d",&plmd->msprof);
+  i=sscanf(argv[3],"%d",&plmd->msprof);
   if (i!=1) {
     fprintf(stderr,"Error, second argument should indicate whether to use multisite profiles.\n");
     exit(1);
   }
 
-  fp=fopen(argv[3],"r");
+  fp=fopen(argv[4],"r");
   for (plmd->B=0; fgets(line,MAXLENGTH,fp) != NULL; plmd->B++) {
     ;
   }
@@ -204,7 +197,7 @@ struct_plmd* setup(int argc, char *argv[])
   plmd->mc_lambda=(real*) calloc(plmd->B*plmd->nblocks,sizeof(real));
   plmd->mc_ensweight=(real*) calloc(plmd->B,sizeof(real));
 
-  fp=fopen(argv[3],"r");
+  fp=fopen(argv[4],"r");
   for (i=0;i<plmd->B;i++) {
     for (j=0;j<plmd->nblocks;j++) {
       double buffer;
@@ -216,7 +209,7 @@ struct_plmd* setup(int argc, char *argv[])
 
   monte_carlo_Z(plmd[0]);
 
-  fp=fopen(argv[4],"r");
+  fp=fopen(argv[5],"r");
   for (i=0; i<plmd->B; i++) {
     double buffer;
     fscanf(fp,"%lf",&buffer);
@@ -224,6 +217,19 @@ struct_plmd* setup(int argc, char *argv[])
     plmd->mc_ensweight[i]=1;
   }
   fclose(fp);
+
+  if (argc>=8) {
+    double criteria;
+    i=sscanf(argv[7],"%lg",&criteria);
+    fprintf(stdout,"Note, found seventh argument indicating halting criteria. Overwriting default value of 1.25e-3\n");
+    if (i!=1) {
+      fprintf(stderr,"Error, seventh argument should indicate halting criteria.\n");
+      exit(1);
+    }
+    plmd->criteria=criteria;
+  } else {
+    plmd->criteria=1.25e-3;
+  }
 
   cudaMalloc(&(plmd->lambda_d),plmd->B*plmd->nblocks*sizeof(real));
   cudaMalloc(&(plmd->mc_lambda_d),plmd->B*plmd->nblocks*sizeof(real));
@@ -243,7 +249,9 @@ struct_plmd* setup(int argc, char *argv[])
     for (j=i; j<plmd->nsites; j++) {
       if (i==j) {
         plmd->nbias+=plmd->nsubs[i]+(5*plmd->nsubs[i]*(plmd->nsubs[i]-1))/2;
-      } else if (plmd->ms) {
+      } else if (plmd->ms==1) {
+        plmd->nbias+=5*plmd->nsubs[i]*plmd->nsubs[j];
+      } else if (plmd->ms==2) {
         plmd->nbias+=plmd->nsubs[i]*plmd->nsubs[j];
       }
     }
@@ -268,11 +276,38 @@ struct_plmd* setup(int argc, char *argv[])
   // plmd->nx=plmd->nbias+plmd->nprof;
   plmd->nx=plmd->nbias;
 
-  plmd->kT=kB*298.15;
+  double temperature;
+  sscanf(argv[1],"%lg",&temperature);
+  plmd->kT=kB*temperature;
 
   // Set regularization constants
   real kp=1.0/(plmd->kT*plmd->kT);
   plmd->kx=(real*) calloc(plmd->nx,sizeof(real));
+  plmd->xr=(real*) calloc(plmd->nx,sizeof(real));
+  real *xr_x, *xr_s;
+  // load starting values if needed for ms==1
+  if (plmd->ms==1) {
+    xr_x=(real*) calloc(plmd->nblocks*plmd->nblocks,sizeof(real));
+    fp=fopen("x_prev.dat","r");
+    for(i=0; i<plmd->nblocks; i++) {
+      for(j=0; j<plmd->nblocks; j++) {
+        double buffer;
+        fscanf(fp,"%lf",&buffer);
+        xr_x[i*plmd->nblocks+j]=buffer;
+      }
+    }
+    fclose(fp);
+    xr_s=(real*) calloc(plmd->nblocks*plmd->nblocks,sizeof(real));
+    fp=fopen("s_prev.dat","r");
+    for(i=0; i<plmd->nblocks; i++) {
+      for(j=0; j<plmd->nblocks; j++) {
+        double buffer;
+        fscanf(fp,"%lf",&buffer);
+        xr_s[i*plmd->nblocks+j]=buffer;
+      }
+    }
+    fclose(fp);
+  }
   // k0=1e-2; // 1.0/400;
   k0=kp/400;
   // k0=1;
@@ -293,11 +328,25 @@ struct_plmd* setup(int argc, char *argv[])
       } else if (plmd->ms) {
         for (i=0; i<plmd->nsubs[si]; i++) {
           for (j=0; j<plmd->nsubs[sj]; j++) {
-            plmd->kx[k++]=k0/1; // c
+            plmd->kx[k++]=k0/4; // c
+            if (plmd->ms==1) {
+              plmd->xr[k]=xr_x[(plmd->block0[si]+i)*plmd->nblocks+plmd->block0[sj]+j]; // x
+              plmd->kx[k++]=k0/0.25; // x
+              plmd->xr[k]=xr_x[(plmd->block0[sj]+j)*plmd->nblocks+plmd->block0[si]+i]; // x
+              plmd->kx[k++]=k0/0.25; // x
+              plmd->xr[k]=xr_s[(plmd->block0[si]+i)*plmd->nblocks+plmd->block0[sj]+j]; // s
+              plmd->kx[k++]=k0/0.25; // s
+              plmd->xr[k]=xr_s[(plmd->block0[sj]+j)*plmd->nblocks+plmd->block0[si]+i]; // s
+              plmd->kx[k++]=k0/0.25; // s
+            }
           }
         }
       }
     }
+  }
+  if (plmd->ms==1) {
+    free(xr_x);
+    free(xr_s);
   }
   // No restraints on average profile values - treated implicitly now
   /*for (i=0; i<plmd->nprof; i++) {
@@ -305,6 +354,8 @@ struct_plmd* setup(int argc, char *argv[])
   }*/
   cudaMalloc(&plmd->kx_d,plmd->nx*sizeof(real));
   cudaMemcpy(plmd->kx_d,plmd->kx,plmd->nx*sizeof(real),cudaMemcpyHostToDevice);
+  cudaMalloc(&plmd->xr_d,plmd->nx*sizeof(real));
+  cudaMemcpy(plmd->xr_d,plmd->xr,plmd->nx*sizeof(real),cudaMemcpyHostToDevice);
 
   // plmd->kprofile=1.0/NBINS;
   real kp0=kp/NBINS;
@@ -578,6 +629,16 @@ void energykernel(struct_plmd plmd,real* x,real* lambda,real* energy)
               q2=lambda[i2];
               E+=x[k]*q1*q2;
               k++;
+              if (plmd.ms==1) { // include extra terms
+                E+=x[k]*q2*(1-exp(-q1/0.18));
+                k++;
+                E+=x[k]*q1*(1-exp(-q2/0.18));
+                k++;
+                E+=x[k]*q2*(1-1/(q1/0.017+1));
+                k++;
+                E+=x[k]*q1*(1-1/(q2/0.017+1));
+                k++;
+              }
             }
           }
         }
@@ -659,6 +720,20 @@ void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,r
             E=w*q1*q2;
             reduce(E,Eloc,&dEdx[k]);
             k++;
+            if (plmd.ms==1) { // include extra terms
+              E=w*q2*(1-exp(-q1/0.18));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              E=w*q1*(1-exp(-q2/0.18));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              E=w*q2*(1-1/(q1/0.017+1));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              E=w*q1*(1-1/(q2/0.017+1));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+            }
           }
         }
       }
@@ -856,11 +931,12 @@ __global__
 void regularizeLkernel(struct_plmd plmd)
 {
   int i=blockIdx.x*blockDim.x+threadIdx.x;
-  real L;
+  real deltax, L;
   __shared__ real Lloc[BLOCK];
 
   if (i<plmd.nx) {
-    L=0.5*plmd.kx_d[i]*plmd.x_d[i]*plmd.x_d[i];
+    deltax=plmd.x_d[i]-plmd.xr_d[i];
+    L=0.5*plmd.kx_d[i]*deltax*deltax;
   } else {
     L=0;
   }
@@ -872,14 +948,14 @@ __global__
 void regularizelinekernel(struct_plmd plmd,real s)
 {
   int i=blockIdx.x*blockDim.x+threadIdx.x;
-  real x, dxds, L, dLds;
+  real deltax, dxds, L, dLds;
   __shared__ real Lloc[BLOCK];
 
   if (i<plmd.nx) {
     dxds=plmd.dxds_d[i];
-    x=plmd.x_d[i]+s*dxds;
-    L=0.5*plmd.kx_d[i]*x*x;
-    dLds=plmd.kx_d[i]*x*dxds;
+    deltax=plmd.x_d[i]+s*dxds-plmd.xr_d[i];
+    L=0.5*plmd.kx_d[i]*deltax*deltax;
+    dLds=plmd.kx_d[i]*deltax*dxds;
   } else {
     L=0;
     dLds=0;
@@ -895,7 +971,7 @@ void regularizedLdxkernel(struct_plmd plmd)
   int i=blockIdx.x*blockDim.x+threadIdx.x;
 
   if (i<plmd.nx) {
-    plmd.dLdx_d[i]=plmd.kx_d[i]*plmd.x_d[i];
+    plmd.dLdx_d[i]=plmd.kx_d[i]*(plmd.x_d[i]-plmd.xr_d[i]);
   }
 }
 
@@ -1063,7 +1139,7 @@ void evaluateL(struct_plmd *plmd)
 
   cudaMemcpy(plmd->L,plmd->L_d,sizeof(real),cudaMemcpyDeviceToHost);
 
-  fprintf(stderr,"New      L=%lg\n",plmd->L[0]);
+  fprintf(stdout,"New      L=%lg\n",plmd->L[0]);
 }
 
 void evaluateL_line(real s,struct_plmd *plmd)
@@ -1340,8 +1416,10 @@ void update_line(int step,struct_plmd *plmd)
   L1=plmd->L[0];
   dLds1=plmd->dLds[0];
   if (dLds1>0) {
-    fprintf(stderr,"Error, hi is pointing wrong way\n");
-    exit(1);
+    fprintf(stdout,"Error, hi is pointing wrong way - halting\n");
+    plmd->done=true;
+    return;
+    // exit(1);
   }
   
   s3=1.0;
@@ -1349,12 +1427,38 @@ void update_line(int step,struct_plmd *plmd)
   L3=plmd->L[0];
   dLds3=plmd->dLds[0];
 
-  while (dLds3<0 && s3<100000000L) {
+  while (dLds3<0 && s3<1e+8) {
+    fprintf(stdout,"Seek %4d s=%lg %lg\n          L=%lg %lg\n       dLds=%lg %lg\n",
+            step,(double) s1,(double) s3,
+            (double) L1,(double) L3,
+            (double) dLds1,(double) dLds3);
     s2=s1-dLds1*(s3-s1)/(dLds3-dLds1);
     s3=((1.5*s2>8*s3 || 1.5*s2<=0) ? 8*s3 : 1.5*s2); // s2 is expected 0. Go past it by 50%, unless that's an increase of more than a factor of 8.
     evaluateL_line(s3,plmd);
     L3=plmd->L[0];
     dLds3=plmd->dLds[0];
+  }
+
+  while (!isfinite(dLds3) && s3>1e-8) {
+    fprintf(stdout,"Warning, overshot bound\n");
+    fprintf(stdout,"Seek %4d s=%lg %lg\n          L=%lg %lg\n       dLds=%lg %lg\n",
+            step,(double) s1,(double) s3,
+            (double) L1,(double) L3,
+            (double) dLds1,(double) dLds3);
+    s3=0.95*s3;
+    evaluateL_line(s3,plmd);
+    L3=plmd->L[0];
+    dLds3=plmd->dLds[0];
+  }
+
+  if (!(dLds3>0)) {
+    fprintf(stdout,"Warning: Step %4d unsuccessful, halting minimization\n",step);
+    fprintf(stdout,"Seek %4d s=%lg %lg\n          L=%lg %lg\n       dLds=%lg %lg\n",
+            step,(double) s1,(double) s3,
+            (double) L1,(double) L3,
+            (double) dLds1,(double) dLds3);
+    plmd->done=true;
+    return;
   }
 
   /*if (s3>6) { // DEBUG
@@ -1375,7 +1479,7 @@ void update_line(int step,struct_plmd *plmd)
   L2=plmd->L[0];
   dLds2=plmd->dLds[0];
 
-  fprintf(stderr,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
+  fprintf(stdout,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
           step,(double) s1,(double) s2,(double) s3,
           (double) L1,(double) L2,(double) L3,
           (double) dLds1,(double) dLds2,(double) dLds3);
@@ -1419,13 +1523,13 @@ void update_line(int step,struct_plmd *plmd)
     L2=plmd->L[0];
     dLds2=plmd->dLds[0];
 
-    fprintf(stderr,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
+    fprintf(stdout,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
             step,(double) s1,(double) s2,(double) s3,
             (double) L1,(double) L2,(double) L3,
             (double) dLds1,(double) dLds2,(double) dLds3);
   }
 
-  fprintf(stderr,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
+  fprintf(stdout,"Step %4d s=%lg %lg %lg\n          L=%lg %lg %lg\n       dLds=%lg %lg %lg\n",
           step,(double) s1,(double) s2,(double) s3,
           (double) L1,(double) L2,(double) L3,
           (double) dLds1,(double) dLds2,(double) dLds3);
@@ -1440,12 +1544,12 @@ void update_line(int step,struct_plmd *plmd)
   }
 
   // fprintf(stderr,"Step %d smid1 %lg smid2 %lg L=%lg -> L1=%lg L2=%lg\n",step,(double) smid1,(double) smid2,(double) L0,(double) Lmid1,(double) Lmid2);
-  fprintf(stderr,"Step %4d L=%24.16lf -> L2=%24.16lf, dL=%lg, step length=%lg\n",step,(double)L0,(double)L2,(double)(L2-L0),(double) sqrt(stepLength2));
+  fprintf(stdout,"Step %4d L=%24.16lf -> L2=%24.16lf, dL=%lg, step length=%lg\n",step,(double)L0,(double)L2,(double)(L2-L0),(double) sqrt(stepLength2));
 
   fprintf(plmd->fplog,"%24.16lf %24.16lf %lg %lg\n",(double)L0,(double)L2,(double)sqrt(initGrad2),(double)sqrt(stepLength2));
 
   if (sqrt(stepLength2)<5e-7) plmd->done=true;
-  if (sqrt(stepLength2)<1e-2) {
+  if (sqrt(stepLength2/plmd->nx)<plmd->criteria) { // criteria was 1e-2
     plmd->doneCount+=1;
     if (plmd->doneCount==2) plmd->done=true;
   } else {
@@ -1498,7 +1602,7 @@ void finish(struct_plmd *plmd,int argc, char *argv[])
   int i,j;
   FILE *fp;
 
-  fp=fopen(argv[5],"w");
+  fp=fopen(argv[6],"w");
   for (i=0; i<plmd->nx; i++) {
     fprintf(fp," %lg",(double) plmd->x[i]);
   }
@@ -1539,6 +1643,8 @@ void finish(struct_plmd *plmd,int argc, char *argv[])
   cudaFree(plmd->mc_ensweight_d);
   free(plmd->kx);
   cudaFree(plmd->kx_d);
+  free(plmd->xr);
+  cudaFree(plmd->xr_d);
 
   free(plmd->L);
   cudaFree(plmd->L_d);
