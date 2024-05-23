@@ -127,9 +127,9 @@ dynamics cpt @resttoken -
   iasors 1 -            !!assign velocities during heating (0 will be scale velocities)
   iasvel 1 -            !!using gaussian distribution to assign velocities
   iscvel 0 -
-  inbfrq -1 -
+  inbfrq 0 - ! -1 -     !! BLaDE does it's own neighbor searching
   ilbfrq 0 -
-  imgfrq -1 -
+  imgfrq 0 - ! -1 -     !! BLaDE does it's own neighbor searching
   ntrfrq 0 - ! 500 -
   echeck -1             !!energy tolerance check before crashing
 
