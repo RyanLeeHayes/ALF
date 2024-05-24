@@ -1,6 +1,10 @@
+// double is comparable on data center gpus and 4:3 slower on gaming gpus.
+// float causes crashes on multisite systems and weird drift on single site
+// systems with many samples. Teh stability of double is worth the mild extra
+// cost.
 // typedef long double real;
-// typedef double real;
-typedef float real;
+typedef double real;
+// typedef float real;
 
 typedef struct struct_plmd {
   int nblocks;
