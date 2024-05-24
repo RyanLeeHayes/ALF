@@ -24,6 +24,7 @@ struct_plmd* setup(int argc, char *argv[])
   FILE *fp;
   char line[MAXLENGTH];
   char *linebuf;
+  double lc;
 
   plmd=(struct_plmd*) malloc(sizeof(struct_plmd));
 
@@ -80,6 +81,12 @@ struct_plmd* setup(int argc, char *argv[])
     exit(1);
   }
 
+  lc=0.99; // default value
+  if (argc>=5) {
+    sscanf(argv[4],"%lg",&lc);
+  }
+  plmd->lc=lc;
+
   return plmd;
 }
 
@@ -112,7 +119,7 @@ void run(struct_plmd *plmd)
       for (i=0; i<plmd->nsites; i++) {
         plmd->filter[i]=0;
         for (j=0; j<plmd->nsubs[i]; j++) {
-          if (plmd->lambda[plmd->block0[i]+j]>0.99) {
+          if (plmd->lambda[plmd->block0[i]+j]>plmd->lc) {
             plmd->filter[i]=j+1;
           }
         }

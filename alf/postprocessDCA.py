@@ -50,16 +50,16 @@ def SetupDCA(i,NF,FREQ,engine='charmm'):
     os.mkdir('dca%d/data' % i)
   time.sleep(15)
 
-def FilterDCA(i,iNF,NF,FREQ,engine='charmm'):
+def FilterDCA(i,iNF,NF,FREQ,lc=0.99,engine='charmm'):
   """
   Filters continuous lambda trajectory into discrete lambda states
 
   At each time step (row of output) and each site (column of output) the
-  index block with a lambda value greater than 0.99 is printed, starting
-  from an index of 1 for the first site. If no lambda value is above this
-  threshhold, a 0 is printed for the alchemical intermediate state. This
-  function should be called NF times, once with each of the iNF values
-  from 0 to NF-1.
+  index block with a lambda value greater than lc of 0.99 is printed,
+  starting from an index of 1 for the first site. If no lambda value is
+  above this threshhold, a 0 is printed for the alchemical intermediate
+  state. This function should be called NF times, once with each of the
+  iNF values from 0 to NF-1.
 
   This is the second routine in the Potts model estimator. SetupDCA should
   be called before it, and MomentDCA should be called after it.
@@ -78,6 +78,8 @@ def FilterDCA(i,iNF,NF,FREQ,engine='charmm'):
       significant amounts of memory to store and analyze. Only alchemical
       frames with index modulus FREQ equal to FREQ-1 are analyzed. 1
       analyzes all frames.
+  lc : float, optional
+      The lambda cutoff for free energy estimate (default is 0.99)
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
@@ -96,7 +98,7 @@ def FilterDCA(i,iNF,NF,FREQ,engine='charmm'):
   exe=os.path.dirname(os.path.abspath(__file__))+'/dca/Filter'
   fnmin=('../analysis%d/data/Lambda.%d.%d.dat' % (i,iNF,alf_info['ncentral']))
   fnmout=('data/Filter.%d.dat' % iNF)
-  subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,str(FREQ),fnmin,fnmout])
+  subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,str(FREQ),fnmin,fnmout,str(lc)])
   print("WARNING: direct standard error somewhere")
   time.sleep(15)
 

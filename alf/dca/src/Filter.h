@@ -11,4 +11,5 @@ typedef struct struct_plmd {
   real *lambda;
   int *filter;
   int freq;
+  real lc;
 } struct_plmd;

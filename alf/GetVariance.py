@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-def GetVariance(alf_info,NF,NBS=50):
+def GetVariance(alf_info,NF,NBS=50,lc=0.99):
   """
   Calculates the free energy change upon alchemical mutation
 
@@ -9,7 +9,7 @@ def GetVariance(alf_info,NF,NBS=50):
   where [i] is the cycle of alf, [idupl] is the numerical index for each
   of the indepdendent trials, and [irep] is the replica index for replica
   exchange. The histogram based estimator uses a hard-coded lambda cutoff
-  of 0.99. The free energies are computed as -kT*log(P), where P is the
+  lc of 0.99. The free energies are computed as -kT*log(P), where P is the
   number of times an alchemical state occurs in the trajectory. The energy
   of the biases at the endpoints is added back in. Uncertainty is
   estimated by bootstrapping from the independent trials [NBS] times.
@@ -34,6 +34,8 @@ def GetVariance(alf_info,NF,NBS=50):
       The number of independent trials run by runprod
   NBS : int, optional
       The number of bootstrap samples to take (default is 50)
+  lc : float, optional
+      The lambda cutoff for the histogram estimator (default is 0.99)
   """
 
   import sys, os, os.path
@@ -102,7 +104,7 @@ def GetVariance(alf_info,NF,NBS=50):
       # print(i) # Was useful for keeping track of progress on slow analysis runs
       L=np.loadtxt('data/Lambda.'+str(i)+'.'+str(irep)+'.dat')
       for j in range(0,nlig):
-        P=np.sum(np.all(L[:,blk[j,:]]>0.99,axis=1))
+        P=np.sum(np.all(L[:,blk[j,:]]>lc,axis=1))
         Pkeep[i,j]=P
         G[i,j]=-Eall[irep,i,j]-Eshift[irep,i,j]-kT*np.log(P)
     PkeepA[irep,:,:]=Pkeep

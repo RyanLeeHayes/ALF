@@ -1,5 +1,5 @@
 
-def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,ntersite=[0,0]):
+def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,ntersite=[0,0],lc=0.99):
   """
   analyze a longer production run from runflat for improved biases and dG
 
@@ -56,6 +56,9 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
       intersite profiles (second element) in flattening. (default is [0,0]
       for no coupling. If multiple sites are simulated and coupling is
       expected, [0,1] is recommended)
+  lc : float, optional
+      Lambda cutoff for use in histogram-based free energy estimation
+      (default value is 0.99)
   """
 
   import os, sys, shutil, traceback, time, subprocess, random
@@ -101,7 +104,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
 
     alf.SetVars(alf_info,i+1)
     alf.GetVolumes(alf_info,i,N,eqS,S)
-    alf.GetVariance(alf_info,N)
+    alf.GetVariance(alf_info,N,lc=0.99)
   except Exception:
     sys.stdout.flush()
     sys.stderr.flush()
