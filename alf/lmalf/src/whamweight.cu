@@ -1076,7 +1076,7 @@ void justplotit(struct_data *data,double beta)
     get_lnZ <<< (data->ND+(100*SBLOCK)-1)/(100*SBLOCK), 100 >>> (data[0],data->beta_t);
     cudaMemcpy(data->lnZ_h,data->lnZ_d,B_N*sizeof(double),cudaMemcpyDeviceToHost);
 
-    sprintf(fnm,"G%d.dat",i+1);
+    sprintf(fnm,"multisite/G%d.dat",i+1);
     fp=fopen(fnm,"w");
     for (k=0; k<B_N; k++) {
       fprintf(fp,"%g\n",(-data->lnZ_h[k]-data->Gimp_h[k])/data->beta_t);
