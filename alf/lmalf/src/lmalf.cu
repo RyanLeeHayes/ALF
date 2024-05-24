@@ -714,9 +714,9 @@ void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,r
         }
       } else if (plmd.ms) { // Different sites
         for (i1=plmd.block0_d[s1]; i1<plmd.block0_d[s1+1]; i1++) {
-          q1=lambda[i1];
+          if (b<plmd.B) q1=lambda[i1];
           for (i2=plmd.block0_d[s2]; i2<plmd.block0_d[s2+1]; i2++) {
-            q2=lambda[i2];
+            if (b<plmd.B) q2=lambda[i2];
             E=w*q1*q2;
             reduce(E,Eloc,&dEdx[k]);
             k++;
