@@ -1,5 +1,5 @@
 
-def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
+def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,G_imp=None,ntersite=[0,0]):
   """
   Run several cycles of short simulations followed by bias optimization
 
@@ -53,6 +53,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',G_imp=None,ntersite=[0,0]):
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
+  n1 : int, optional
+      A given cycle of ALF combines sampling from several previous runs
+      using WHAM/MBAR. The earliest existing run is indicated by n1.
+      (default of 1 should be used except in unusual situations)
   G_imp : str, optional
       To use a G_imp directory other than the default one in alf/G_imp,
       provide a path. (default is None)
