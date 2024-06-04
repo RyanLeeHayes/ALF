@@ -75,14 +75,14 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,G_imp=None,ntersite=[0,0]):
 
   home_dir=os.getcwd()
 
-  iri=max(ni-5,1)
+  iri=max(ni-5,n1)
 
   fex='inp'
   if engine in ['pycharmm']:
     fex='py'
 
   for i in range(ni,nf+1):
-    im5=max(i-4,1)
+    im5=max(i-4,n1)
     N=i-im5+1
     ir=random.randrange(iri,i+1)
 
