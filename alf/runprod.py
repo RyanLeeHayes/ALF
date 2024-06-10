@@ -123,10 +123,15 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
   for i in range(ibeg,itt+1):
     fnm=('res/%s_prod%d.lmd' % (alf_info['name'],i))
     while alf.GetSteps(alf_info,fnm)!=nlambdasteps:
+      pause=False
       if os.path.exists('output_%d' % i):
         os.rename('output_%d' % i,'failed/output_%d' % i)
+        pause=True
       if os.path.exists('error_%d' % i):
         os.rename('error_%d' % i,'failed/error_%d' % i)
+        pause=True
+      if pause:
+        time.sleep(15) # Give file system time to catch up
 
       try:
         fpout=open('output_%d' % i,'w')
