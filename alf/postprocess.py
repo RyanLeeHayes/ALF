@@ -88,6 +88,8 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
       else:
         G_imp_dir=G_imp
       os.symlink(G_imp_dir,'analysis%d/G_imp' % i)
+      if not os.path.exists(G_imp_dir):
+        print("Warning G_imp directory (%s) does not exist" % (G_imp_dir,))
     os.chdir('analysis%d' % i)
 
     # Run the analysis
