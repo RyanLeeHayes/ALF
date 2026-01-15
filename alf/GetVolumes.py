@@ -80,7 +80,7 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
     os.mkdir('data')
   DIR="data"
 
-  # PSF="../prep/"+name+".psf"
+  # mdanalysis can probably read insertion codes correctly as of April 2025
   PSF="../prep/minimized.psf"
 
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
