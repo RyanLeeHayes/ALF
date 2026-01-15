@@ -44,7 +44,7 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
     # Time step for dynamics in AKMA units
     delta4 = (fp.read_record(dtype=np.float32))
 
-    # Title in trajectoory file 
+    # Title in trajectory file 
     # title = (fp.read_record([('h',np.int32,1),('title',np.bytes_,80)]))[0][1]
     title = (fp.read_record([('h',np.int32),('title',np.bytes_,80)]))[0][1]
 

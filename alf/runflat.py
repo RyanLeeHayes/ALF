@@ -6,7 +6,7 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,G_imp=None,ntersite=[0,0]):
   runflat runs many short cycles of simulation followed by flattening. It
   assumes the existence of a directory prep, described in the README.md
   file, and that initialize has been run first to create the
-  variables1.inp and analysis0 directories (along with nbhift) equired to
+  variables1.inp and analysis0 directories (along with nbshift) equired to
   start the first run. Each cycle [i] a run directory is created called
   run[i], the MD engine is launched with the msld_flat.inp script (you
   may write your own, otherwise a default script will be copied from

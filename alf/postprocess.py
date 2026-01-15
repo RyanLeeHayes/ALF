@@ -106,7 +106,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
 
     alf.SetVars(alf_info,i+1)
     alf.GetVolumes(alf_info,i,N,eqS,S)
-    alf.GetVariance(alf_info,N,lc=0.99)
+    alf.GetVariance(alf_info,N,lc=lc)
   except Exception:
     sys.stdout.flush()
     sys.stderr.flush()
