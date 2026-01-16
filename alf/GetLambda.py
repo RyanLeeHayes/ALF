@@ -17,12 +17,40 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
       A list of the filenames of the binary input files
   """
 
+  import os, subprocess
+
+  for fnmin in fnmsin:
+    if not os.path.exists(fnmin):
+      print('Error, %s does not exist, molecular dynamics probably failed, check run output and run error for clues' % (fnmin,))
+
+  exe=os.path.dirname(os.path.abspath(__file__))+'/GetLambda/GetLambda'
+  subprocess.check_output([exe,fnmout,*fnmsin])
+
+def GetLambdaCharmmSlow(alf_info,fnmout,fnmsin):
+  """
+  Reads alchemical trajectories from CHARMM binary format
+
+  This routine is called by the routine GetLambda to read CHARMM binary
+  alchemical trajectories and write them to human readable format.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnmout : str
+      The filename for the human readable output
+  fnmsin : list of str
+      A list of the filenames of the binary input files
+  """
+
   import sys, os
   import numpy as np
   from scipy.io import FortranFile
 
   nblocks=alf_info['nblocks']
-  Lambdas=np.zeros((0,nblocks))
+  # Lambdas=np.zeros((0,nblocks))
+
+  fpout=open(fnmout,'w')
 
   for fnmin in fnmsin:
     if not os.path.exists(fnmin):
@@ -72,9 +100,11 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
 
     fp.close()
 
-    Lambdas=np.concatenate((Lambdas,Lambda),axis=0)
+    np.savetxt(fpout,Lambda,fmt="%10.6f")
+    # Lambdas=np.concatenate((Lambdas,Lambda),axis=0)
 
-  np.savetxt(fnmout,Lambdas,fmt="%10.6f")
+  fpout.close()
+  # np.savetxt(fnmout,Lambdas,fmt="%10.6f")
 
 
 

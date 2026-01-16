@@ -52,6 +52,9 @@ def GetDCD(istep,ndupl=None,begres=None,endres=None,firstE=0,skipE=1,engine='cha
   name=alf_info['name']
 
   fnmpsf="prep/minimized.psf"
+  if not os.path.isfile(fnmpsf):
+    print("Error psf file %s does not exist" % (fnmpsf,))
+    quit()
 
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     fmt="dcd"
@@ -88,6 +91,10 @@ def GetDCD(istep,ndupl=None,begres=None,endres=None,firstE=0,skipE=1,engine='cha
       else:
         fnmsin.append(DDIR+'/dcd/'+name+'_flat.'+fmt+reptag)
         fnmout=(DDIR+'/dcdcat/'+name+'_flat_rep%d.%s' % (i,fmt))
+      for f in fnmsin:
+        if not os.path.isfile(f):
+          print("Error dcd file %s does not exist" % (f,))
+          quit()
 
       trajin=mda.Universe(fnmpsf,fnmsin,topology_format='psf',format=fmt)
       # trajin.write(fnmout,frames='all')

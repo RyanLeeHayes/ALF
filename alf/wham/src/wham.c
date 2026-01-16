@@ -192,6 +192,10 @@ struct_data* readdata(int arg1, double arg2, int arg3, int arg4)
       for (j=0; j<data->NF; j++) {
         sscanf(linebuffer,"%lf%n",&E,&ibuffer);
         linebuffer+=ibuffer;
+        if (!isfinite(E)) {
+          fprintf(stderr,"Error, energy matrix is not finite\n");
+          exit(1);
+        }
         data->D_h[data->ND*data->Ndim+data->NL+1+j]=E;
       }
       // data->D_h[data->ND*data->Ndim]=E;

@@ -80,8 +80,11 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
     os.mkdir('data')
   DIR="data"
 
-  # mdanalysis can probably read insertion codes correctly as of April 2025
+  # mdanalysis reads insertion codes correctly as of 2026-01-15
   PSF="../prep/minimized.psf"
+  if not os.path.isfile(PSF):
+    print("Error psf file %s does not exist" % (PSF,))
+    quit()
 
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     fmt="dcd"
@@ -114,6 +117,10 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
           fnmsin.append(DDIR+'/dcd/'+name+'_prod'+str(j+1)+'.'+fmt+reptag)
       else:
         fnmsin.append(DDIR+'/dcd/'+name+'_flat.'+fmt+reptag)
+      for f in fnmsin:
+        if not os.path.isfile(f):
+          print("Error dcd file %s does not exist" % (f,))
+          quit()
       fnmout=DIR+("/Volume.%d.%d.dat" % (idupl,i))
       GetVolume(alf_info,fnmout,fnmsin,PSF)
       datasplit.append(np.loadtxt(fnmout))

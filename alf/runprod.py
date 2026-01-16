@@ -91,6 +91,9 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
   run_dir=('run'+str(step)+a)
   nlambdasteps=nsteps//10 # assume nsavl=10
 
+  if itt0<0:
+    print("Warning itt0=%d not allowed. Reset itt0=0" % (itt0,))
+    itt0=0
   for i in range(itt0,-1,-1):
     fnm=(run_dir+'/res/%s_prod%d.lmd' % (alf_info['name'],i))
     if i==0 or alf.GetSteps(alf_info,fnm)==nlambdasteps:

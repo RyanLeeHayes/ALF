@@ -21,6 +21,35 @@ def GetStepsCharmm(alf_info,fnm):
       The number of steps actually contained in the trajectory
   """
 
+  import os, subprocess
+
+  exe=os.path.dirname(os.path.abspath(__file__))+'/GetLambda/GetSteps'
+  try:
+    return(int(subprocess.check_output([exe,fnm])))
+  except:
+    return(0)
+
+def GetStepsCharmmSlow(alf_info,fnm):
+  """
+  Counts the steps in alchemical trajectories in CHARMM binary format
+
+  This routine is called by the routine GetSteps to count the number of
+  steps in CHARMM binary alchemical trajectories and return the integer
+  result.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnm : str
+      The filename for the binary input file
+
+  Returns
+  -------
+  int
+      The number of steps actually contained in the trajectory
+  """
+
   import numpy as np
   from scipy.io import FortranFile
 

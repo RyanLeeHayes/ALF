@@ -38,28 +38,31 @@ def GetTrans(istep,ndupl=None,engine='charmm',lc=0.8):
 
   for tag in range(0,ndupl):
 
-    data=np.loadtxt("analysis"+str(istep)+"/data/Lambda."+str(tag)+".0.dat")
+    for irep in range(0,alf_info['nreps']):
+      data=np.loadtxt("analysis"+str(istep)+"/data/Lambda."+str(tag)+"."+str(irep)+".dat")
 
-    ibuff=0
-    for i in range(0,len(nsubs)):
+      ibuff=0
+      for i in range(0,len(nsubs)):
 
-      trans=np.zeros((nsubs[i],nsubs[i]),dtype='int')
+        trans=np.zeros((nsubs[i],nsubs[i]),dtype='int')
 
-      i_curr=-1
-      for t in range(0,data.shape[0]): # row in data:
-        i_prev=i_curr
-        for j in range(0,nsubs[i]):
-          if data[t,j+ibuff]>lc:
-            i_curr=j;
-        if i_prev>=0 and i_prev!=i_curr:
-          trans[i_prev,i_curr]+=1
+        i_curr=-1
+        for t in range(0,data.shape[0]): # row in data:
+          i_prev=i_curr
+          for j in range(0,nsubs[i]):
+            if data[t,j+ibuff]>lc:
+              i_curr=j;
+          if i_prev>=0 and i_prev!=i_curr:
+            trans[i_prev,i_curr]+=1
 
-      print("Trial %d, site %d" % (tag,i))
-      print("Transition matrix")
-      print(trans)
-      print("Transitions from")
-      print(np.sum(trans,axis=1))
-      print("Transition to")
-      print(np.sum(trans,axis=0))
+        print("Trial %d, replica %d, site %d" % (tag,irep,i))
+        print("Transition matrix")
+        print(trans)
+        print("Transitions from")
+        print(np.sum(trans,axis=1))
+        print("Transition to")
+        print(np.sum(trans,axis=0))
+        print("Transitions")
+        print(np.sum(trans))
 
-      ibuff+=nsubs[i]
+        ibuff+=nsubs[i]
