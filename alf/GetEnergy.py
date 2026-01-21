@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-def GetEnergy(alf_info,Fi,Ff,skipE=1):
+def GetEnergy(alf_info,Fi,Ff,N=None,skipE=1):
   """
   Compute energies for wham/mbar reweighting
 
@@ -31,6 +31,8 @@ def GetEnergy(alf_info,Fi,Ff,skipE=1):
       The first cycle of alf to include in analysis (inclusive)
   Ff : int
       The final cycle of alf to include in analysis (inclusive)
+  N : int, optional
+      The number of independent trials in production
   skipE : int, optional
       In longer production runs the number of lambda samples may require
       significant amounts of memory to store and analyze. Only alchemical
@@ -64,6 +66,8 @@ def GetEnergy(alf_info,Fi,Ff,skipE=1):
     if ndupl==0:
       print("Error, not flattening or production")
       quit()
+    if not N is None: # Used for intentionally subsampling during postprocessing
+      ndupl=N
 
   nblocks=alf_info['nblocks']
   nsubs=alf_info['nsubs']

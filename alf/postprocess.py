@@ -94,7 +94,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
 
     # Run the analysis
     alf.GetLambdas(alf_info,i,N,eqS,S)
-    alf.GetEnergy(alf_info,i,i,skipE)
+    alf.GetEnergy(alf_info,i,i,N=N,skipE)
     fpout=open('output','w')
     fperr=open('error','w')
     if 'lmalf' in alf_info:

@@ -134,6 +134,8 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
   for i in range(0,NF):
     for j in range(0,nlig):
       # Actual expressions
+      # From https://arxiv.org/abs/1704.00891
+      # I'm missing kT*f[ncentral] term that cancels out when you subtract reference
       # G[i,j]=Eall[ncentral,i,j]-kT*np.log(np.sum(PkeepA[:,i,j]*np.exp(-Eshift[ncentral,i,j]/kT)/np.sum(np.exp(lndenom[:,i,j]))))
       # More efficient? - exp(-Eshift(central)/kT)=1`
       G[i,j]=-Eall[ncentral,i,j]-kT*np.log(np.sum(PkeepA[:,i,j]))+kT*np.log(np.sum(np.exp(lndenom[:,i,j])))

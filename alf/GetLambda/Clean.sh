@@ -1,1 +1,1 @@
-rm -r GetLambda CMakeCache.txt CMakeFiles cmake_install.cmake Makefile
+rm -r GetLambda GetSteps CMakeCache.txt CMakeFiles cmake_install.cmake Makefile
