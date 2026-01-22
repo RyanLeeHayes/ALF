@@ -271,6 +271,49 @@ alf and should include the following keys:
      alchemical group. This is used to compute the discrete solvent
      charge changing correction. If missing, no charge changing
      correction will be applied.
+ * loss : the loss function ALF uses for optimizing biases. The options
+     are 'linear2018' and 'nonlinear2024'. 'linear2018' refers to the
+     linearized loss function published in 2018 in DOI:10.1002/pro.3500
+     'nonlinear2024' refers to the nonlinear loss function published in
+     2024 in DOI:10.1021/acs.jctc.4c00514
+ * bias : the bias functional form that ALF optimizes. The default bias
+     'bcxs2018' was published in 2018 in DOI:10.1002/pro.3500 and
+     includes linear (b), quadratic (c), skew (x), and endpoint (s)
+     biases with an endpoint alpha parameter of 0.017. A more recent
+     bias 'bcxstu2026' includes two modified endpoint potentials (t and
+     u) and an endpoint alpha parameter of 0.012.
+ * impcons : the implicit constraint type used in calculations.
+     Supported values are 'fnex2011', 'fnexdozen2024', and
+     'fnpwise2026'. 'fnex2011' refers the the fnex implicit constraints
+     developed in 2011 and published in DOI:10.1002/jcc.21921 These
+     implicit constraints focus sampling on the end states for moderate
+     numbers of substituents, but do not sample exact end states and
+     perform poorly past 9 substituents per site. 'fnexdozen2024'
+     uses the same implicit constraints as 'fnex2011', but adds the
+     independent bias - 2 described in 2024 in
+     DOI:10.1021/acs.jctc.4c00514 These implicit constraints still do
+     not sample the exact end states, but for moderate increases in the
+     fnex c value can maintain high fraction physical ligand beyond 1000
+     substituents. 'fnpwise2026' uses modified implicit constraints in
+     preparation for publication in 2026. These piecewise implicit
+     constraints have finite end state sampling and a fraction physical
+     ligand that is roughly independent of number of substituents and
+     can be tuned to arbitrary values with a width parameter.
+ * impconsopt : a dictionary of implicit constraint options. For
+     'fnex2011' and 'fnexdozen2024', this dictionary should contain 'c'.
+     The default value is 5.5, lower values are not recommended, higher
+     values increase the fraction physical ligand at the expense of
+     numerical stability. Values above 15.5 are not recommended. For
+     'fnpwise2026' the dictionary should contain 'width' and 'kbeta'.
+     The default value for 'width' is 0.35 which has roughly 24%
+     fraction physical ligand. Lower widths have lower fraction
+     physical, higher values have higher fraction physical. 'kbeta' is
+     flat bottom harmonic spring constant in units of kT, and should be
+     set fairly high (default value 100) to minimize excursions beyond
+     the region defined by the width.
+Note that changes to the bias, impcons, or impconsopt keys are not
+automatically passed to the CHARMM script and require modification of
+name.inp
 
 name.inp: This file should include everything from loading force field
 parameters to setting up the system, initial conditions, periodic

@@ -53,12 +53,23 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
   c=np.loadtxt('c_prev.dat')
   x=np.loadtxt('x_prev.dat')
   s=np.loadtxt('s_prev.dat')
+  if alf_info['bias']=='bcxstu2026':
+    t=np.loadtxt('t_prev.dat')
+    u=np.loadtxt('u_prev.dat')
 
   b_shift=np.loadtxt('../nbshift/b_shift.dat')
   c_shift=np.loadtxt('../nbshift/c_shift.dat')
   x_shift=np.loadtxt('../nbshift/x_shift.dat')
   s_shift=np.loadtxt('../nbshift/s_shift.dat')
+  if alf_info['bias']=='bcxstu2026':
+    t_shift=np.loadtxt('../nbshift/t_shift.dat')
+    u_shift=np.loadtxt('../nbshift/u_shift.dat')
   ncentral=alf_info['ncentral']
+
+  if alf_info['bias']=='bcxs2018':
+    alpha=0.017
+  elif alf_info['bias']=='bcxstu2026':
+    alpha=0.012
 
   f=np.loadtxt('f.dat')
 
@@ -91,8 +102,12 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
         LList=np.zeros((nblocks,))
         LList[blk[j,:]]=1
         # E=np.sum(b[blk[j,:]])
-        Eall[irep,i,j]=np.dot(LList,-b)+np.dot(np.dot(LList,-c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),-x),LList)+np.dot(np.dot(LList/(LList+0.017),-s),LList)
-        Eshift[irep,i,j]=(irep-ncentral)*(np.dot(LList,-b_shift)+np.dot(np.dot(LList,-c_shift),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),-x_shift),LList)+np.dot(np.dot(LList/(LList+0.017),-s_shift),LList))
+        Eall[irep,i,j]=np.dot(LList,-b)+np.dot(np.dot(LList,-c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),-x),LList)+np.dot(np.dot(LList/(LList+alpha),-s),LList)
+        if alf_info['bias']=='bcxstu2026':
+          Eall[irep,i,j]=Eall[irep,i,j]+np.dot(np.dot(LList/(LList-(1+alpha)),-t),LList)+np.dot(np.dot(LList/(LList+alpha),-u),LList**2)
+        Eshift[irep,i,j]=(irep-ncentral)*(np.dot(LList,-b_shift)+np.dot(np.dot(LList,-c_shift),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),-x_shift),LList)+np.dot(np.dot(LList/(LList+alpha),-s_shift),LList))
+        if alf_info['bias']=='bcxstu2026':
+          Eshift[irep,i,j]=Eshift[irep,i,j]+(irep-ncentral)*(np.dot(np.dot(LList/(LList-(1+alpha)),-t_shift),LList)+np.dot(np.dot(LList/(LList+alpha),-u_shift),LList**2))
         # lndenom[irep,i,j]=np.log(nframes[irep,i])+f[isim]-(Eall[irep,i,j]+Eshift[irep,i,j])/kT
         lndenom[irep,i,j]=np.log(nframes[irep,i])+f[isim]-(Eshift[irep,i,j])/kT
 

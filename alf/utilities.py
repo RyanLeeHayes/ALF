@@ -65,6 +65,68 @@ def initialize_alf_info(engine='charmm'):
   if 'q' in alf_info:
     alf_info['q']=np.array(alf_info['q'])
 
+  # Check loss function
+  losses=['linear2018','nonlinear2024']
+  if not 'loss' in alf_info:
+    print("Error: need loss key in prep/alf_info.py. Options are")
+    print(losses)
+    quit()
+  if not alf_info['loss'] in losses:
+    print("Error: unsupported loss function %s. Options are" % (alf_info['loss'],))
+    print(losses)
+    quit()
+
+  # Check biases
+  biases=['bcxs2018','bcxstu2026']
+  if not 'bias' in alf_info:
+    # print("Error: need bias key in prep/alf_info.py. Options are")
+    # print(biases)
+    # quit()
+    print("Default bias bcxs2018 added to alf_info")
+    alf_info['bias']='bcxs2018' # default
+  if not alf_info['bias'] in biases:
+    print("Error: unsupported bias function %s. Options are" % (alf_info['bias'],))
+    print(biases)
+    quit()
+
+  # Check implicit constraints
+  impconses=['fnex2011','fnexdozen2024','fnpwise2026']
+  if not 'impcons' in impconses:
+    # print("Error: need impcons key in prep/alf_info.py. Options are")
+    # print(impconses)
+    # quit()
+    print("Default implicit constraint fnex2011 added to alf_info")
+    alf_info['impcons']='fnex2011' # default
+  if not alf_info['impcons'] in impconses:
+    print("Error: unsupported implicit constraint %s. Options are" % (alf_info['impcons'],))
+    print(impconses)
+    quit()
+
+  # Set implicit constraint options
+  if alf_info['impcons'] in ['fnex2011','fnexdozen2024']:
+    if not 'impconsopt' in alf_info:
+      print("Default implicit constraint options placed in alf_info")
+      print("alf_info['impconsopt']={'c':5.5}")
+      alf_info['impconsopt']={'c':5.5}
+    elif not 'c' in alf_info['impconsopt']:
+      print("Default implicit constraint options placed in alf_info")
+      print("alf_info['impconsopt']['c']=5.5")
+      alf_info['impconsopt']['c']=5.5
+  elif alf_info['impcons']=='fnpwise2026':
+    if not 'impconsopt' in alf_info:
+      print("Default implicit constraint options placed in alf_info")
+      print("alf_info['impconsopt']={'width':0.35,'kbeta':100}")
+      alf_info['impconsopt']={'width':0.35,'kbeta':100}
+    else:
+      if not 'width' in alf_info['impconsopt']:
+        print("Default implicit constraint width option placed in alf_info")
+        print("alf_info['impconsopt']['width']=0.35")
+        alf_info['impconsopt']['width']=0.35
+      if not 'kbeta' in alf_info['impconsopt']:
+        print("Default implicit constraint kbeta option placed in alf_info")
+        print("alf_info['impconsopt']['kbeta']=100")
+        alf_info['impconsopt']['kbeta']=100
+
   engines=['charmm','bladelib','blade','pycharmm']
   if not engine in engines:
     print('Error: unsupported engine')

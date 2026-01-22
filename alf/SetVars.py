@@ -103,6 +103,46 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
       jbuff+=nsubs[sj]
     ibuff+=nsubs[si]
 
+  if alf_info['bias']='bcxstu2026':
+
+    t_prev=np.loadtxt('t_prev.dat')
+    t=np.loadtxt('t.dat')
+    t_sum=t_prev+t
+    np.savetxt('t_sum.dat',t_sum,fmt=' %7.2f')
+
+    ibuff=0
+    for si in range(0,len(nsubs)):
+      jbuff=0
+      for sj in range(0,len(nsubs)):
+        for i in range(0,nsubs[si]):
+          ii=i+ibuff
+          for j in range(0,nsubs[sj]):
+            jj=j+jbuff
+            if ii!=jj:
+              line=("set ts%ds%ds%ds%d = %8.2f\n" % (si+1,i+1,sj+1,j+1,-t_sum[ii,jj]))
+              fp.write(line)
+        jbuff+=nsubs[sj]
+      ibuff+=nsubs[si]
+
+    u_prev=np.loadtxt('u_prev.dat')
+    u=np.loadtxt('u.dat')
+    u_sum=u_prev+u
+    np.savetxt('u_sum.dat',u_sum,fmt=' %7.2f')
+
+    ibuff=0
+    for si in range(0,len(nsubs)):
+      jbuff=0
+      for sj in range(0,len(nsubs)):
+        for i in range(0,nsubs[si]):
+          ii=i+ibuff
+          for j in range(0,nsubs[sj]):
+            jj=j+jbuff
+            if ii!=jj:
+              line=("set us%ds%ds%ds%d = %8.2f\n" % (si+1,i+1,sj+1,j+1,-u_sum[ii,jj]))
+              fp.write(line)
+        jbuff+=nsubs[sj]
+      ibuff+=nsubs[si]
+
   fp.write("set sysname = \""+name+"\n")
   fp.write("trim sysname from 2\n")
   fp.write("set nnodes = "+str(nnodes)+"\n")
@@ -220,6 +260,46 @@ def SetVarsBlade(alf_info,Step,minimize=False):
             fp.write(line)
       jbuff+=nsubs[sj]
     ibuff+=nsubs[si]
+
+  if alf_info['bias']=='bcxstu2026':
+
+    t_prev=np.loadtxt('t_prev.dat')
+    t=np.loadtxt('t.dat')
+    t_sum=t_prev+t
+    np.savetxt('t_sum.dat',t_sum,fmt=' %7.2f')
+
+    ibuff=0
+    for si in range(0,len(nsubs)):
+      jbuff=0
+      for sj in range(0,len(nsubs)):
+        for i in range(0,nsubs[si]):
+          ii=i+ibuff
+          for j in range(0,nsubs[sj]):
+            jj=j+jbuff
+            if ii!=jj:
+              line=("variables set ts%ds%ds%ds%d %8.2f\n" % (si+1,i+1,sj+1,j+1,-t_sum[ii,jj]))
+              fp.write(line)
+        jbuff+=nsubs[sj]
+      ibuff+=nsubs[si]
+
+    u_prev=np.loadtxt('u_prev.dat')
+    u=np.loadtxt('u.dat')
+    u_sum=u_prev+u
+    np.savetxt('u_sum.dat',u_sum,fmt=' %7.2f')
+
+    ibuff=0
+    for si in range(0,len(nsubs)):
+      jbuff=0
+      for sj in range(0,len(nsubs)):
+        for i in range(0,nsubs[si]):
+          ii=i+ibuff
+          for j in range(0,nsubs[sj]):
+            jj=j+jbuff
+            if ii!=jj:
+              line=("variables set us%ds%ds%ds%d %8.2f\n" % (si+1,i+1,sj+1,j+1,-u_sum[ii,jj]))
+              fp.write(line)
+        jbuff+=nsubs[sj]
+      ibuff+=nsubs[si]
 
   fp.write("variables set sysname "+name+"\n")
   fp.write("variables set nnodes "+str(nnodes)+"\n")
@@ -449,6 +529,11 @@ def InitVars(alf_info,minimize=True):
   np.savetxt('analysis0/x.dat',c)
   np.savetxt('analysis0/s_prev.dat',c)
   np.savetxt('analysis0/s.dat',c)
+  if alf_info['bias']=='bcxstu2026':
+    np.savetxt('analysis0/t_prev.dat',c)
+    np.savetxt('analysis0/t.dat',c)
+    np.savetxt('analysis0/u_prev.dat',c)
+    np.savetxt('analysis0/u.dat',c)
 
   # Don't change nbshift if it exists
   if not os.path.exists('nbshift'):
@@ -457,6 +542,9 @@ def InitVars(alf_info,minimize=True):
     np.savetxt('nbshift/c_shift.dat',c)
     np.savetxt('nbshift/x_shift.dat',c)
     np.savetxt('nbshift/s_shift.dat',c)
+    if alf_info['bias']=='bcxstu2026':
+      np.savetxt('nbshift/t_shift.dat',c)
+      np.savetxt('nbshift/u_shift.dat',c)
 
   os.chdir('analysis0')
   SetVars(alf_info,1,minimize=minimize)

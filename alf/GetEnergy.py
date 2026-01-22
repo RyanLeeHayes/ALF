@@ -78,12 +78,23 @@ def GetEnergy(alf_info,Fi,Ff,N=None,skipE=1):
   c_shift=np.loadtxt('../nbshift/c_shift.dat')
   x_shift=np.loadtxt('../nbshift/x_shift.dat')
   s_shift=np.loadtxt('../nbshift/s_shift.dat')
+  if alf_info['bias']=='bcxstu2026':
+    t_shift=np.loadtxt('../nbshift/t_shift.dat')
+    u_shift=np.loadtxt('../nbshift/u_shift.dat')
+
+  if alf_info['bias']=='bcxs2018':
+    alpha=0.017
+  elif alf_info['bias']=='bcxstu2026':
+    alpha=0.012
 
   Lambda=[]
   b=[]
   c=[]
   x=[]
   s=[]
+  if alf_info['bias']=='bcxstu2026':
+    t=[]
+    u=[]
   for i in range(0,NF):
     DIR='../analysis'+str(Fi+i)
     for j in range(0,ndupl):
@@ -96,6 +107,9 @@ def GetEnergy(alf_info,Fi,Ff,N=None,skipE=1):
         c.append(np.loadtxt(DIR+'/c_prev.dat')+c_shift*(k-ncentral))
         x.append(np.loadtxt(DIR+'/x_prev.dat')+x_shift*(k-ncentral))
         s.append(np.loadtxt(DIR+'/s_prev.dat')+s_shift*(k-ncentral))
+        if alf_info['bias']=='bcxstu2026':
+          t.append(np.loadtxt(DIR+'/t_prev.dat')+t_shift*(k-ncentral))
+          u.append(np.loadtxt(DIR+'/u_prev.dat')+u_shift*(k-ncentral))
 
   if not os.path.isdir('Lambda'):
     os.mkdir('Lambda')
@@ -110,11 +124,17 @@ def GetEnergy(alf_info,Fi,Ff,N=None,skipE=1):
       ci=c[i]
       xi=x[i]
       si=s[i]
+      if alf_info['bias']=='bcxstu2026':
+        ti=t[i]
+        ui=u[i]
       Lj=Lambda[j]
       E[-1].append(np.reshape(np.dot(Lj,-bi),(-1,1)))
       E[-1][-1]+=np.sum(np.dot(Lj,-ci)*Lj,axis=1,keepdims=True)
       E[-1][-1]+=np.sum(np.dot(1-np.exp(-5.56*Lj),-xi)*Lj,axis=1,keepdims=True)
-      E[-1][-1]+=np.sum(np.dot(Lj/(Lj+0.017),-si)*Lj,axis=1,keepdims=True)
+      E[-1][-1]+=np.sum(np.dot(Lj/(Lj+alpha),-si)*Lj,axis=1,keepdims=True)
+      if alf_info['bias']=='bcxstu2026':
+        E[-1][-1]+=np.sum(np.dot(Lj/(Lj-(1+alpha)),-ti)*Lj,axis=1,keepdims=True)
+        E[-1][-1]+=np.sum(np.dot(Lj/(Lj+alpha),-ui)*(Lj**2),axis=1,keepdims=True)
 
   for i in range(0,NF*ndupl*nreps):
     Ei=E[nreps*(NF*ndupl-1)+ncentral][i]

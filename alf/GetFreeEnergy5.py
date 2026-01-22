@@ -4,6 +4,8 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   """
   Perform the matrix inversion to solve for optimal bias changes
 
+  Used with alf_info['loss']=='linear2018'
+
   The alf.RunWham routine computes profiles and linear changes to those
   profiles in response to changes in bias parameters. It also computes a
   quadratic penalty function that penalizes deviations of the profiles
@@ -45,9 +47,15 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   cutc=8
   cutx=2
   cuts=1
+  if alf_info['bias']=='bcxstu2026':
+    cutt=1
+    cutu=1
   cutc2=2
   cutx2=0.5
   cuts2=0.5
+  if alf_info['bias']=='bcxstu2026':
+    cutt2=0.05
+    cutu2=0.05
 
   Emid=np.arange(1.0/800,1,1.0/400)
   Emid2=np.arange(1.0/40,1,1.0/20)
@@ -59,11 +67,17 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   c_prev=np.loadtxt('c_prev.dat')
   x_prev=np.loadtxt('x_prev.dat')
   s_prev=np.loadtxt('s_prev.dat')
+  if alf_info['bias']=='bcxstu2026':
+    t_prev=np.loadtxt('t_prev.dat')
+    u_prev=np.loadtxt('u_prev.dat')
 
   b=np.zeros((1,nblocks))
   c=np.zeros((nblocks,nblocks))
   x=np.zeros((nblocks,nblocks))
   s=np.zeros((nblocks,nblocks))
+  if alf_info['bias']=='bcxstu2026':
+    t=np.zeros((nblocks,nblocks))
+    u=np.zeros((nblocks,nblocks))
 
   nparm=0
   for isite in range(0,len(nsubs)):
@@ -73,8 +87,12 @@ def GetFreeEnergy5(alf_info,ms,msprof):
       n3=nsubs[isite]*nsubs[jsite]
       if isite==jsite:
         nparm+=n1+5*n2
+        if alf_info['bias']=='bcxstu2026':
+          nparm+=4*n2
       elif ms==1:
         nparm+=5*n3
+        if alf_info['bias']=='bcxstu2026':
+          nparm+=4*n3
       elif ms==2:
         nparm+=n3
 
@@ -97,6 +115,11 @@ def GetFreeEnergy5(alf_info,ms,msprof):
         n0+=2*n2
         cutlist[n0:n0+2*n2]=cuts
         n0+=2*n2
+        if alf_info['bias']=='bcxstu2026':
+          cutlist[n0:n0+2*n2]=cutt
+          n0+=2*n2
+          cutlist[n0:n0+2*n2]=cutu
+          n0+=2*n2
       elif ms==1:
         cutlist[n0:n0+n3]=cutc2
         n0+=n3
@@ -120,6 +143,27 @@ def GetFreeEnergy5(alf_info,ms,msprof):
             ind+=1
         cutlist[n0:n0+2*n3]=cuts2
         n0+=2*n3
+
+        if alf_info['bias']=='bcxstu2026':
+          ind=n0
+          for i in range(0,nsubs[isite]):
+            for j in range(0,nsubs[jsite]):
+              reglist[ind]=-t_prev[iblock+i,jblock+j]
+              ind+=1
+              reglist[ind]=-t_prev[jblock+j,iblock+i]
+              ind+=1
+          cutlist[n0:n0+2*n3]=cutt2
+          n0+=2*n3
+
+          ind=n0
+          for i in range(0,nsubs[isite]):
+            for j in range(0,nsubs[jsite]):
+              reglist[ind]=-u_prev[iblock+i,jblock+j]
+              ind+=1
+              reglist[ind]=-u_prev[jblock+j,iblock+i]
+              ind+=1
+          cutlist[n0:n0+2*n3]=cutu2
+          n0+=2*n3
       elif ms==2:
         cutlist[n0:n0+n3]=cutc2
         n0+=n3
@@ -175,6 +219,17 @@ def GetFreeEnergy5(alf_info,ms,msprof):
             if i != j:
               s[iblock+i,jblock+j]=coeff[ind]
               ind+=1
+        if alf_info['bias']=='bcxstu2026':
+          for i in range(0,nsubs[isite]):
+            for j in range(0,nsubs[isite]):
+              if i != j:
+                t[iblock+i,jblock+j]=coeff[ind]
+                ind+=1
+          for i in range(0,nsubs[isite]):
+            for j in range(0,nsubs[isite]):
+              if i != j:
+                u[iblock+i,jblock+j]=coeff[ind]
+                ind+=1
       elif ms==1:
         for i in range(0,nsubs[isite]):
           for j in range(0,nsubs[jsite]):
@@ -192,6 +247,19 @@ def GetFreeEnergy5(alf_info,ms,msprof):
             ind+=1
             s[jblock+j,iblock+i]=coeff[ind]
             ind+=1
+        if alf_info['bias']=='bcxstu2026':
+          for i in range(0,nsubs[isite]):
+            for j in range(0,nsubs[jsite]):
+              t[iblock+i,jblock+j]=coeff[ind]
+              ind+=1
+              t[jblock+j,iblock+i]=coeff[ind]
+              ind+=1
+          for i in range(0,nsubs[isite]):
+            for j in range(0,nsubs[jsite]):
+              u[iblock+i,jblock+j]=coeff[ind]
+              ind+=1
+              u[jblock+j,iblock+i]=coeff[ind]
+              ind+=1
       elif ms==2:
         for i in range(0,nsubs[isite]):
           for j in range(0,nsubs[jsite]):
@@ -224,3 +292,6 @@ def GetFreeEnergy5(alf_info,ms,msprof):
   np.savetxt('c.dat',c,fmt=' %7.2f')
   np.savetxt('x.dat',x,fmt=' %7.2f')
   np.savetxt('s.dat',s,fmt=' %7.2f')
+  if alf_info['bias']=='bcxstu2026':
+    np.savetxt('t.dat',t,fmt=' %7.2f')
+    np.savetxt('u.dat',u,fmt=' %7.2f')

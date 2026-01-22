@@ -22,3 +22,5 @@ alf/wham/Makefile
 alf/wham/__pycache__
 alf/wham/cmake_install.cmake
 alf/wham/libwham.so
+env-alf
+setupenv

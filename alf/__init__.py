@@ -135,7 +135,10 @@ RunWham : runs the cuda code in alf/wham to combine the multiple
 GetFreeEnergy5 : inverts the C.dat matrix and multiplies by V.dat to
     minimize the linearized objective function. Saves the changes in the
     b (phi), c (psi), x (chi), and s (omega) coefficients into files
-    like analysisi/b.dat
+    like analysisi/b.dat . Used with alf_info['loss']=='linear2018'
+GetFreeEnergyLM : Takes the output of RunLMALF.sh and packs it into the
+    b (phi), c (psi), x (chi), and s (omega) coefficients in files
+    like analysisi/b.dat . Used with alf_info['loss']=='nonlinear2024'
 SetVars : adds the old bias values like analysisi/b_prev.dat and the
     changes in the bias values like analysisi/b.dat to give the new bias
     values like analysisi/b_sum.dat, and saves those bias values to
@@ -157,7 +160,7 @@ from alf.GetLambdas import *
 from alf.GetVolumes import *
 from alf.GetEnergy import *
 from alf.GetFreeEnergy5 import *
-from alf.GetFreeEnergyLM import * # undocumented
+from alf.GetFreeEnergyLM import *
 from alf.wham.RunWham import *
 from alf.GetSteps import *
 from alf.GetVariance import *

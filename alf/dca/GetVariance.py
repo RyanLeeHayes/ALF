@@ -53,7 +53,15 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
   c=np.loadtxt('c_prev.dat')
   x=np.loadtxt('x_prev.dat')
   s=np.loadtxt('s_prev.dat')
+  if alf_info['bias']=='bcxstu2026':
+    t=np.loadtxt('t_prev.dat')
+    u=np.loadtxt('u_prev.dat')
   kT=0.001987*alf_info['temp']
+
+  if alf_info['bias']=='bcxs2018':
+    alpha=0.017
+  elif alf_info['bias']=='bcxstu2026':
+    alpha=0.012
 
   G=np.zeros((nlig_ng,))
   ind=np.zeros((nlig,len(nsubs)),dtype='int')
@@ -93,7 +101,9 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
     if np.all(ind[j,:]>0):
       LList=np.zeros((nblocks-len(nsubs),))
       LList[blk_ng[jno0,:]]=1
-      E=np.dot(LList,b)+np.dot(np.dot(LList,c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),x),LList)+np.dot(np.dot(LList/(LList+0.017),s),LList)
+      E=np.dot(LList,b)+np.dot(np.dot(LList,c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),x),LList)+np.dot(np.dot(LList/(LList+alpha),s),LList)
+      if alf_info['bias']=='bcxstu2026':
+        E=E+np.dot(np.dot(LList/(LList-(1+alpha)),t),LList)+np.dot(np.dot(LList/(LList+alpha),u),LList**2)
       G[jno0]=E-kT*Epotts
       jno0+=1
 
@@ -115,7 +125,9 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
     if np.all(ind[j,:]>0):
       LList=np.zeros((nblocks-len(nsubs),))
       LList[blk_ng[jno0,:]]=1
-      E=np.dot(LList,b)+np.dot(np.dot(LList,c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),x),LList)+np.dot(np.dot(LList/(LList+0.017),s),LList)
+      E=np.dot(LList,b)+np.dot(np.dot(LList,c),LList)+np.dot(np.dot(1-np.exp(-5.56*LList),x),LList)+np.dot(np.dot(LList/(LList+alpha),s),LList)
+      if alf_info['bias']=='bcxstu2026':
+        E=E+np.dot(np.dot(LList/(LList-(1+alpha)),t),LList)+np.dot(np.dot(LList/(LList+alpha),u),LList**2)
       for i in range(NBS):
         # P=np.exp(np.sum(h[blk[j,:]])+0.5*np.sum(np.sum(J[blk[j,:],blk[j,:]])))
         Epotts=np.sum(h[0,blk[j,:],i])+0.5*np.sum(np.sum(J[blk[j,:]][:,blk[j,:],i]))

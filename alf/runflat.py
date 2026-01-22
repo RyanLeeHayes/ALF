@@ -138,6 +138,9 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,G_imp=None,ntersite=[0,0]):
         shutil.copy('analysis%d/c_sum.dat' % (i-1),'analysis%d/c_prev.dat' % i)
         shutil.copy('analysis%d/x_sum.dat' % (i-1),'analysis%d/x_prev.dat' % i)
         shutil.copy('analysis%d/s_sum.dat' % (i-1),'analysis%d/s_prev.dat' % i)
+        if alf_info['bias']=='bcxstu2026':
+          shutil.copy('analysis%d/t_sum.dat' % (i-1),'analysis%d/t_prev.dat' % i)
+          shutil.copy('analysis%d/u_sum.dat' % (i-1),'analysis%d/u_prev.dat' % i)
         np.savetxt('analysis%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
 
         if not os.path.islink('analysis%d/G_imp' % i):

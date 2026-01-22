@@ -52,14 +52,21 @@ def GetModelDCA(alf_info,NF,Path,NBS=50):
   c=np.loadtxt('c_prev.dat')
   x=np.loadtxt('x_prev.dat')
   s=np.loadtxt('s_prev.dat')
+  if alf_info['bias']=='bcxstu2026':
+    t=np.loadtxt('t_prev.dat')
+    u=np.loadtxt('u_prev.dat')
   kT=0.001987*alf_info['temp']
 
-  c0=0
+  if alf_info['bias']=='bcxs2018':
+    alpha=0.017
+  elif alf_info['bias']=='bcxstu2026':
+    alpha=0.012
   c1=1
-  x0=1-np.exp(-5.56*0)
   x1=1-np.exp(-5.56*1)
-  s0=0/(0+0.017)
-  s1=1/(1+0.017)
+  s1=1/(1+alpha)
+  if alf_info['bias']=='bcxstu2026':
+    t1=1/(1-(1+alpha))
+    u1=1/(1+alpha)
 
   h_bias=np.zeros((nblocks,))
   J_bias=np.zeros((nblocks,nblocks))
@@ -69,6 +76,8 @@ def GetModelDCA(alf_info,NF,Path,NBS=50):
     for j in range(nblocks):
       if (block2site[i]!=block2site[j]):
         J_bias[i,j]=c1*(c[i,j]+c[j,i])+x1*(x[i,j]+x[j,i])+s1*(s[i,j]+s[j,i])
+        if alf_info['bias']=='bcxstu2026':
+          J_bias[i,j]=J_bias[i,j]+t1*(t[i,j]+t[j,i])+u1*(u[i,j]+u[j,i])
   np.savetxt(Path+'/h.bias.dat',h_bias,fmt=' %10.6f')
   np.savetxt(Path+'/J.bias.dat',J_bias,fmt=' %10.6f')
 
