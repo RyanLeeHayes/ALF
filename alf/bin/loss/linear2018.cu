@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "wham.h"
+#include "linear2018.h"
 
 // #define kB 0.008314
 #define kB 0.00198614

@@ -12,7 +12,7 @@
 //   ID=omp_get_thread_num();
 //   NID=omp_get_max_threads();
 
-#include "lmalf.h"
+#include "impcons.h"
 
 #define MAXLENGTH 1024
 #define BLOCK 512

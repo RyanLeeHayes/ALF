@@ -5,7 +5,7 @@
 #include <limits.h> // CXX
 #include <math.h> // CXX
 
-#include "wham.h"
+#include "linear2018.h"
 
 // #define kB 0.008314
 #define kB 0.00198614
