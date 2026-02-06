@@ -3,7 +3,7 @@
 
 rm -r CMakeCache.txt CMakeFiles cmake_install.cmake Makefile
 # from loss
-rm linear2018 nonlinear2024 whamweight impcons
+rm liblinear2018.so nonlinear2024 whamweight impcons
 # from dca
 rm PLM LM Filter Moment
 # from io

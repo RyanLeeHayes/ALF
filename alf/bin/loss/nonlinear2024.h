@@ -6,6 +6,12 @@
 typedef double real;
 // typedef float real;
 
+typedef enum ebias {
+  bcxs2018,
+  bcxstu2026,
+  ebiasend}
+ebias;
+
 typedef struct struct_plmd {
   int nblocks;
   int nsites;
@@ -13,6 +19,7 @@ typedef struct struct_plmd {
   int *block0;
   int *block0_d;
   int *block2site;
+  ebias bias;
   int B; // number of frames
   real kT;
   real *kx; // Regularization constants

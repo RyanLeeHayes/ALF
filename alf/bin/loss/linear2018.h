@@ -1,9 +1,8 @@
-typedef struct struct_hist {
-  double max;
-  double min;
-  int N;
-  double dx;
-} struct_hist;
+typedef enum ebias {
+  bcxs2018,
+  bcxstu2026,
+  ebiasend}
+ebias;
 
 typedef struct struct_data {
   int NL;
@@ -14,8 +13,7 @@ typedef struct struct_data {
   double *beta_h;
   double *beta_d;
   double beta_t;
-  struct_hist B[2];
-  struct_hist B2d[3];
+  ebias bias;
   int ND;
   int NDmax;
   int Nsim;

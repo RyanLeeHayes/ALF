@@ -283,8 +283,8 @@ alf and should include the following keys:
      bias 'bcxstu2026' includes two modified endpoint potentials (t and
      u) and an endpoint alpha parameter of 0.012.
  * impcons : the implicit constraint type used in calculations.
-     Supported values are 'fnex2011', 'fnexdozen2024', and
-     'fnpwise2026'. 'fnex2011' refers the the fnex implicit constraints
+     Supported values are 'fnex2011', 'fnexdozen2024', 'fnpwise2026',
+     and 'custom'. 'fnex2011' refers the the fnex implicit constraints
      developed in 2011 and published in DOI:10.1002/jcc.21921 These
      implicit constraints focus sampling on the end states for moderate
      numbers of substituents, but do not sample exact end states and
@@ -298,7 +298,11 @@ alf and should include the following keys:
      preparation for publication in 2026. These piecewise implicit
      constraints have finite end state sampling and a fraction physical
      ligand that is roughly independent of number of substituents and
-     can be tuned to arbitrary values with a width parameter.
+     can be tuned to arbitrary values with a width parameter. You may
+     choose some other implicit constraint scheme if prefered, but you
+     must supply your own G_imp directory, and if you are using
+     'nonlinear2024' as the loss function, supply mc_Lambda.dat in the
+     G_imp directory as well.
  * impconsopt : a dictionary of implicit constraint options. For
      'fnex2011' and 'fnexdozen2024', this dictionary should contain 'c'.
      The default value is 5.5, lower values are not recommended, higher

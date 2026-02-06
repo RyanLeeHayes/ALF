@@ -60,76 +60,29 @@ void printarray(real* x,int N,char* fnm)
   fclose(fp);
 }
 
-double randDouble()
+void readbias(const char *fnm,int nblocks,real **xrp)
 {
-  return (rand()+0.5)/(RAND_MAX+1.0);
-}
+  int i,j;
+  real *xr;
+  FILE *fp;
 
-void monte_carlo_Z(struct_plmd plmd)
-{
-  int ibeg,iend,Ns;
-  int Neq=plmd.B/10;
-  int Nmc=plmd.B;
-  real *theta;
-  int s,i,j;
-  real b, st, norm;
-  real thetaNew,eOld,eNew;
-
-  theta=(real*) calloc(plmd.nblocks,sizeof(real));
-
-  for (s=0; s<plmd.nsites; s++) {
-    ibeg=plmd.block0[s];
-    iend=plmd.block0[s+1];
-    Ns=iend-ibeg;
-
-    b=1;
-    for (i=0; i<50; i++) {
-      b=0.5*log(0.25*b*Ns*Ns*M_PI/2);
-      if (!(b>0)) b=0;
-    }
-
-    theta[ibeg]=M_PI/2;
-    for (i=ibeg+1; i<iend; i++) {
-      theta[i]=3*M_PI/2;
-    }
-
-    for (i=-Neq; i<Nmc; i++) {
-      if (i%Neq==0) {
-        fprintf(stdout,"Partition Function Sample Step %d\n",i);
-      }
-
-      for (j=ibeg; j<iend; j++) {
-        st=(-0.5*sin(theta[j])+0.5);
-        eOld=-b*st*st*st*st;
-
-        thetaNew=2*M_PI*randDouble();
-        st=(-0.5*sin(thetaNew)+0.5);
-        eNew=-b*st*st*st*st;
-
-        if (exp(eOld-eNew)>randDouble()) {
-          theta[j]=thetaNew;
-        }
-      }
-
-      if (i>=0) {
-        norm=0;
-        for (j=ibeg; j<iend; j++) {
-          norm+=exp(5.5*sin(theta[j]));
-        }
-        for (j=ibeg; j<iend; j++) {
-          plmd.mc_lambda[plmd.nblocks*i+j]=exp(5.5*sin(theta[j]))/norm;
-        }
-      }
+  xr=(real*) calloc(nblocks*nblocks,sizeof(real));
+  fp=fopen(fnm,"r");
+  for(i=0; i<nblocks; i++) {
+    for(j=0; j<nblocks; j++) {
+      double buffer;
+      fscanf(fp,"%lf",&buffer);
+      xr[i*nblocks+j]=buffer;
     }
   }
-
-  free(theta);
+  fclose(fp);
+  *xrp=xr;
 }
 
 struct_plmd* setup(int argc, char *argv[])
 {
   struct_plmd *plmd;
-  int si,sj,i,j,k,l;
+  int si,sj,i,j,k,l,c;
   real k0;
   FILE *fp;
   char line[MAXLENGTH];
@@ -173,19 +126,44 @@ struct_plmd* setup(int argc, char *argv[])
   cudaMalloc(&(plmd->block0_d),(plmd->nsites+1)*sizeof(int));
   cudaMemcpy(plmd->block0_d,plmd->block0,(plmd->nsites+1)*sizeof(int),cudaMemcpyHostToDevice);
 
-  i=sscanf(argv[2],"%d",&plmd->ms);
-  if (i!=1) {
-    fprintf(stderr,"Error, first argument must be a boolean flag for whether to use multisite coupling\n");
+  c=1;
+
+  if (argc>c && sscanf(argv[c],"%s",line)==1) {
+    if (strcmp("bcxs2018",line)==0) {
+      plmd->bias=bcxs2018;
+      c++;
+    } else if (strcmp("bcxstu2026",line)==0) {
+      plmd->bias=bcxstu2026;
+      c++;
+    } else {
+      fprintf(stderr,"Error, bias in argument %d is not bcxs2018 or bcxstu2026\n",c);
+      exit(1);
+    }
+  } else {
+    fprintf(stderr,"Error, argument %d must specify bcxs2018 or bcxstu2026 as the bias\n",c);
     exit(1);
   }
 
-  i=sscanf(argv[3],"%d",&plmd->msprof);
+  double temperature;
+  sscanf(argv[c],"%lg",&temperature);
+  plmd->kT=kB*temperature;
+  c++;
+
+  i=sscanf(argv[c],"%d",&plmd->ms);
   if (i!=1) {
-    fprintf(stderr,"Error, second argument should indicate whether to use multisite profiles.\n");
+    fprintf(stderr,"Error, argument %d must be a boolean flag for whether to use multisite coupling\n",c);
     exit(1);
   }
+  c++;
 
-  fp=fopen(argv[4],"r");
+  i=sscanf(argv[c],"%d",&plmd->msprof);
+  if (i!=1) {
+    fprintf(stderr,"Error, argument %d should indicate whether to use multisite profiles.\n",c);
+    exit(1);
+  }
+  c++;
+
+  fp=fopen("Lambda/Lambda.dat","r");
   for (plmd->B=0; fgets(line,MAXLENGTH,fp) != NULL; plmd->B++) {
     ;
   }
@@ -197,7 +175,7 @@ struct_plmd* setup(int argc, char *argv[])
   plmd->mc_lambda=(real*) calloc(plmd->B*plmd->nblocks,sizeof(real));
   plmd->mc_ensweight=(real*) calloc(plmd->B,sizeof(real));
 
-  fp=fopen(argv[4],"r");
+  fp=fopen("Lambda/Lambda.dat","r");
   for (i=0;i<plmd->B;i++) {
     for (j=0;j<plmd->nblocks;j++) {
       double buffer;
@@ -207,9 +185,17 @@ struct_plmd* setup(int argc, char *argv[])
   }
   fclose(fp);
 
-  monte_carlo_Z(plmd[0]);
+  fp=fopen("mc_Lambda.dat","r");
+  for (i=0;i<plmd->B;i++) {
+    for (j=0;j<plmd->nblocks;j++) {
+      double buffer;
+      fscanf(fp,"%lf",&buffer);
+      plmd->lambda[i*plmd->nblocks+j]=buffer;
+    }
+  }
+  fclose(fp);
 
-  fp=fopen(argv[5],"r");
+  fp=fopen("Lambda/weight.dat","r");
   for (i=0; i<plmd->B; i++) {
     double buffer;
     fscanf(fp,"%lf",&buffer);
@@ -218,15 +204,16 @@ struct_plmd* setup(int argc, char *argv[])
   }
   fclose(fp);
 
-  if (argc>=8) {
+  if (argc>c) {
     double criteria;
-    i=sscanf(argv[7],"%lg",&criteria);
-    fprintf(stdout,"Note, found seventh argument indicating halting criteria. Overwriting default value of 1.25e-3\n");
+    i=sscanf(argv[c],"%lg",&criteria);
+    fprintf(stdout,"Note, found argument %d indicating halting criteria. Overwriting default value of 1.25e-3\n",c);
     if (i!=1) {
-      fprintf(stderr,"Error, seventh argument should indicate halting criteria.\n");
+      fprintf(stderr,"Error, argument %d should indicate halting criteria.\n",c);
       exit(1);
     }
     plmd->criteria=criteria;
+    c++;
   } else {
     plmd->criteria=1.25e-3;
   }
@@ -244,13 +231,19 @@ struct_plmd* setup(int argc, char *argv[])
 
 
   // count nbias
+  int ntriangle;
+  if (plmd->bias==bcxs2018) {
+    ntriangle=5;
+  } else if (plmd->bias==bcxstu2026) {
+    ntriangle=9;
+  }
   plmd->nbias=0;
   for (i=0; i<plmd->nsites; i++) {
     for (j=i; j<plmd->nsites; j++) {
       if (i==j) {
-        plmd->nbias+=plmd->nsubs[i]+(5*plmd->nsubs[i]*(plmd->nsubs[i]-1))/2;
+        plmd->nbias+=plmd->nsubs[i]+(ntriangle*plmd->nsubs[i]*(plmd->nsubs[i]-1))/2;
       } else if (plmd->ms==1) {
-        plmd->nbias+=5*plmd->nsubs[i]*plmd->nsubs[j];
+        plmd->nbias+=ntriangle*plmd->nsubs[i]*plmd->nsubs[j];
       } else if (plmd->ms==2) {
         plmd->nbias+=plmd->nsubs[i]*plmd->nsubs[j];
       }
@@ -276,37 +269,19 @@ struct_plmd* setup(int argc, char *argv[])
   // plmd->nx=plmd->nbias+plmd->nprof;
   plmd->nx=plmd->nbias;
 
-  double temperature;
-  sscanf(argv[1],"%lg",&temperature);
-  plmd->kT=kB*temperature;
-
   // Set regularization constants
   real kp=1.0/(plmd->kT*plmd->kT);
   plmd->kx=(real*) calloc(plmd->nx,sizeof(real));
   plmd->xr=(real*) calloc(plmd->nx,sizeof(real));
-  real *xr_x, *xr_s;
+  real *xr_x, *xr_s, *xr_t, *xr_u;
   // load starting values if needed for ms==1
   if (plmd->ms==1) {
-    xr_x=(real*) calloc(plmd->nblocks*plmd->nblocks,sizeof(real));
-    fp=fopen("x_prev.dat","r");
-    for(i=0; i<plmd->nblocks; i++) {
-      for(j=0; j<plmd->nblocks; j++) {
-        double buffer;
-        fscanf(fp,"%lf",&buffer);
-        xr_x[i*plmd->nblocks+j]=buffer;
-      }
+    readbias("x_prev.dat",plmd->nblocks,&xr_x);
+    readbias("s_prev.dat",plmd->nblocks,&xr_s);
+    if (plmd->bias==bcxstu2026) {
+    readbias("t_prev.dat",plmd->nblocks,&xr_t);
+    readbias("u_prev.dat",plmd->nblocks,&xr_u);
     }
-    fclose(fp);
-    xr_s=(real*) calloc(plmd->nblocks*plmd->nblocks,sizeof(real));
-    fp=fopen("s_prev.dat","r");
-    for(i=0; i<plmd->nblocks; i++) {
-      for(j=0; j<plmd->nblocks; j++) {
-        double buffer;
-        fscanf(fp,"%lf",&buffer);
-        xr_s[i*plmd->nblocks+j]=buffer;
-      }
-    }
-    fclose(fp);
   }
   // k0=1e-2; // 1.0/400;
   k0=kp/400;
@@ -323,6 +298,12 @@ struct_plmd* setup(int argc, char *argv[])
             plmd->kx[k++]=k0/4; // x
             plmd->kx[k++]=k0/1; // s
             plmd->kx[k++]=k0/1; // s
+            if (plmd->bias==bcxstu2026) {
+            plmd->kx[k++]=k0/1; // t
+            plmd->kx[k++]=k0/1; // t
+            plmd->kx[k++]=k0/1; // u
+            plmd->kx[k++]=k0/1; // u
+            }
           }
         }
       } else if (plmd->ms) {
@@ -338,6 +319,16 @@ struct_plmd* setup(int argc, char *argv[])
               plmd->kx[k++]=k0/0.25; // s
               plmd->xr[k]=xr_s[(plmd->block0[sj]+j)*plmd->nblocks+plmd->block0[si]+i]; // s
               plmd->kx[k++]=k0/0.25; // s
+              if (plmd->bias==bcxstu2026) {
+              plmd->xr[k]=xr_t[(plmd->block0[si]+i)*plmd->nblocks+plmd->block0[sj]+j]; // t
+              plmd->kx[k++]=k0/0.0025; // t
+              plmd->xr[k]=xr_t[(plmd->block0[sj]+j)*plmd->nblocks+plmd->block0[si]+i]; // t
+              plmd->kx[k++]=k0/0.0025; // t
+              plmd->xr[k]=xr_u[(plmd->block0[si]+i)*plmd->nblocks+plmd->block0[sj]+j]; // u
+              plmd->kx[k++]=k0/0.0025; // u
+              plmd->xr[k]=xr_u[(plmd->block0[sj]+j)*plmd->nblocks+plmd->block0[si]+i]; // u
+              plmd->kx[k++]=k0/0.0025; // u
+              }
             }
           }
         }
@@ -347,11 +338,11 @@ struct_plmd* setup(int argc, char *argv[])
   if (plmd->ms==1) {
     free(xr_x);
     free(xr_s);
+    if (plmd->bias==bcxstu2026) {
+    free(xr_t);
+    free(xr_u);
+    }
   }
-  // No restraints on average profile values - treated implicitly now
-  /*for (i=0; i<plmd->nprof; i++) {
-    plmd->kx[k++]=0;
-  }*/
   cudaMalloc(&plmd->kx_d,plmd->nx*sizeof(real));
   cudaMemcpy(plmd->kx_d,plmd->kx,plmd->nx*sizeof(real),cudaMemcpyHostToDevice);
   cudaMalloc(&plmd->xr_d,plmd->nx*sizeof(real));
@@ -586,6 +577,7 @@ void reduceBitonicSort(int itmp,real Ztmp,int* iloc,real* Zloc,real* Zloc2,real*
   }
 }*/
 
+template <ebias bias>
 __global__
 void energykernel(struct_plmd plmd,real* x,real* lambda,real* energy)
 {
@@ -595,6 +587,13 @@ void energykernel(struct_plmd plmd,real* x,real* lambda,real* energy)
   int k;
   real q1,q2;
   real E;
+  real a;
+
+  if (bias==bcxs2018) {
+    a=0.017;
+  } else if (bias==bcxstu2026) {
+    a=0.012;
+  }
 
   lambda+=plmd.nblocks*b;
 
@@ -616,10 +615,20 @@ void energykernel(struct_plmd plmd,real* x,real* lambda,real* energy)
               k++;
               E+=x[k]*q1*(1-exp(-q2/0.18));
               k++;
-              E+=x[k]*q2*(1-1/(q1/0.017+1));
+              E+=x[k]*q2*(1-1/(q1/a+1));
               k++;
-              E+=x[k]*q1*(1-1/(q2/0.017+1));
+              E+=x[k]*q1*(1-1/(q2/a+1));
               k++;
+              if (bias==bcxstu2026) {
+              E+=x[k]*q2*(1-1/(q1/(-1-a)+1));
+              k++;
+              E+=x[k]*q1*(1-1/(q2/(-1-a)+1));
+              k++;
+              E+=x[k]*q2*q2*(1-1/(q1/a+1));
+              k++;
+              E+=x[k]*q1*q1*(1-1/(q2/a+1));
+              k++;
+              }
             }
           }
         } else if (plmd.ms) { // Different sites
@@ -634,10 +643,20 @@ void energykernel(struct_plmd plmd,real* x,real* lambda,real* energy)
                 k++;
                 E+=x[k]*q1*(1-exp(-q2/0.18));
                 k++;
-                E+=x[k]*q2*(1-1/(q1/0.017+1));
+                E+=x[k]*q2*(1-1/(q1/a+1));
                 k++;
-                E+=x[k]*q1*(1-1/(q2/0.017+1));
+                E+=x[k]*q1*(1-1/(q2/a+1));
                 k++;
+                if (bias==bcxstu2026) {
+                E+=x[k]*q2*(1-1/(q1/(-1-a)+1));
+                k++;
+                E+=x[k]*q1*(1-1/(q2/(-1-a)+1));
+                k++;
+                E+=x[k]*q2*q2*(1-1/(q1/a+1));
+                k++;
+                E+=x[k]*q1*q1*(1-1/(q2/a+1));
+                k++;
+                }
               }
             }
           }
@@ -645,6 +664,15 @@ void energykernel(struct_plmd plmd,real* x,real* lambda,real* energy)
       }
     }
     energy[b]=E;
+  }
+}
+
+void energykernelwrapper(struct_plmd plmd,real* x,real* lambda,real* energy)
+{
+  if (plmd.bias==bcxs2018) {
+    energykernel<bcxs2018><<<(plmd.B+BLOCK-1)/BLOCK,BLOCK>>>(plmd,x,lambda,energy);
+  } else if (plmd.bias==bcxstu2026) {
+    energykernel<bcxstu2026><<<(plmd.B+BLOCK-1)/BLOCK,BLOCK>>>(plmd,x,lambda,energy);
   }
 }
 
@@ -663,6 +691,7 @@ void dotenergykernel(struct_plmd plmd,real sign,real* x,real* y,real* z)
   reduce(xtmp,xloc,z);
 }
 
+template <ebias bias>
 __global__
 void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,real* dEdx)
 {
@@ -673,6 +702,13 @@ void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,r
   real q1,q2;
   real w,E;
   __shared__ real Eloc[BLOCK];
+  real a;
+
+  if (bias==bcxs2018) {
+    a=0.017;
+  } else if (bias==bcxstu2026) {
+    a=0.012;
+  }
 
   lambda+=plmd.nblocks*b;
 
@@ -704,12 +740,26 @@ void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,r
             E=w*q1*(1-exp(-q2/0.18));
             reduce(E,Eloc,&dEdx[k]);
             k++;
-            E=w*q2*(1-1/(q1/0.017+1));
+            E=w*q2*(1-1/(q1/a+1));
             reduce(E,Eloc,&dEdx[k]);
             k++;
-            E=w*q1*(1-1/(q2/0.017+1));
+            E=w*q1*(1-1/(q2/a+1));
             reduce(E,Eloc,&dEdx[k]);
             k++;
+            if (bias==bcxstu2026) {
+            E=w*q2*(1-1/(q1/(-1-a)+1));
+            reduce(E,Eloc,&dEdx[k]);
+            k++;
+            E=w*q1*(1-1/(q2/(-1-a)+1));
+            reduce(E,Eloc,&dEdx[k]);
+            k++;
+            E=w*q2*q2*(1-1/(q1/a+1));
+            reduce(E,Eloc,&dEdx[k]);
+            k++;
+            E=w*q1*q1*(1-1/(q2/a+1));
+            reduce(E,Eloc,&dEdx[k]);
+            k++;
+            }
           }
         }
       } else if (plmd.ms) { // Different sites
@@ -727,17 +777,40 @@ void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,r
               E=w*q1*(1-exp(-q2/0.18));
               reduce(E,Eloc,&dEdx[k]);
               k++;
-              E=w*q2*(1-1/(q1/0.017+1));
+              E=w*q2*(1-1/(q1/a+1));
               reduce(E,Eloc,&dEdx[k]);
               k++;
-              E=w*q1*(1-1/(q2/0.017+1));
+              E=w*q1*(1-1/(q2/a+1));
               reduce(E,Eloc,&dEdx[k]);
               k++;
+              if (bias==bcxstu2026) {
+              E=w*q2*(1-1/(q1/(-1-a)+1));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              E=w*q1*(1-1/(q2/(-1-a)+1));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              E=w*q2*q2*(1-1/(q1/a+1));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              E=w*q1*q1*(1-1/(q2/a+1));
+              reduce(E,Eloc,&dEdx[k]);
+              k++;
+              }
             }
           }
         }
       }
     }
+  }
+}
+
+void weightedenergykernelwrapper(struct_plmd plmd,real sign,real* lambda,real* weight,real* dEdx)
+{
+  if (plmd.bias==bcxs2018) {
+    weightedenergykernel<bcxs2018><<<(plmd.B+BLOCK-1)/BLOCK,BLOCK>>>(plmd,sign,lambda,weight,dEdx);
+  } else if (plmd.bias==bcxstu2026) {
+    weightedenergykernel<bcxstu2026><<<(plmd.B+BLOCK-1)/BLOCK,BLOCK>>>(plmd,sign,lambda,weight,dEdx);
   }
 }
 
@@ -776,7 +849,7 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
   int k;
   real q1,q2;
   real w, wout;
-  int itmp;
+  int itmp,jtmp;
   real Ztmp;
   __shared__ int iloc[BLOCK];
   __shared__ real Zloc[BLOCK];
@@ -803,6 +876,8 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
           if (b<plmd.B) {
             q1=lambda[i1];
             itmp=(int)floor(q1*NBINS);
+            itmp=(itmp<0)?0:itmp; // sanity check for bad cuda floor
+            itmp=(itmp>=NBINS)?(NBINS-1):itmp; // sanity check for q1=1
             // if (weightprofile) assert(w<=plmd.Zprofile_d[k*NBINS+itmp]);
             if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
           }
@@ -821,6 +896,8 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
               q2=lambda[i2];
               if (q1+q2>0.8) {
                 itmp=(int)floor(q1/(q1+q2)*NBINS);
+                itmp=(itmp<0)?0:itmp; // sanity check for bad cuda floor
+                itmp=(itmp>=NBINS)?(NBINS-1):itmp; // sanity check for q1=1
                 // if (weightprofile) assert(w<=plmd.Zprofile_d[k*NBINS+itmp]);
                 if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
               } else { // WORKING - testing the next line
@@ -842,7 +919,14 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
               if (b<plmd.B) {
                 q1=lambda[i1];
                 q2=lambda[i2];
-                itmp=NBINS2*((int)floor(q1*NBINS2))+(int)floor(q2*NBINS2);
+                // itmp=NBINS2*((int)floor(q1*NBINS2))+(int)floor(q2*NBINS2);
+                itmp=(int)floor(q1*NBINS2);
+                itmp=(itmp<0)?0:itmp; // sanity check for bad cuda floor
+                itmp=(itmp>=NBINS2)?(NBINS2-1):itmp; // sanity check for q1=1
+                jtmp=(int)floor(q2*NBINS2);
+                jtmp=(jtmp<0)?0:jtmp; // sanity check for bad cuda floor
+                jtmp=(itmp+jtmp>=NBINS2)?(NBINS2-1-itmp):jtmp; // sanity check for q1+q2=1
+                itmp=NBINS2*itmp+jtmp;
                 // if (weightprofile) assert(w<=plmd.Zprofile_d[k*NBINS+itmp]);
                 if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
               }
@@ -861,7 +945,14 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
             if (b<plmd.B) {
               q1=lambda[i1];
               q2=lambda[i2];
-              itmp=NBINS2*((int)floor(q1*NBINS2))+(int)floor(q2*NBINS2);
+              // itmp=NBINS2*((int)floor(q1*NBINS2))+(int)floor(q2*NBINS2);
+              itmp=(int)floor(q1*NBINS2);
+              itmp=(itmp<0)?0:itmp; // sanity check for bad cuda floor
+              itmp=(itmp>=NBINS2)?(NBINS2-1):itmp; // sanity check for q1=1
+              jtmp=(int)floor(q2*NBINS2);
+              jtmp=(jtmp<0)?0:jtmp; // sanity check for bad cuda floor
+              jtmp=(jtmp>=NBINS2)?(NBINS2-1):jtmp; // sanity check for q2=1
+              itmp=NBINS2*itmp+jtmp;
               // if (weightprofile) assert(w<=plmd.Zprofile_d[k*NBINS+itmp]);
               if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
             }
@@ -975,45 +1066,45 @@ void regularizedLdxkernel(struct_plmd plmd)
   }
 }
 
+void readGimp(char *fnm,real kT,real *Gimp)
+{
+  int i;
+  FILE *fp;
+
+  fp=fopen(fnm,"r");
+  if (fp==NULL) {
+    fprintf(stderr,"Error, %s does not exist\n",fnm);
+  }
+  for(i=0; i<NBINS; i++) {
+    double buffer;
+    fscanf(fp,"%lf",&buffer);
+    Gimp[i]=kT*buffer;
+  }
+  fclose(fp);
+}
+
 void evaluateGimp(struct_plmd *plmd)
 {
   if (PROFILE) {
-    cudaMemset(plmd->mc_Zprofile_d,0,plmd->nprof*NBINS*sizeof(real));
-    // void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprofile,real* outweight,real* Zprofile)
-    profilekernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->mc_lambda_d,plmd->mc_ensweight_d,NULL,NULL,plmd->mc_Zprofile_d);
-    // freeenergykernel<<<(plmd->nprof*NBINS+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->mc_Zprofile_d,plmd->Gimp_d,0,NULL,NULL,NULL);
-    // Too noisy:
-    // freeenergykernel<<<plmd->nprof,NBINS>>>(plmd[0],plmd->mc_Zprofile_d,plmd->Gimp_d,NULL,NULL);
-    int s1,s2,i,j,k,kn;
-    real *mc_Zprofile, *Gimp;
-    mc_Zprofile=(real*)calloc(NBINS*plmd->nprof,sizeof(real));
+    int s1,s2,j,k,kn;
+    real *Gimp;
+    char fnm[MAXLENGTH];
     Gimp=(real*)calloc(NBINS,sizeof(real));
-    cudaMemcpy(mc_Zprofile,plmd->mc_Zprofile_d,NBINS*plmd->nprof*sizeof(real),cudaMemcpyDeviceToHost);
     k=0;
     for (s1=0; s1<plmd->nsites; s1++) {
       for (s2=s1; s2<plmd->nsites; s2++) {
         if (s1==s2) { // Same site
           kn=k+plmd->nsubs[s1];
-          for (i=0; i<NBINS; i++) {
-            Gimp[i]=0;
-            for (j=k; j<kn; j++) {
-              Gimp[i]+=mc_Zprofile[NBINS*j+i];
-            }
-            Gimp[i]=-plmd->kT*log(Gimp[i]);
-          }
+          sprintf(fnm,"G_imp/G1_%d.dat",plmd->nsubs[s1]);
+          readGimp(fnm,plmd->kT,Gimp);
           for (j=k; j<kn; j++) {
             cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
           }
           k=kn;
 
           kn=k+(plmd->nsubs[s1]*(plmd->nsubs[s1]-1))/2;
-          for (i=0; i<NBINS; i++) {
-            Gimp[i]=0;
-            for (j=k; j<kn; j++) {
-              Gimp[i]+=mc_Zprofile[NBINS*j+i];
-            }
-            Gimp[i]=-plmd->kT*log(Gimp[i]);
-          }
+          sprintf(fnm,"G_imp/G12_%d.dat",plmd->nsubs[s1]);
+          readGimp(fnm,plmd->kT,Gimp);
           for (j=k; j<kn; j++) {
             cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
           }
@@ -1021,13 +1112,8 @@ void evaluateGimp(struct_plmd *plmd)
 
           if (plmd->nsubs[s1]>2) {
             kn=k+(plmd->nsubs[s1]*(plmd->nsubs[s1]-1))/2;
-            for (i=0; i<NBINS; i++) {
-              Gimp[i]=0;
-              for (j=k; j<kn; j++) {
-                Gimp[i]+=mc_Zprofile[NBINS*j+i];
-              }
-              Gimp[i]=-plmd->kT*log(Gimp[i]);
-            }
+            sprintf(fnm,"G_imp/G2_%d.dat",plmd->nsubs[s1]);
+            readGimp(fnm,plmd->kT,Gimp);
             for (j=k; j<kn; j++) {
               cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
             }
@@ -1035,13 +1121,8 @@ void evaluateGimp(struct_plmd *plmd)
           }
         } else if (plmd->msprof) {
           kn=k+plmd->nsubs[s1]*plmd->nsubs[s2];
-          for (i=0; i<NBINS; i++) {
-            Gimp[i]=0;
-            for (j=k; j<kn; j++) {
-              Gimp[i]+=mc_Zprofile[NBINS*j+i];
-            }
-            Gimp[i]=-plmd->kT*log(Gimp[i]);
-          }
+          sprintf(fnm,"G_imp/G1_%d_%d.dat",plmd->nsubs[s1],plmd->nsubs[s2]);
+          readGimp(fnm,plmd->kT,Gimp);
           for (j=k; j<kn; j++) {
             cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
           }
@@ -1049,7 +1130,6 @@ void evaluateGimp(struct_plmd *plmd)
         }
       }
     }
-    free(mc_Zprofile);
     free(Gimp);
   }
 
@@ -1063,7 +1143,7 @@ void evaluateGimp(struct_plmd *plmd)
     cudaMemcpy(plmd->sumensweight_d,&sum,sizeof(real),cudaMemcpyHostToDevice);
     cudaMemset(plmd->moments_d,0,plmd->nbias*sizeof(real));
 // void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,real* dEdx)
-    weightedenergykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],-1,plmd->lambda_d,plmd->ensweight_d,plmd->moments_d);
+    weightedenergykernelwrapper(plmd[0],-1,plmd->lambda_d,plmd->ensweight_d,plmd->moments_d);
   }
 }
 
@@ -1110,7 +1190,7 @@ void evaluateL(struct_plmd *plmd)
 
   regularizeLkernel<<<(plmd->nx+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0]);
 
-  energykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->x_d,plmd->lambda_d,plmd->E_d);
+  energykernelwrapper(plmd[0],plmd->x_d,plmd->lambda_d,plmd->E_d);
 
   // cudaMemcpy(plmd->L,plmd->E_d,sizeof(real),cudaMemcpyDeviceToHost); // DEBUG
   // fprintf(stderr,"Debug    energy[0]=%lg\n",plmd->L[0]); // DEBUG
@@ -1128,7 +1208,7 @@ void evaluateL(struct_plmd *plmd)
   }
 
   if (MOMENT) {
-    energykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->x_d,plmd->mc_lambda_d,plmd->mc_E_d);
+    energykernelwrapper(plmd[0],plmd->x_d,plmd->mc_lambda_d,plmd->mc_E_d);
     cudaMemset(plmd->Esum_d,0,sizeof(real));
     dotenergykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],1,plmd->ensweight_d,plmd->E_d,plmd->Esum_d);
     cudaMemset(plmd->mc_Z_d,0,sizeof(real));
@@ -1195,14 +1275,14 @@ void evaluatedLdx(struct_plmd *plmd)
     profilekernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->lambda_d,plmd->weight_d,plmd->dLdZprofile_d,plmd->dLdE_d,NULL);
 
 // void weightedenergykernel(struct_plmd plmd,real* lambda,real* weight,real* dEdx)
-    weightedenergykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>
+    weightedenergykernelwrapper
       (plmd[0],-1,plmd->lambda_d,plmd->dLdE_d,plmd->dLdx_d);
   }
 
   if (MOMENT) {
     cudaMemset(plmd->mc_moments_d,0,plmd->nbias*sizeof(real));
 // void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,real* dEdx)
-    weightedenergykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],1,plmd->mc_lambda_d,plmd->mc_weight_d,plmd->mc_moments_d);
+    weightedenergykernelwrapper(plmd[0],1,plmd->mc_lambda_d,plmd->mc_weight_d,plmd->mc_moments_d);
 
 // void gradientlikelihoodkernel(struct_plmd plmd,real* norm,real* dLdxin)
     gradientlikelihoodkernel<<<(plmd->nbias+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->sumensweight_d,plmd->moments_d);
@@ -1387,9 +1467,9 @@ void projectHinv(struct_plmd *plmd)
 
   cudaMemcpy(plmd->dxds_d,plmd->hi,plmd->nx*sizeof(real),cudaMemcpyHostToDevice);
 
-  energykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->dxds_d,plmd->lambda_d,plmd->dEds_d);
+  energykernelwrapper(plmd[0],plmd->dxds_d,plmd->lambda_d,plmd->dEds_d);
   if (MOMENT) {
-    energykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->dxds_d,plmd->mc_lambda_d,plmd->mc_dEds_d);
+    energykernelwrapper(plmd[0],plmd->dxds_d,plmd->mc_lambda_d,plmd->mc_dEds_d);
     cudaMemset(plmd->dEdssum_d,0,sizeof(real));
     dotenergykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],1,plmd->ensweight_d,plmd->dEds_d,plmd->dEdssum_d);
   }
@@ -1597,36 +1677,16 @@ void run(struct_plmd *plmd)
   }
 }
 
-void finish(struct_plmd *plmd,int argc, char *argv[])
+void finish(struct_plmd *plmd)
 {
   int i,j;
   FILE *fp;
 
-  fp=fopen(argv[6],"w");
+  fp=fopen("OUT.dat","w");
   for (i=0; i<plmd->nx; i++) {
     fprintf(fp," %lg",(double) plmd->x[i]);
   }
   fclose(fp);
-
-  plmd->mc_weight=(real*)calloc(plmd->B,sizeof(real));
-  cudaMemcpy(plmd->mc_weight,plmd->mc_weight_d,plmd->B*sizeof(real),cudaMemcpyDeviceToHost);
-  cudaMemcpy(plmd->mc_lambda,plmd->mc_lambda_d,plmd->B*plmd->nblocks*sizeof(real),cudaMemcpyDeviceToHost);
-
-  fp=fopen("mc_weight.dat","w");
-  for (i=0; i<plmd->B; i++) {
-    fprintf(fp," %lg\n",(double) plmd->mc_weight[i]);
-  }
-  fclose(fp);
-
-  fp=fopen("mc_Lambda.dat","w");
-  for (i=0; i<plmd->B; i++) {
-    for (j=0; j<plmd->nblocks; j++) {
-      fprintf(fp," %lg",(double) plmd->mc_lambda[i*plmd->nblocks+j]);
-    }
-    fprintf(fp,"\n");
-  }
-  fclose(fp);
-  free(plmd->mc_weight);
 
   free(plmd->nsubs);
   free(plmd->block0);
@@ -1702,7 +1762,7 @@ int main(int argc, char *argv[])
  
   run(plmd);
 
-  finish(plmd,argc,argv);
+  finish(plmd);
 
   return 0;
 }

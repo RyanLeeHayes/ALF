@@ -1,5 +1,5 @@
 
-def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,ntersite=[0,0],lc=0.99):
+def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',ntersite=[0,0],lc=0.99):
   """
   analyze a longer production run from runflat for improved biases and dG
 
@@ -48,9 +48,6 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
-  G_imp : str, optional
-      To use a G_imp directory other than the default one in alf/G_imp,
-      provide a path. (default is None)
   ntersite : list of two ints, optional
       Flags for whether to use intersite coupling (first element) and
       intersite profiles (second element) in flattening. (default is [0,0]
@@ -82,14 +79,11 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
     shutil.copy('analysis%d/x_sum.dat' % (i-1),'analysis%d/x_prev.dat' % i)
     shutil.copy('analysis%d/s_sum.dat' % (i-1),'analysis%d/s_prev.dat' % i)
     np.savetxt('analysis%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
+    if not os.path.exists('G_imp'):
+      print("Error, G_imp directory does not exist")
+      quit()
     if not os.path.islink('analysis%d/G_imp' % i):
-      if not G_imp:
-        G_imp_dir=os.path.dirname(os.path.abspath(__file__))+'/G_imp'
-      else:
-        G_imp_dir=G_imp
-      os.symlink(G_imp_dir,'analysis%d/G_imp' % i)
-      if not os.path.exists(G_imp_dir):
-        print("Warning G_imp directory (%s) does not exist" % (G_imp_dir,))
+      os.symlink('../G_imp','analysis%d/G_imp' % i)
     os.chdir('analysis%d' % i)
 
     # Run the analysis
@@ -97,12 +91,15 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',G_imp=None,nters
     alf.GetEnergy(alf_info,i,i,N=N,skipE=skipE)
     fpout=open('output','w')
     fperr=open('error','w')
-    if 'lmalf' in alf_info:
-      subprocess.call([os.path.dirname(__file__)+'/lmalf/RunLMALF.sh',str(N*alf_info['nreps']),str(alf_info['temp']),str(ntersite[0]),str(ntersite[1])],stdout=fpout,stderr=fperr)
+    if alfinfo['loss']=='linear2018':
+      alf.linear2018(alf_info,N,ntersite,fpout,fperr)
+      alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
+    elif alfinfo['loss']=='nonlinear2024':
+      alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
       alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
     else:
-      subprocess.call([shutil.which('python'),'-c','import alf; alf.RunWham(%d,%f,%d,%d)' % (N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
-      alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
+      print("Error, unrecognized loss function")
+      quit()
 
     alf.SetVars(alf_info,i+1)
     alf.GetVolumes(alf_info,i,N,eqS,S)

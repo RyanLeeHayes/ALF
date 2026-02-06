@@ -548,3 +548,4 @@ def InitVars(alf_info,minimize=True):
 
   os.chdir('analysis0')
   SetVars(alf_info,1,minimize=minimize)
+  SetGimp(alf_info)
