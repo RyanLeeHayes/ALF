@@ -35,6 +35,30 @@ postprocess.
 #define kB 0.00198614L
 
 #define MAXSTRING 1024
+#define BLOCK 512
+
+#define USEGPU
+
+#ifdef USEGPU
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 600
+// From http://stackoverflow.com/questions/16077464/atomicadd-for-real-on-gpu
+// And https://stackoverflow.com/questions/37566987/cuda-atomicadd-for-doubles-definition-error
+__device__ static inline
+double atomicAdd(double* address, double val)
+{
+    unsigned long long int* address_as_ull =
+                                          (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                        __longlong_as_double(assumed)));
+    } while (assumed != old);
+    return __longlong_as_double(old);
+}
+#endif
+#endif
 
 double randDouble()
 {
@@ -338,6 +362,9 @@ struct_plmd* setup(int argc, char *argv[])
   }
   plmd->block0[i]=k;
 
+  cudaMalloc(&(plmd->block0_d),(plmd->nsites+1)*sizeof(int));
+  cudaMemcpy(plmd->block0_d,plmd->block0,(plmd->nsites+1)*sizeof(int),cudaMemcpyHostToDevice);
+
   c=1;
 
   if (argc>c && sscanf(argv[c],"%d",&plmd->B)==1) {
@@ -407,9 +434,39 @@ struct_plmd* setup(int argc, char *argv[])
 
   plmd->mc_lambda=(real*) calloc(plmd->nblocks*plmd->B,sizeof(real));
 
+#ifdef USEGPU
+  plmd->mc_ensweight=(real*)calloc(plmd->B,sizeof(real));
+  for (i=0; i<plmd->B; i++) {
+    plmd->mc_ensweight[i]=1;
+  }
+
+  cudaMalloc(&(plmd->mc_lambda_d),plmd->B*plmd->nblocks*sizeof(real));
+  cudaMalloc(&(plmd->mc_ensweight_d),plmd->B*sizeof(real));
+
+  cudaMemcpy(plmd->mc_ensweight_d,plmd->mc_ensweight,plmd->B*sizeof(real),cudaMemcpyHostToDevice);
+
+  // count nprof
+  plmd->nprof=0;
+  for (i=0; i<plmd->nsites; i++) {
+    for (j=i; j<plmd->nsites; j++) {
+      if (i==j) {
+        if (plmd->nsubs[i]==2) {
+          plmd->nprof+=plmd->nsubs[i]+plmd->nsubs[i]*(plmd->nsubs[i]-1)/2;
+        } else {
+          plmd->nprof+=plmd->nsubs[i]+2*plmd->nsubs[i]*(plmd->nsubs[i]-1)/2;
+        }
+      } else { // if (plmd->msprof)
+        plmd->nprof+=plmd->nsubs[i]*plmd->nsubs[j];
+      }
+    }
+  }
+#endif
+  cudaMalloc(&(plmd->mc_Zprofile_d),plmd->nprof*plmd->NBINS*sizeof(real));
   return plmd;
 }
 
+
+#ifdef USEGPU
 /*
 __device__
 void reduceBitonicSort(int itmp,real Ztmp,int* iloc,real* Zloc,real* Zloc2,real* Zglobal)
@@ -466,7 +523,7 @@ void reduceBitonicSort(int itmp,real Ztmp,int* iloc,real* Zloc,real* Zloc2,real*
     atomicAdd(&Zglobal[threadIdx.x],Zloc2[threadIdx.x]);
   }
 }
-
+*/
 __global__
 void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprofile,real* outweight,real* Zprofile)
 {
@@ -478,9 +535,11 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
   real w, wout;
   int itmp,jtmp;
   real Ztmp;
-  __shared__ int iloc[BLOCK];
-  __shared__ real Zloc[BLOCK];
-  __shared__ real Zloc2[NBINS+1];
+  // __shared__ int iloc[BLOCK];
+  // __shared__ real Zloc[BLOCK];
+  // __shared__ real Zloc2[NBINS+1];
+  int NBINS=plmd.NBINS;
+  int NBINS2=plmd.NBINS2;
 
   lambda+=plmd.nblocks*b;
 
@@ -509,7 +568,8 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
             if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
           }
           if (outweight) wout+=Ztmp;
-          if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+          // if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+          if (Zprofile) atomicAdd(&Zprofile[k*NBINS+itmp],Ztmp);
           k++;
         }
 
@@ -532,7 +592,8 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
               }
             }
             if (outweight) wout+=Ztmp;
-            if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+            // if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+            if (Zprofile) atomicAdd(&Zprofile[k*NBINS+itmp],Ztmp);
             k++;
           }
         }
@@ -558,12 +619,13 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
                 if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
               }
               if (outweight) wout+=Ztmp;
-              if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+              // if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+              if (Zprofile) atomicAdd(&Zprofile[k*NBINS+itmp],Ztmp);
               k++;
             }
           }
         }
-      } else if (plmd.msprof) {
+      } else { // only needed if plmd.msprof
         for (i1=plmd.block0_d[s1]; i1<plmd.block0_d[s1+1]; i1++) {
           for (i2=plmd.block0_d[s2]; i2<plmd.block0_d[s2+1]; i2++) {
             __syncthreads();
@@ -584,7 +646,8 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
               if (weightprofile) Ztmp*=weightprofile[k*NBINS+itmp];
             }
             if (outweight) wout+=Ztmp;
-            if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+            // if (Zprofile) reduceBitonicSort(itmp,Ztmp,iloc,Zloc,Zloc2,&Zprofile[k*NBINS]);
+            if (Zprofile) atomicAdd(&Zprofile[k*NBINS+itmp],Ztmp);
             k++;
           }
         }
@@ -601,15 +664,18 @@ void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprof
 
 void evaluateGimp(struct_plmd *plmd)
 {
-  if (PROFILE) {
-    cudaMemset(plmd->mc_Zprofile_d,0,plmd->nprof*NBINS*sizeof(real));
-    // void profilekernel(struct_plmd plmd,real* lambda,real* inweight,real* weightprofile,real* outweight,real* Zprofile)
-    profilekernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->mc_lambda_d,plmd->mc_ensweight_d,NULL,NULL,plmd->mc_Zprofile_d);
-    // freeenergykernel<<<(plmd->nprof*NBINS+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->mc_Zprofile_d,plmd->Gimp_d,0,NULL,NULL,NULL);
-    // Too noisy:
-    // freeenergykernel<<<plmd->nprof,NBINS>>>(plmd[0],plmd->mc_Zprofile_d,plmd->Gimp_d,NULL,NULL);
     int s1,s2,i,j,k,kn;
+    int NBINS, NBINS2;
     real *mc_Zprofile, *Gimp;
+    char fnm[MAXSTRING];
+    FILE *fp;
+
+    NBINS=plmd->NBINS;
+    NBINS2=plmd->NBINS2;
+
+    cudaMemset(plmd->mc_Zprofile_d,0,plmd->nprof*NBINS*sizeof(real));
+    profilekernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],plmd->mc_lambda_d,plmd->mc_ensweight_d,NULL,NULL,plmd->mc_Zprofile_d);
+
     mc_Zprofile=(real*)calloc(NBINS*plmd->nprof,sizeof(real));
     Gimp=(real*)calloc(NBINS,sizeof(real));
     cudaMemcpy(mc_Zprofile,plmd->mc_Zprofile_d,NBINS*plmd->nprof*sizeof(real),cudaMemcpyDeviceToHost);
@@ -617,6 +683,8 @@ void evaluateGimp(struct_plmd *plmd)
     for (s1=0; s1<plmd->nsites; s1++) {
       for (s2=s1; s2<plmd->nsites; s2++) {
         if (s1==s2) { // Same site
+          sprintf(fnm,"../G_imp/G1_%d.dat",plmd->nsubs[s1]);
+          fp=fopen(fnm,"w");
           kn=k+plmd->nsubs[s1];
           for (i=0; i<NBINS; i++) {
             Gimp[i]=0;
@@ -626,14 +694,17 @@ void evaluateGimp(struct_plmd *plmd)
             if (Gimp[i]==0) {
               fprintf(stdout,"Warning, empty 1D Gimp[%d]\n",i);
             }
-            // fprintf(fp,"%lg\n",Gimp[i]);
-            Gimp[i]=-plmd->kT*log(Gimp[i]);
+            Gimp[i]=-log(Gimp[i]);
+            fprintf(fp,"%lg\n",Gimp[i]);
           }
-          for (j=k; j<kn; j++) {
-            cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
-          }
+          // for (j=k; j<kn; j++) {
+          //   cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
+          // }
           k=kn;
+          fclose(fp);
 
+          sprintf(fnm,"../G_imp/G12_%d.dat",plmd->nsubs[s1]);
+          fp=fopen(fnm,"w");
           kn=k+(plmd->nsubs[s1]*(plmd->nsubs[s1]-1))/2;
           for (i=0; i<NBINS; i++) {
             Gimp[i]=0;
@@ -643,15 +714,18 @@ void evaluateGimp(struct_plmd *plmd)
             if (Gimp[i]==0) {
               fprintf(stdout,"Warning, empty transition Gimp[%d]\n",i);
             }
-            // fprintf(fp,"%lg\n",Gimp[i]);
-            Gimp[i]=-plmd->kT*log(Gimp[i]);
+            Gimp[i]=-log(Gimp[i]);
+            fprintf(fp,"%lg\n",Gimp[i]);
           }
-          for (j=k; j<kn; j++) {
-            cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
-          }
+          // for (j=k; j<kn; j++) {
+          //   cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
+          // }
           k=kn;
+          fclose(fp);
 
           if (plmd->nsubs[s1]>2) {
+            sprintf(fnm,"../G_imp/G2_%d.dat",plmd->nsubs[s1]);
+            fp=fopen(fnm,"w");
             kn=k+(plmd->nsubs[s1]*(plmd->nsubs[s1]-1))/2;
             for (i=0; i<NBINS; i++) {
               Gimp[i]=0;
@@ -664,15 +738,18 @@ void evaluateGimp(struct_plmd *plmd)
               } else if (Gimp[i]!=0 && (i/NBINS2)+(i%NBINS2)>=NBINS2) {
                 fprintf(stdout,"Warning, nonempty 2D intrasite Gimp[%d] should be empty\n",i);
               }
-              // fprintf(fp,"%lg\n",Gimp[i]);
-              Gimp[i]=-plmd->kT*log(Gimp[i]);
+              Gimp[i]=-log(Gimp[i]);
+              fprintf(fp,"%lg\n",Gimp[i]);
             }
-            for (j=k; j<kn; j++) {
-              cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
-            }
+            // for (j=k; j<kn; j++) {
+            //   cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
+            // }
             k=kn;
+            fclose(fp);
           }
-        } else if (plmd->msprof) {
+        } else { // only needed if plmd->msprof
+          sprintf(fnm,"../G_imp/G1_%d_%d.dat",plmd->nsubs[s1],plmd->nsubs[s2]);
+          fp=fopen(fnm,"w");
           kn=k+plmd->nsubs[s1]*plmd->nsubs[s2];
           for (i=0; i<NBINS; i++) {
             Gimp[i]=0;
@@ -682,34 +759,21 @@ void evaluateGimp(struct_plmd *plmd)
             if (Gimp[i]==0) {
               fprintf(stdout,"Warning, empty 2D intersite Gimp[%d]\n",i);
             }
-            // fprintf(fp,"%lg\n",Gimp[i]);
-            Gimp[i]=-plmd->kT*log(Gimp[i]);
+            Gimp[i]=-log(Gimp[i]);
+            fprintf(fp,"%lg\n",Gimp[i]);
           }
-          for (j=k; j<kn; j++) {
-            cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
-          }
+          // for (j=k; j<kn; j++) {
+          //   cudaMemcpy(&plmd->Gimp_d[NBINS*j],Gimp,NBINS*sizeof(real),cudaMemcpyHostToDevice);
+          // }
           k=kn;
+          fclose(fp);
         }
       }
     }
     free(mc_Zprofile);
     free(Gimp);
-  }
-
-  if (MOMENT) {
-    int i;
-    real sum;
-    sum=0;
-    for (i=0; i<plmd->B; i++) {
-      sum+=plmd->ensweight[i];
-    }
-    cudaMemcpy(plmd->sumensweight_d,&sum,sizeof(real),cudaMemcpyHostToDevice);
-    cudaMemset(plmd->moments_d,0,plmd->nbias*sizeof(real));
-// void weightedenergykernel(struct_plmd plmd,real sign,real* lambda,real* weight,real* dEdx)
-    weightedenergykernel<<<(plmd->B+BLOCK-1)/BLOCK,BLOCK>>>(plmd[0],-1,plmd->lambda_d,plmd->ensweight_d,plmd->moments_d);
-  }
 }
-*/
+#else
 
 void profile1(real *Gimp,int NBINS,int nblocks,int B,int i1,real *lambda)
 {
@@ -869,6 +933,7 @@ void evaluateGimp(struct_plmd *plmd)
   }
   free(Gimp);
 }
+#endif
 
 void printSamples(struct_plmd *plmd)
 {
@@ -888,6 +953,9 @@ void printSamples(struct_plmd *plmd)
 void run(struct_plmd *plmd)
 {
   monte_carlo_Z(plmd);
+#ifdef USEGPU
+  cudaMemcpy(plmd->mc_lambda_d,plmd->mc_lambda,plmd->B*plmd->nblocks*sizeof(real),cudaMemcpyHostToDevice);
+#endif
 
   if (plmd->mode==gimp) {
     evaluateGimp(plmd);

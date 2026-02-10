@@ -23,7 +23,7 @@ def GetStepsCharmm(alf_info,fnm):
 
   import os, subprocess
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/GetLambda/GetSteps'
+  exe=os.path.dirname(os.path.abspath(__file__))+'/bin/GetSteps'
   try:
     return(int(subprocess.check_output([exe,fnm])))
   except:

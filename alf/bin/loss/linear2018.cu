@@ -633,7 +633,7 @@ __global__ void reactioncoord_omega2_12(struct_data data,int i1,int i2)
   if (t<data.ND) {
     q1=data.D_d[t*data.Ndim+1+i1];
     q2=data.D_d[t*data.Ndim+1+i2];
-    data.D_d[t*data.Ndim+1+data.NL+data.Nsim+1]=q2*(1-1/(q1/-1.012+1));
+    data.D_d[t*data.Ndim+1+data.NL+data.Nsim+1]=-q2*(1-1/(q1/-1.012+1)); // switch sign so logadd will work. Reverse sign in GetFreeEnergy5.py
   }
 }
 

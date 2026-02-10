@@ -78,6 +78,9 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',ntersite=[0,0],l
     shutil.copy('analysis%d/c_sum.dat' % (i-1),'analysis%d/c_prev.dat' % i)
     shutil.copy('analysis%d/x_sum.dat' % (i-1),'analysis%d/x_prev.dat' % i)
     shutil.copy('analysis%d/s_sum.dat' % (i-1),'analysis%d/s_prev.dat' % i)
+    if alf_info['bias']=='bcxstu2026':
+      shutil.copy('analysis%d/t_sum.dat' % (i-1),'analysis%d/t_prev.dat' % i)
+      shutil.copy('analysis%d/u_sum.dat' % (i-1),'analysis%d/u_prev.dat' % i)
     np.savetxt('analysis%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
     if not os.path.exists('G_imp'):
       print("Error, G_imp directory does not exist")
@@ -91,10 +94,10 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',ntersite=[0,0],l
     alf.GetEnergy(alf_info,i,i,N=N,skipE=skipE)
     fpout=open('output','w')
     fperr=open('error','w')
-    if alfinfo['loss']=='linear2018':
+    if alf_info['loss']=='linear2018':
       alf.linear2018(alf_info,N,ntersite,fpout,fperr)
       alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
-    elif alfinfo['loss']=='nonlinear2024':
+    elif alf_info['loss']=='nonlinear2024':
       alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
       alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
     else:

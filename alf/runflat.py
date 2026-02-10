@@ -152,10 +152,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
         alf.GetEnergy(alf_info,im5,i)
         fpout=open('output','w')
         fperr=open('error','w')
-        if alfinfo['loss']=='linear2018':
+        if alf_info['loss']=='linear2018':
           alf.linear2018(alf_info,N,ntersite,fpout,fperr)
           alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
-        elif alfinfo['loss']=='nonlinear2024':
+        elif alf_info['loss']=='nonlinear2024':
           alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
           alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
         else:

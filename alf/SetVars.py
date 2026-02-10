@@ -103,7 +103,7 @@ def SetVarsCharmm(alf_info,Step,minimize=False):
       jbuff+=nsubs[sj]
     ibuff+=nsubs[si]
 
-  if alf_info['bias']='bcxstu2026':
+  if alf_info['bias']=='bcxstu2026':
 
     t_prev=np.loadtxt('t_prev.dat')
     t=np.loadtxt('t.dat')
@@ -512,7 +512,7 @@ def InitVars(alf_info,minimize=True):
 
   import sys, os
   import numpy as np
-  from subprocess import call
+  import alf
 
   nblocks=alf_info['nblocks']
 
@@ -548,4 +548,4 @@ def InitVars(alf_info,minimize=True):
 
   os.chdir('analysis0')
   SetVars(alf_info,1,minimize=minimize)
-  SetGimp(alf_info)
+  alf.SetGimp(alf_info)

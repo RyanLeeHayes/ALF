@@ -23,7 +23,7 @@ def GetLambdaCharmm(alf_info,fnmout,fnmsin):
     if not os.path.exists(fnmin):
       print('Error, %s does not exist, molecular dynamics probably failed, check run output and run error for clues' % (fnmin,))
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/GetLambda/GetLambda'
+  exe=os.path.dirname(os.path.abspath(__file__))+'/bin/GetLambda'
   subprocess.check_output([exe,fnmout,*fnmsin])
 
 def GetLambdaCharmmSlow(alf_info,fnmout,fnmsin):

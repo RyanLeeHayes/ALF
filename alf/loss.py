@@ -15,7 +15,7 @@ def SetGimp(alf_info):
       Dictionary of variables alf needs to run
   """
 
-  import os.path
+  import os, shutil, os.path
   import subprocess
 
   # Don't generate G_imp if using custom implicit constraints, the user will supply it
@@ -31,7 +31,11 @@ def SetGimp(alf_info):
     nbins2=20
   elif alf_info['loss']=='nonlinear2024':
     nbins2=16
-  subprocess.call([os.path.dirname(__file__)+'/bin/impcons',10000000,'gimp',str(nbins2),alf_info['impcons']]+options,stdout=fpout,stderr=fperr)
+  if alf_info['impcons'] in ['fnex2011','fnexdozen2024']:
+    options=[str(alf_info['impconsopt']['c'])]
+  elif alf_info['impcons']=='fnpwise2026':
+    options=[str(alf_info['impconsopt']['kbeta']),str(alf_info['impconsopt']['width'])]
+  subprocess.call(['time',os.path.dirname(__file__)+'/bin/impcons',str(10000000),'gimp',str(nbins2),alf_info['impcons']]+options,stdout=fpout,stderr=fperr)
   fpout.close()
   fperr.close()
 
@@ -63,9 +67,9 @@ def linear2018(alf_info,N,ntersite,fpout,fperr):
       File pointer to write standard error to
   """
 
-  import subprocess
+  import subprocess, shutil
 
-  subprocess.call([shutil.which('python'),'-c','import alf; alf.runlinear2018(%s,%d,%f,%d,%d)' % (alf_info['bias'],N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
+  subprocess.call(['time',shutil.which('python'),'-c','import alf; alf.runlinear2018("%s",%d,%f,%d,%d)' % (alf_info['bias'],N*alf_info['nreps'],alf_info['temp'],ntersite[0],ntersite[1])],stdout=fpout,stderr=fperr)
 
 def runlinear2018(bias,nf,temp,nts0,nts1):
   """
@@ -121,7 +125,7 @@ def runlinear2018(bias,nf,temp,nts0,nts1):
   whamlib = ctypes.CDLL(os.path.dirname(__file__)+'/bin/liblinear2018.so')
   pywham = whamlib.wham # declare as a c function to prevent c++ name mangling
   pywham.argtypes=[ctypes.c_char_p,ctypes.c_int,ctypes.c_double,ctypes.c_int,ctypes.c_int]
-  pywham(bias,nf,temp,nts0,nts1)
+  pywham(bytes(bias,encoding='ascii'),nf,temp,nts0,nts1)
 
 def nonlinear2024(alf_info,N,ntersite,fpout,fperr):
   """
@@ -154,7 +158,7 @@ def nonlinear2024(alf_info,N,ntersite,fpout,fperr):
     os.mkdir('multisite')
 
   # Run wham and get the weights
-  subprocess.call([os.path.dirname(__file__)+'/bin/whamweight',str(N*alf_info['nreps']),str(alf_info['temp']),str(ntersite[0]),str(ntersite[1])],stdout=fpout,stderr=fperr)
+  subprocess.call(['time',os.path.dirname(__file__)+'/bin/whamweight',str(N*alf_info['nreps']),str(alf_info['temp']),str(ntersite[0]),str(ntersite[1])],stdout=fpout,stderr=fperr)
 
   # Generate monte carlo samples
   samples=len(np.loadtxt('Lambda/weight.dat'))
@@ -162,8 +166,8 @@ def nonlinear2024(alf_info,N,ntersite,fpout,fperr):
     if alf_info['impcons'] in ['fnex2011','fnexdozen2024']:
       options=[str(alf_info['impconsopt']['c'])]
     elif alf_info['impcons']=='fnpwise2026':
-      options=[[str(alf_info['impconsopt']['kbeta']),str(alf_info['impconsopt']['width'])]
-    subprocess.call([os.path.dirname(__file__)+'/bin/impcons',str(sample),'sample',alf_info['impcons']]+options,stdout=fpout,stderr=fperr)
+      options=[str(alf_info['impconsopt']['kbeta']),str(alf_info['impconsopt']['width'])]
+    subprocess.call(['time',os.path.dirname(__file__)+'/bin/impcons',str(samples),'sample',alf_info['impcons']]+options,stdout=fpout,stderr=fperr)
   elif alf_info['impcons']=='custom':
     # still have to generate mc_Lambda.dat by tiling mc_Lambda.dat from G_imp
     mc_Lambda=np.loadtxt('../G_imp/mc_Lambda.dat')
@@ -173,4 +177,4 @@ def nonlinear2024(alf_info,N,ntersite,fpout,fperr):
     np.savetxt('mc_Lambda.dat',mc_Lambdas[0:samples,:])
 
   # Run loss function
-  subprocess.call([os.path.dirname(__file__)+'/bin/nonlinear2024',alf_info['bias'],str(alf_info['temp']),str(ntersite[0]),str(ntersite[1])],stdout=fpout,stderr=fperr)
+  subprocess.call(['time',os.path.dirname(__file__)+'/bin/nonlinear2024',alf_info['bias'],str(alf_info['temp']),str(ntersite[0]),str(ntersite[1])],stdout=fpout,stderr=fperr)

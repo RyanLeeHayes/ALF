@@ -87,7 +87,7 @@ struct_plmd* setup(int argc, char *argv[])
   FILE *fp;
   char line[MAXLENGTH];
 
-  if (argc<7) {
+  if (argc<5) {
     fprintf(stderr,"Error: not enough input arguments\n");
     exit(1);
   }
@@ -190,7 +190,7 @@ struct_plmd* setup(int argc, char *argv[])
     for (j=0;j<plmd->nblocks;j++) {
       double buffer;
       fscanf(fp,"%lf",&buffer);
-      plmd->lambda[i*plmd->nblocks+j]=buffer;
+      plmd->mc_lambda[i*plmd->nblocks+j]=buffer;
     }
   }
   fclose(fp);
@@ -530,11 +530,11 @@ void reduceBitonicSort(int itmp,real Ztmp,int* iloc,real* Zloc,real* Zloc2,real*
     for (i2=i1; i2>0; i2/=2) {
       otherThreadIdx=(threadIdx.x^i2);
       if (i2<32) {
-        iother=__shfl_xor_sync(-1,itmp,i2);
+        iother=__shfl_xor_sync(0xffffffff,itmp,i2);
         bswitch=(((otherThreadIdx>threadIdx.x)==(iother>itmp))==direction);
         bswitch=(iother==itmp?0:bswitch);
-        itmp=__shfl_sync(-1,itmp,threadIdx.x^(i2*bswitch));
-        Ztmp=__shfl_sync(-1,Ztmp,threadIdx.x^(i2*bswitch));
+        itmp=__shfl_sync(0xffffffff,itmp,threadIdx.x^(i2*bswitch));
+        Ztmp=__shfl_sync(0xffffffff,Ztmp,threadIdx.x^(i2*bswitch));
       } else {
         iloc[threadIdx.x]=itmp;
         Zloc[threadIdx.x]=Ztmp;
@@ -1679,7 +1679,7 @@ void run(struct_plmd *plmd)
 
 void finish(struct_plmd *plmd)
 {
-  int i,j;
+  int i;
   FILE *fp;
 
   fp=fopen("OUT.dat","w");

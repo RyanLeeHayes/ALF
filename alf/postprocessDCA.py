@@ -95,7 +95,7 @@ def FilterDCA(i,iNF,NF,FREQ,lc=0.99,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/Filter'
+  exe=os.path.dirname(os.path.abspath(__file__))+'/bin/Filter'
   fnmin=('../analysis%d/data/Lambda.%d.%d.dat' % (i,iNF,alf_info['ncentral']))
   fnmout=('data/Filter.%d.dat' % iNF)
   subprocess.call(['mpirun','-n','1','--map-by','node','--bind-to','none','-x','OMP_NUM_THREADS=1',exe,str(FREQ),fnmin,fnmout,str(lc)])
@@ -147,7 +147,7 @@ def MomentDCA(i,iNF,NF,FREQ,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/Moment'
+  exe=os.path.dirname(os.path.abspath(__file__))+'/bin/Moment'
   fnmin=('data/Filter.%d.dat' % iNF)
   fnmout1=('data/m1.%d.obs.dat' % iNF)
   fnmout2=('data/m2.%d.obs.dat' % iNF)
@@ -243,7 +243,7 @@ def LMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/LM'
+  exe=os.path.dirname(os.path.abspath(__file__))+'/bin/LM'
   if iBS==NBS:
     fnmout1='data/h.LM.dat'
     fnmout2='data/J.LM.dat'
@@ -300,7 +300,7 @@ def PLMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
 
   os.chdir('dca%d' % i)
 
-  exe=os.path.dirname(os.path.abspath(__file__))+'/dca/PLM'
+  exe=os.path.dirname(os.path.abspath(__file__))+'/bin/PLM'
   if iBS==NBS:
     fnmout1='data/h.PLM.dat'
     fnmout2='data/J.PLM.dat'

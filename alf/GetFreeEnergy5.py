@@ -223,7 +223,7 @@ def GetFreeEnergy5(alf_info,ms,msprof):
           for i in range(0,nsubs[isite]):
             for j in range(0,nsubs[isite]):
               if i != j:
-                t[iblock+i,jblock+j]=coeff[ind]
+                t[iblock+i,jblock+j]=-coeff[ind] # switched sign in linear2018.cu
                 ind+=1
           for i in range(0,nsubs[isite]):
             for j in range(0,nsubs[isite]):
@@ -250,9 +250,9 @@ def GetFreeEnergy5(alf_info,ms,msprof):
         if alf_info['bias']=='bcxstu2026':
           for i in range(0,nsubs[isite]):
             for j in range(0,nsubs[jsite]):
-              t[iblock+i,jblock+j]=coeff[ind]
+              t[iblock+i,jblock+j]=-coeff[ind] # switched sign in linear2018.cu
               ind+=1
-              t[jblock+j,iblock+i]=coeff[ind]
+              t[jblock+j,iblock+i]=-coeff[ind] # switched sign in linear2018.cu
               ind+=1
           for i in range(0,nsubs[isite]):
             for j in range(0,nsubs[jsite]):

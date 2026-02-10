@@ -91,7 +91,7 @@ def initialize_alf_info(engine='charmm'):
 
   # Check implicit constraints
   impconses=['fnex2011','fnexdozen2024','fnpwise2026','custom']
-  if not 'impcons' in impconses:
+  if not 'impcons' in alf_info:
     # print("Error: need impcons key in prep/alf_info.py. Options are")
     # print(impconses)
     # quit()
