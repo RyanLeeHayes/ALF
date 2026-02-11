@@ -1,19 +1,21 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.20)
 # loss
-project(linear2018 LANGUAGES CXX)
-project(nonlinear2024 LANGUAGES CXX)
-project(whamweight LANGUAGES CXX)
-project(impcons LANGUAGES CXX)
+project(linear2018 LANGUAGES CXX CUDA)
+project(nonlinear2024 LANGUAGES CXX CUDA)
+project(whamweight LANGUAGES CXX CUDA)
+project(impcons LANGUAGES CXX CUDA)
 # dca
 project(Filter LANGUAGES C)
 project(Moment LANGUAGES C)
 project(LM LANGUAGES C)
-project(PLM LANGUAGES CXX)
+project(PLM LANGUAGES CXX CUDA)
 # io
 project(GetLambda LANGUAGES Fortran)
 project(GetSteps LANGUAGES Fortran)
 
-find_package(CUDA 9.0)
+# Note: added CUDA to all project commands, and changed cuda_add_library to add_library and cuda_add_executable to add_executable for cmake 4.0 compatibility
+
+find_package(CUDA 9.0 REQUIRED)
 
 find_package(OpenMP REQUIRED)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -83,26 +85,18 @@ target_include_directories(LM PUBLIC ${MPI_C_INCLUDE_PATH} .)
 add_executable(GetLambda ${GetLambda_sources})
 add_executable(GetSteps ${GetSteps_sources})
 
-if (CUDA_FOUND)
-
 set(CUDA_NVCC_FLAGS_DEBUG ${CUDA_NVCC_FLAGS_DEBUG} "-G")
 set(CUDA_NVCC_FLAGS_RELEASE ${CUDA_NVCC_FLAGS_RELEASE} "--use_fast_math")
 
 # loss
-cuda_add_library(linear2018 SHARED ${linear2018_sources})
-# cuda_add_executable(linear2018 ${linear2018_sources})
-# cuda_add_library(nonlinear2024 SHARED ${nonlinear2024_sources})
-cuda_add_executable(nonlinear2024 ${nonlinear2024_sources})
-# cuda_add_library(whamweight SHARED ${whamweight_sources})
-cuda_add_executable(whamweight ${whamweight_sources})
-# cuda_add_library(impcons SHARED ${impcons_sources})
-cuda_add_executable(impcons ${impcons_sources})
+add_library(linear2018 SHARED ${linear2018_sources})
+# add_executable(linear2018 ${linear2018_sources})
+# add_library(nonlinear2024 SHARED ${nonlinear2024_sources})
+add_executable(nonlinear2024 ${nonlinear2024_sources})
+# add_library(whamweight SHARED ${whamweight_sources})
+add_executable(whamweight ${whamweight_sources})
+# add_library(impcons SHARED ${impcons_sources})
+add_executable(impcons ${impcons_sources})
 # dca
 # add_library(PLM SHARED ${plm_sources})
-cuda_add_executable(PLM ${plm_sources})
-
-else()
-
-message(FATAL_ERROR "No CUDA found. ALF requires CUDA")
-
-endif()
+add_executable(PLM ${plm_sources})
