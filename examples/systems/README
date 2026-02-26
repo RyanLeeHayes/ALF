@@ -1,0 +1,7 @@
+prep_T4L-MSF - demonstrate multisite perturbations
+
+prep_T4L149F - demonstrate replica exchange (other ensemble is prep_T4L149U)
+
+prep_FAAH - demonstrate different engines
+
+prep_protG-T16-F - demonstrate loss, bias, and impcons (other emsemble is prep_protG-T16-F)

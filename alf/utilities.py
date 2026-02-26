@@ -68,9 +68,11 @@ def initialize_alf_info(engine='charmm'):
   # Check loss function
   losses=['linear2018','nonlinear2024']
   if not 'loss' in alf_info:
-    print("Error: need loss key in prep/alf_info.py. Options are")
-    print(losses)
-    quit()
+    # print("Error: need loss key in prep/alf_info.py. Options are")
+    # print(losses)
+    # quit()
+    print("Default loss linear2018 added to alf_info")
+    alf_info['loss']='linear2018' # default
   if not alf_info['loss'] in losses:
     print("Error: unsupported loss function %s. Options are" % (alf_info['loss'],))
     print(losses)
