@@ -200,3 +200,40 @@ def GetSteps(alf_info,fnm):
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
     quit()
+
+def GetStepsAll(alf_info,fnm):
+  """
+  Counts the steps in alchemical trajectories in CHARMM binary format
+
+  This routine counts the number of steps in binary alchemical
+  trajectories and returns the integer result, primarily to ensure that
+  production chunks ran successfully. Based on the contents of
+  alf_info['engine'], this routine either wraps the GetStepsCharmm routine
+  for reading CHARMM binary alchemical trajectories or the GetStepsBlade
+  routine for reading standalone BLaDE binary alchemical trajectories.
+
+  This routine wraps GetSteps and calls it for each replica, returning the
+  minimum number of steps.
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  fnm : str
+      The filename for the binary input file
+
+  Returns
+  -------
+  int
+      The number of steps actually contained in the trajectory
+  """
+
+  if alf_info['nreps']==1:
+    return GetSteps(alf_info,fnm)
+  else:
+    steps=GetSteps(alf_info,fnm+'_0')
+    for i in range(1,alf_info['nreps']):
+      isteps=GetSteps(alf_info,fnm+'_'+str(i))
+      if isteps<steps:
+        steps=isteps
+    return steps

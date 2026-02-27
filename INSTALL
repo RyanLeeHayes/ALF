@@ -2,12 +2,12 @@ Overview
 
 In order to install ALF, you will need an environment with C, C++, MPI, and CUDA
 compilers as well as cmake and python and pip. You will need to compile ALF code
-in alf/wham and alf/dca, then use pip to install the python module in a virtual
-environment. You can achieve this manually or using conda as described below.
-Manual installation is preferred if you expect to have many versions of ALF or
-engage in ALF development. Conda installation is simpler if you expect to have a
-single version of ALF and use it out of the box as a fixed tool. Limited
-functionality is available without CUDA, as outlined below.
+in alf/bin, then use pip to install the python module in a virtual environment.
+You can achieve this manually or using conda as described below. Manual
+installation is preferred if you expect to have many versions of ALF or engage
+in ALF development. Conda installation is simpler if you expect to have a single
+version of ALF and use it out of the box as a fixed tool. Limited functionality
+is available without CUDA, as outlined below.
 
 
 
@@ -28,8 +28,7 @@ You may wish to save the appropriate commands to set up your environment in the
 ALF top level directory in a file called modules and source this file before or
 during compilation.
 
-To compile the ALF code in alf/wham and alf/dca, cd into each of those
-directories, run Clean.sh
+To compile the ALF code in alf/bin, cd into that directory and run Clean.sh
 
 bash Clean.sh
 
@@ -37,12 +36,11 @@ if you need to remove a previous installation attempt, and then run Compile.sh
 
 bash Compile.sh
 
-in each directory to compile the appropriate code. You may wish to add sourcing
-modules or setting up the environment directly to the Compile.sh script.
+to compile the appropriate code. You may wish to add sourcing modules or setting
+up the environment directly to the Compile.sh script.
 
-After compiling these codes, you are ready to create a python virtual
-environment and install the alf module. This can be done using the commands
-in Setup.sh
+After compiling this code, you are ready to create a python virtual environment
+and install the alf module. This can be done using the commands in Setup.sh
 
 python -m venv env-alf
 source env-alf/bin/activate
@@ -103,11 +101,7 @@ executables, and add the alf module to your virtual environment.
 conda activate env-alf
 export ALF_SOURCE_DIR=`pwd` # bash syntax
 # Compile ALF executables in wham and dca
-cd $ALF_SOURCE_DIR/alf/wham
-bash Clean.sh
-cmake ./
-make wham
-cd $ALF_SOURCE_DIR/alf/dca
+cd $ALF_SOURCE_DIR/alf/bin
 bash Clean.sh
 cmake ./
 make all
@@ -122,6 +116,11 @@ python -c "import alf"
 
 
 Installing without CUDA
+
+Installing without CUDA is not currently supported. The code that used to
+support it is still present, but no longer compatible with the rest of ALF.
+Instructions have been left here for the old installation in case the old CPU
+code is updated. Contact the developers if this functionality is needed.
 
 If you don't have access to CUDA GPUs, you can still run ALF, it will
 just be slower, and the tools aren't as streamlined for this. When

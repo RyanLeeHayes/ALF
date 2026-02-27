@@ -96,7 +96,7 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
     itt0=0
   for i in range(itt0,-1,-1):
     fnm=(run_dir+'/res/%s_prod%d.lmd' % (alf_info['name'],i))
-    if i==0 or alf.GetSteps(alf_info,fnm)==nlambdasteps:
+    if i==0 or alf.GetStepsAll(alf_info,fnm)==nlambdasteps:
       ibeg=i+1
       break
     else:
@@ -125,7 +125,7 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
 
   for i in range(ibeg,itt+1):
     fnm=('res/%s_prod%d.lmd' % (alf_info['name'],i))
-    while alf.GetSteps(alf_info,fnm)!=nlambdasteps:
+    while alf.GetStepsAll(alf_info,fnm)!=nlambdasteps:
       pause=False
       if os.path.exists('output_%d' % i):
         os.rename('output_%d' % i,'failed/output_%d' % i)
