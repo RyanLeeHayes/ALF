@@ -22,7 +22,7 @@ set(ALF_LIBEXEC_DIR "${CMAKE_INSTALL_PREFIX}/libexec/alf")
 
 file(COPY
   "${CMAKE_SOURCE_DIR}/alf"
-  "${CMAKE_SOURCE_DIR}/setup.py"
+  "${CMAKE_SOURCE_DIR}/pyproject.toml"
   "${CMAKE_SOURCE_DIR}/README.md"
   DESTINATION "${ALF_STAGE_DIR}"
 )
