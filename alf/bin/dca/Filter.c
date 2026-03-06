@@ -119,7 +119,7 @@ void run(struct_plmd *plmd)
       for (i=0; i<plmd->nsites; i++) {
         plmd->filter[i]=0;
         for (j=0; j<plmd->nsubs[i]; j++) {
-          if (plmd->lambda[plmd->block0[i]+j]>plmd->lc) {
+          if (plmd->lambda[plmd->block0[i]+j]>=plmd->lc) {
             plmd->filter[i]=j+1;
           }
         }

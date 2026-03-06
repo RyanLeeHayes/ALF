@@ -119,7 +119,7 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
       # print(i) # Was useful for keeping track of progress on slow analysis runs
       L=np.loadtxt('data/Lambda.'+str(i)+'.'+str(irep)+'.dat')
       for j in range(0,nlig):
-        P=np.sum(np.all(L[:,blk[j,:]]>lc,axis=1))
+        P=np.sum(np.all(L[:,blk[j,:]]>=lc,axis=1))
         Pkeep[i,j]=P
         G[i,j]=-Eall[irep,i,j]-Eshift[irep,i,j]-kT*np.log(P)
     PkeepA[irep,:,:]=Pkeep
