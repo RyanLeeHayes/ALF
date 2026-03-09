@@ -92,6 +92,14 @@ GetDCD : concatenate the many DCD files from a long production run into
     a single DCD file for each independent trial
 GetTrans : calculate alchemical transitions at each site, useful for
     assessing convergence of production simulations
+result_difference : take the difference between two Result.txt files to
+    give the ddG
+result_independentsum : combine all permutations of two or more
+    Result.txt files to give a compound state composed of independent
+    elements. Examples include combining multiple peptide calculations
+    into a single dG for the unfolded ensemble or combining protein
+    and ligand dG values to give the unbound reference dG before
+    binding.
 
 Lower Level Routines
 --------------------
@@ -170,6 +178,8 @@ from alf.dca.BootstrapMoments import *
 from alf.util.PlotFreeEnergy import *
 from alf.util.GetDCD import *
 from alf.util.GetTrans import *
+from alf.util.difference import *
+from alf.util.independentsum import *
 
 from alf.initialize import *
 from alf.runflat import *

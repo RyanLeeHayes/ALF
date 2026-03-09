@@ -1,0 +1,40 @@
+! List all mutation sites and mutants at each site
+! j is hsp
+set resid1 = 16
+set s1seq1 = 0 ! t
+set s1seq2 = a
+set s1seq3 = c
+set s1seq4 = d
+set s1seq5 = e
+set s1seq6 = f
+set s1seq7 = g
+set s1seq8 = h
+set s1seq9 = i
+set s1seq10 = k
+set s1seq11 = l
+set s1seq12 = m
+set s1seq13 = n
+set s1seq14 = p
+set s1seq15 = q
+set s1seq16 = r
+set s1seq17 = s
+set s1seq18 = v
+set s1seq19 = w
+set s1seq20 = y
+set s1seq21 = b
+set s1seq22 = j
+set segid1 = PROT
+
+! Set the terminal properties of any segid mutated above
+set nterdel_prot = 0 ! 0 means don't do it
+set nterres_prot = 1
+set ntercap_prot = nter
+set nterc_prot = 2 ! 2 nter, 3 cter, 4 ace, 5 ct3
+set cterdel_prot = 0 ! 0 means don't do it
+set cterres_prot = 56
+set ctercap_prot = cter
+set cterc_prot = 3  ! 2 nter, 3 cter, 4 ace, 5 ct3
+
+! Only modify aainitl and aafinal if you're mutating things besides proteins
+set aainitl = 0
+set aafinal = @nsites

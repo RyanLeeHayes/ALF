@@ -1,0 +1,13 @@
+protG-T16-Fpart-linear-dozens-bcxs_charmm - this runs the folded side of
+hydrophobic point mutations at T16 in protein G. This uses the linear loss
+function, bcxs bias, and the dozens of substituents fnex implicit constraint.
+
+Make a copy of the examples/engine/charmm or examples/engine/bladelib templates
+and copy this directory into it, renaming it prep, and editing the path in
+alf_info.py 'enginepath' to point to your charmm executable. Expected results
+after production are in a file called Result.txt .
+
+Note the loss function, bias, and implicit constraints choices are suboptimal.
+This exmples serves to illustrate how to select those options in alf_info.py .
+A more difficult variant with full site saturation mutagenesis is available by
+dropping "part" from the directory name.

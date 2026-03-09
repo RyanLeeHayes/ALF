@@ -5,7 +5,8 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
   Computes free energies and places them in Results.txt
 
   Will bail out if there are more than 2^20 alchemical states. Used in
-  alf.FinishDCA. See further documentation there.
+  alf.FinishDCA. See further documentation there. Must be run from inside
+  dca analysis directory.
 
   Parameters
   ----------
@@ -141,7 +142,7 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
   np.savetxt('G.dat',G)
   np.savetxt('GS.dat',GS)
 
-  fp=open('Result.txt','w')
+  fp=open('ResultGuess.txt','w')
 
   for i in range(0,nlig_ng):
     for j in range(0,len(nsubs)):
@@ -149,3 +150,51 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
     fp.write('%8.3f +/- %5.3f\n' % (Value[i],Error[i]))
 
   fp.close()
+
+def GetVarianceMaskedDCA(alf_info,Path):
+  """
+  Takes DCA free energies in Results.txt and masks them with nan if a
+  combination was unsampled
+
+  Parameters
+  ----------
+  alf_info : dict
+      Dictionary of variables alf needs to run
+  Path : str
+      Path to a data directory for Potts model estimation, typically 'data'
+  """
+
+  import numpy as np
+
+  nsubs=alf_info['nsubs']
+  m1=np.loadtxt(Path+'/m1.obs.dat')
+  m2=np.loadtxt(Path+'/m2.obs.dat')
+
+  fpin=open('ResultGuess.txt','r')
+  fpout=open('Result.txt','w')
+
+  ind=np.zeros((len(nsubs),),dtype=int)
+  for line in fpin:
+    for i in range(len(nsubs)):
+      ind[i]=int(line.split()[i])
+    shift=0
+    iblock0=0
+    for i in range(len(nsubs)):
+      iind=ind[i]+iblock0+1
+      if m1[iind]==0:
+        shift=np.nan
+      jblock0=iblock0+nsubs[i]+1
+      for j in range(i+1,len(nsubs)):
+        jind=ind[j]+jblock0+1
+        if m2[iind,jind]==0:
+          shift=np.nan
+        jblock0=jblock0+nsubs[j]+1
+      iblock0=iblock0+nsubs[i]+1
+    for i in range(len(nsubs)):
+      fpout.write('%2d ' % ind[i])
+    Value=float(line.split()[len(nsubs)])+shift
+    Error=float(line.split()[len(nsubs)+2])+shift
+    fpout.write('%8.3f +/- %5.3f\n' % (Value,Error))
+  fpin.close()
+  fpout.close()
+

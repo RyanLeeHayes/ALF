@@ -1,0 +1,63 @@
+* Lame Title - run with openMM
+*
+
+set box = 39.8551744
+
+stream "prep/alchemical_definitions.inp"
+
+set bomlev = ?bomlev
+bomlev -1
+read rtf card name prep/toppar/top_all36_prot.rtf
+read param card flex name prep/toppar/par_all36m_prot.prm
+read rtf card append name "prep/toppar/top_all36_cgenff.rtf"
+read param card flex append name "prep/toppar/par_all36_cgenff.prm"
+stream "prep/toppar/toppar_water_ions.str"
+bomlev @bomlev
+
+stream prep/aa_stream/msldpatch.str
+
+
+read sequ coor resid segid PROT name "prep/system.crd"
+generate PROT first ACE last CT3 setup
+
+! patch disu prot 323 prot 348
+
+! Protonation
+! patch aspp PROT 10 setup
+! patch glup PROT 48 setup
+
+read coor card resid name "prep/system.crd"
+ic param
+ic build
+
+
+auto angle dihe
+bomlev -1
+
+! read sequ coor resid segid LIG name "prep/system.crd"
+! generate LIG setup
+! read sequ coor resid segid WT00 name "prep/system.crd"
+! generate WT00 first none last none setup noangl nodihe
+read sequ coor resid segid WT01 name "prep/system.crd"
+generate WT01 first none last none setup noangl nodihe
+read sequ coor resid segid IONS name "prep/system.crd"
+generate IONS setup
+
+read coor card resid name "prep/system.crd"
+
+stream "prep/aa_stream/patchloop.inp"
+stream "prep/aa_stream/selectloop.inp"
+stream "prep/aa_stream/deleteloop.inp"
+
+! Make sure all atoms have coordinates
+PRINt COORdinate SELEct .NOT. INITialized END
+
+
+! MODIFY to set up periodic images or SBC
+coor stat
+crystal define cubi @box @box @box 90 90 90   !! Need to use CRYSTAL in repdstr
+crystal build cutoff 15 nope 0
+image byseg xcen 0 ycen 0 zcen 0 sele .not. ( resn TIP3 .or. segid IONS ) end
+image byres xcen 0 ycen 0 zcen 0 sele resn TIP3 .or. segid IONS end
+
+stream "prep/aa_stream/blocksetup.inp"

@@ -368,4 +368,5 @@ def FinishDCA(i,NF,FREQ,NBS=50,engine='charmm'):
   os.chdir('dca%d' % i)
 
   alf.GetVarianceDCA(alf_info,NF,'data',NBS=NBS)
+  alf.GetVarianceMaskedDCA(alf_info,'data')
   alf.GetModelDCA(alf_info,NF,'data',NBS=NBS)

@@ -1,0 +1,13 @@
+protG-T16-Upart-nonlinear-pwise-bcxstu_charmm - this runs the unfolded side of
+hydrophobic point mutations at T16 in protein G. This uses the nonlinear loss
+function, bcxstu bias, and the piecewise implicit constraint.
+
+Make a copy of the examples/engine/charmm or examples/engine/bladelib templates
+and copy this directory into it, renaming it prep, and editing the path in
+alf_info.py 'enginepath' to point to your charmm executable. Expected results
+after production are in a file called Result.txt .
+
+This exmples serves to illustrate how to select loss function, bias, and
+implicit constraints in alf_info.py .
+A more difficult variant with full site saturation mutagenesis is available by
+dropping "part" from the directory name.

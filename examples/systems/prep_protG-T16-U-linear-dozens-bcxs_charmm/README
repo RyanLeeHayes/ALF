@@ -1,0 +1,14 @@
+protG-T16-U-linear-dozens-bcxs_charmm - this runs the unfolded side of site
+saturation point mutations at T16 in protein G. This uses the linear loss
+function, bcxs bias, and the dozens of substituents fnex implicit constraint.
+
+Make a copy of the examples/engine/charmm or examples/engine/bladelib templates
+and copy this directory into it, renaming it prep, and editing the path in
+alf_info.py 'enginepath' to point to your charmm executable. Expected results
+after production are in a file called Result.txt .
+
+Note the loss function, bias, and implicit constraints choices are suboptimal.
+This exmples serves to illustrate how to select those options in alf_info.py .
+Successfully converging results will require significantly more effort than the
+default protocol found in examples/engine/charmm. An easier to converge variant
+with only hydrophobic mutations is available in Upart.

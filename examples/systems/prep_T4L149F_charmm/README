@@ -1,0 +1,7 @@
+T4L149F_charmm - this runs the folded side of point mutations to site 149 in
+T4 lysozyme.
+
+Make a copy of the examples/engine/charmm or examples/engine/bladelib templates
+and copy this directory into it, renaming it prep, and editing the path in
+alf_info.py 'enginepath' to point to your charmm executable. Expected results
+after production are in a file called Result.txt .

@@ -1,0 +1,27 @@
+You should be able to add stream files at several points in your system setup file to set up calculations appropriately. There are two ways to set up your system, either by reading in a previously defined psf file (this is how CHARMM-GUI is set up) or by reading in sequences and generating the psf yourself.
+
+First you will need to define variables to control these scripts. This can be done by streaming a file like alchemical_definitions.inp
+stream "prep/alchemical_definitions.inp"
+or by including the variable definitions at the start of the system setup CHARMM script. These variables define the alchemical region. They include nsites and nsubs1 up to nsubsN for the number of sites N. s1seq1 up to sNseq1 should all be 0 for the native sequence and contain single letter amino acid codes for the remaining substituents like s1seq2 for the second substituent at the first site. (For one letter codes, h is hsd, b is hse, j is hsp.) The variables should also include segid1 to segidN for the segment id of the N sites. Should also contain nterdel_prot and cterdel_prot to note any terminal deletions. Use an integer to denote which site index the deletion occurs at, otherwise use 0 to denote there is no terminal deletion. Use nterres_prot and cterres_prot to denote the resid of the first and last residue of the segment, and use ntercap_prot and ctercap_prot to give the full name of the capping group on each end (only nter, cter, ace, and ct3 are supported, if using special proline and glycine patches prop and glyp, enter nter, if using special proline patch acp, enter ace), and use nterc_prot and cterc_prot to denote a one letter code for the cap (2-5, respectively for the previous list.) Replace prot at the end of these variable names with the mutating segids in your system.
+
+The next stream file to place is
+stream "prep/aa_stream/msldpatch.str"
+This file contains the thousands of patches for amino acid perturbations, including a patch for each natural amino acid and patches to link up pairs and triples of neighboring mutating amino acids with appropriate improper dihedrals and CMAP terms. It should be placed immediately after the other rtf and prm files are read in.
+
+The next stream file to include is
+stream "prep/aa_stream/patchloop.inp"
+This stream file should be placed after the psf has been loaded or generated from sequence and autogen commands. The stream file should also be after coordinates for the solute have been read in. This stream file applies the patches in msldpatch.str according to the info in alchemical_definitions.inp. Because so many patches are read in, autogeneration of angles and dihedrals is turned off, and after all patches are complete, angles and dihedrals are generated for all atoms within three bonds of the mutated residues. If there are patches in your system that delete angles (e.g. heme coordination), they should be fine provided they are more than three bonds away, but double check the final psf. It generates coordinates for the alchemical atoms using the positions of the existing atoms, so these atoms must have defined positions.
+
+The next stream file to include is
+stream "prep/aa_stream/selectloop.inp"
+This stream file should be places right after patchloop.inp. If defines selections corresponding to the alchemical groups.
+
+The next stream file to include is
+stream "prep/aa_stream/deleteloop.inp"
+This file should be placed right after selectloop.inp. This stream file will delete all the spurious angles and dihedrals that were generated between atoms of different substituents at the same site by "auto angle dihe".
+
+The final stream file to include is
+stream "prep/aa_stream/blocksetup.inp"
+It should be placed after periodic boundary conditions are set up and before the nonbonded interactions are set up. It reads the alchemical regions and other information into the block module of CHARMM.
+
+Selection stream files sele_*.str and msldpatch.str are produced from top_all36_prot.rtf by running Convert2Patch.py.

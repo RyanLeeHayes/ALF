@@ -81,34 +81,39 @@ def GetModelDCA(alf_info,NF,Path,NBS=50):
   np.savetxt(Path+'/h.bias.dat',h_bias,fmt=' %10.6f')
   np.savetxt(Path+'/J.bias.dat',J_bias,fmt=' %10.6f')
 
-  h_fnm=Path+'/h.'+tag+'.dat'
-  J_fnm=Path+'/J.'+tag+'.dat'
-  h=np.loadtxt(h_fnm)
-  J=np.loadtxt(J_fnm)
-  block0=0
-  for i in range(nsites):
-    h=np.delete(h,block0,axis=0)
-    J=np.delete(J,block0,axis=0)
-    J=np.delete(J,block0,axis=1)
-    block0+=nsubs[i]
-  h*=-kT
-  J*=-kT
-  np.savetxt(Path+'/h.model.dat',h+h_bias,fmt=' %10.6f')
-  np.savetxt(Path+'/J.model.dat',J+J_bias,fmt=' %10.6f')
-
+  iBStrList=['']
   for iB in range(NBS):
-    print(iB)
-    h_fnm=Path+'/h.bs'+str(iB)+'.'+tag+'.dat'
-    J_fnm=Path+'/J.bs'+str(iB)+'.'+tag+'.dat'
+    iBStrList.append('bs'+str(iB)+'.')
+
+  for iBStr in iBStrList:
+    h_fnm=Path+'/h.'+iBStr+tag+'.dat'
+    J_fnm=Path+'/J.'+iBStr+tag+'.dat'
+    m1_fnm=Path+'/m1.'+iBStr+'obs.dat'
+    m2_fnm=Path+'/m2.'+iBStr+'obs.dat'
     h=np.loadtxt(h_fnm)
     J=np.loadtxt(J_fnm)
+    m1=np.loadtxt(m1_fnm)
+    m2=np.loadtxt(m2_fnm)
+    hMask=np.loadtxt(h_fnm)
+    hMask[m1==0]=np.nan
+    JMask=np.loadtxt(J_fnm)
+    JMask[m2==0]=np.nan
     block0=0
     for i in range(nsites):
       h=np.delete(h,block0,axis=0)
       J=np.delete(J,block0,axis=0)
       J=np.delete(J,block0,axis=1)
+      hMask=np.delete(hMask,block0,axis=0)
+      JMask=np.delete(JMask,block0,axis=0)
+      JMask=np.delete(JMask,block0,axis=1)
+      JMask[block0:block0+nsubs[i],block0:block0+nsubs[i]]=0
       block0+=nsubs[i]
     h*=-kT
     J*=-kT
-    np.savetxt(Path+'/h.bs'+str(iB)+'.model.dat',h+h_bias,fmt=' %10.6f')
-    np.savetxt(Path+'/J.bs'+str(iB)+'.model.dat',J+J_bias,fmt=' %10.6f')
+    hMask*=-kT
+    JMask*=-kT
+    np.savetxt(Path+'/hGuess.'+iBStr+'model.dat',h+h_bias,fmt=' %10.6f')
+    np.savetxt(Path+'/JGuess.'+iBStr+'model.dat',J+J_bias,fmt=' %10.6f')
+    np.savetxt(Path+'/h.'+iBStr+'model.dat',hMask+h_bias,fmt=' %10.6f')
+    np.savetxt(Path+'/J.'+iBStr+'model.dat',JMask+J_bias,fmt=' %10.6f')
+
