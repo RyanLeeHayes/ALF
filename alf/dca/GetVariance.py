@@ -31,7 +31,7 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
     tag='PLM'
   else:
     print('Error: Neither h.LM.dat or h.PLM.dat found.')
-    quit()
+    quit(1)
 
   nblocks=alf_info['nblocks']+0 # Add 0 so python makes a copy
   nsubs=alf_info['nsubs']+0 # Add 0 so python makes a copy
@@ -40,7 +40,7 @@ def GetVarianceDCA(alf_info,NF,Path,NBS=50):
 
   if (np.prod(nsubs)>1024*1024):
     print("Too many states")
-    quit()
+    quit(1)
 
   nblocks+=len(nsubs)
   nsubs+=1

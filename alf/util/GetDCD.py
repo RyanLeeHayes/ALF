@@ -54,7 +54,7 @@ def GetDCD(istep,ndupl=None,begres=None,endres=None,firstE=0,skipE=1,engine='cha
   fnmpsf="prep/minimized.psf"
   if not os.path.isfile(fnmpsf):
     print("Error psf file %s does not exist" % (fnmpsf,))
-    quit()
+    quit(1)
 
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     fmt="dcd"
@@ -62,7 +62,7 @@ def GetDCD(istep,ndupl=None,begres=None,endres=None,firstE=0,skipE=1,engine='cha
     fmt="xtc"
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
-    quit()
+    quit(1)
 
   # ----------------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ def GetDCD(istep,ndupl=None,begres=None,endres=None,firstE=0,skipE=1,engine='cha
       for f in fnmsin:
         if not os.path.isfile(f):
           print("Error dcd file %s does not exist" % (f,))
-          quit()
+          quit(1)
 
       trajin=mda.Universe(fnmpsf,fnmsin,topology_format='psf',format=fmt)
       # trajin.write(fnmout,frames='all')

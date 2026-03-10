@@ -1,5 +1,5 @@
 
-def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
+def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,maxtries=None,ntersite=[0,0]):
   """
   Run several cycles of short simulations followed by bias optimization
 
@@ -57,6 +57,10 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
       A given cycle of ALF combines sampling from several previous runs
       using WHAM/MBAR. The earliest existing run is indicated by n1.
       (default of 1 should be used except in unusual situations)
+  maxtries : int, optional
+      By default, maxtries=None, so ALF tries until it succeeds, which can
+      waste resources if there is an error in the setup. If maxtries is
+      given, ALF will give up after that many failures.
   ntersite : list of two ints, optional
       Flags for whether to use intersite coupling (first element) and
       intersite profiles (second element) in flattening. (default is [0,0]
@@ -82,8 +86,13 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
     im5=max(i-4,n1)
     N=i-im5+1
     ir=random.randrange(iri,i+1)
+    tries=0
 
     while not os.path.exists('analysis%d/b_sum.dat' % i):
+      if maxtries is not None and tries >= maxtries:
+        print("Maximum number of tries reached, ALF is exiting")
+        quit(1)
+
       os.chdir(home_dir)
 
       if os.path.exists('run%d' % i):
@@ -104,27 +113,26 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
 
         # Run the simulation
         print('run%d started' % i)
-        fpout=open('output','w')
-        fperr=open('error','w')
-        if not os.path.exists('../msld_flat.'+fex):
-          print("Error: msld_flat.%s does not exist." % fex)
-        if engine in ['charmm']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--map-by','node',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
-        elif engine in ['bladelib']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
-        elif engine in ['blade']:
-          fpin=open('arguments.inp','w')
-          fpin.write("variables set esteps %d\nvariables set nsteps %d" % (esteps,nsteps))
-          fpin.close()
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
-        elif engine in ['pycharmm']:
-          fpin=open('arguments.py','w')
-          fpin.write("esteps=%d\nnsteps=%d" % (esteps,nsteps))
-          fpin.close()
-          subprocess.call(['python','../msld_flat.py'],stdout=fpout,stderr=fperr)
-        else:
-          print("Error: unsupported engine type %s" % alf_info['engine'])
-          quit()
+        with open('output','w') as fpout, open('error','w') as fperr:
+          if not os.path.exists('../msld_flat.'+fex):
+            print("Error: msld_flat.%s does not exist." % fex)
+          if engine in ['charmm']:
+            subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--map-by','node',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          elif engine in ['bladelib']:
+            subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'esteps=%d' % esteps,'nsteps=%d' % nsteps,'seed=%d' % random.getrandbits(16),'-i','../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          elif engine in ['blade']:
+            fpin=open('arguments.inp','w')
+            fpin.write("variables set esteps %d\nvariables set nsteps %d" % (esteps,nsteps))
+            fpin.close()
+            subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'../msld_flat.inp'],stdout=fpout,stderr=fperr)
+          elif engine in ['pycharmm']:
+            fpin=open('arguments.py','w')
+            fpin.write("esteps=%d\nnsteps=%d" % (esteps,nsteps))
+            fpin.close()
+            subprocess.call(['python','../msld_flat.py'],stdout=fpout,stderr=fperr)
+          else:
+            print("Error: unsupported engine type %s" % alf_info['engine'])
+            quit(1)
         os.chdir(home_dir)
 
         # Prep the analysis directories
@@ -142,7 +150,7 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
 
         if not os.path.exists('G_imp'):
           print("Error, G_imp directory does not exist")
-          quit()
+          quit(1)
         if not os.path.islink('analysis%d/G_imp' % i):
           os.symlink('../G_imp','analysis%d/G_imp' % i)
         os.chdir('analysis%d' % i)
@@ -150,17 +158,16 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
         # Run the analysis
         alf.GetLambdas(alf_info,i)
         alf.GetEnergy(alf_info,im5,i)
-        fpout=open('output','w')
-        fperr=open('error','w')
-        if alf_info['loss']=='linear2018':
-          alf.linear2018(alf_info,N,ntersite,fpout,fperr)
-          alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
-        elif alf_info['loss']=='nonlinear2024':
-          alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
-          alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
-        else:
-          print("Error, unrecognized loss function")
-          quit()
+        with open('output','w') as fpout, open('error','w') as fperr:
+          if alf_info['loss']=='linear2018':
+            alf.linear2018(alf_info,N,ntersite,fpout,fperr)
+            alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
+          elif alf_info['loss']=='nonlinear2024':
+            alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
+            alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
+          else:
+            print("Error, unrecognized loss function")
+            quit(1)
 
         alf.SetVars(alf_info,i+1)
         fp=open('../variables%d.%s' % (i+1,fex),'a')
@@ -178,3 +185,4 @@ def runflat(ni,nf,esteps,nsteps,engine='charmm',n1=1,ntersite=[0,0]):
         sys.stdout.flush()
         sys.stderr.flush()
       os.chdir(home_dir)
+      tries=tries+1

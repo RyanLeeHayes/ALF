@@ -65,7 +65,7 @@ def GetEnergy(alf_info,Fi,Ff,N=None,skipE=1):
         ndupl+=1
     if ndupl==0:
       print("Error, not flattening or production")
-      quit()
+      quit(1)
     if not N is None: # Used for intentionally subsampling during postprocessing
       ndupl=N
 

@@ -43,17 +43,9 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
 
   if ndupl==None:
     production=False
-    # istep=int(sys.argv[1])
     ndupl=1
   else:
     production=True
-    # istep=int(sys.argv[1])
-    # ndupl=int(sys.argv[2])
-    # begres=int(sys.argv[3])
-    # endres=int(sys.argv[4])
-  # else:
-    # print("Error: Need 1 argument for flattening or 4 arguments for production")
-    # quit()
 
   nblocks=alf_info['nblocks']
   nsubs=alf_info['nsubs']
@@ -84,7 +76,7 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
   PSF="../prep/minimized.psf"
   if not os.path.isfile(PSF):
     print("Error psf file %s does not exist" % (PSF,))
-    quit()
+    quit(1)
 
   if alf_info['engine'] in ['charmm','bladelib','pycharmm']:
     fmt="dcd"
@@ -92,7 +84,7 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
     fmt="xtc"
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
-    quit()
+    quit(1)
 
   # ----------------------------------------------------------------------------
 
@@ -120,7 +112,7 @@ def GetVolumes(alf_info,istep,ndupl=None,begres=None,endres=None):
       for f in fnmsin:
         if not os.path.isfile(f):
           print("Error dcd file %s does not exist" % (f,))
-          quit()
+          quit(1)
       fnmout=DIR+("/Volume.%d.%d.dat" % (idupl,i))
       GetVolume(alf_info,fnmout,fnmsin,PSF)
       datasplit.append(np.loadtxt(fnmout))

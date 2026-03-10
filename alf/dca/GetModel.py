@@ -29,7 +29,7 @@ def GetModelDCA(alf_info,NF,Path,NBS=50):
     tag='PLM'
   else:
     print('Error: Neither h.LM.dat or h.PLM.dat found.')
-    quit()
+    quit(1)
 
   nsubs=alf_info['nsubs']
   nblocks=alf_info['nblocks']

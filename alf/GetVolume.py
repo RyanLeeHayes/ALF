@@ -37,7 +37,7 @@ def GetVolume(alf_info,fnmout,fnmsin,fnmpsf):
     fmt="XTC"
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
-    quit()
+    quit(1)
 
   Volumes=np.zeros((0,1))
 

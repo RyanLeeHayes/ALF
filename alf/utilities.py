@@ -26,39 +26,39 @@ def initialize_alf_info(engine='charmm'):
 
   if not os.path.exists('prep/alf_info.py'):
     print("Error, prep/alf_info.py is not defined")
-    quit()
+    quit(1)
   try:
     from prep.alf_info import alf_info
   except Exception:
     print("Error in prep/alf_info.py")
     traceback.print_exc()
-    quit()
+    quit(1)
 
   # Error checking:
   if not 'name' in alf_info:
     print("Error: need name key in prep/alf_info.py. name = a string that points to the system setup file prep/name.inp")
-    quit()
+    quit(1)
   if not 'nsubs' in alf_info:
     print("Error: need nsubs key in prep/alf_info.py. nsubs = a vector of integers for the number of substituents at each site")
-    quit()
+    quit(1)
   if ( not 'nblocks' in alf_info ) or ( not np.sum(alf_info['nsubs']) == alf_info['nblocks'] ):
     print("Error: need nblocks key in prep/alf_info.py. nblocks = the sum of nsubs")
-    quit()
+    quit(1)
   if not 'ncentral' in alf_info:
     print("Error: need ncentral key in prep/alf_info.py. ncentral is for replica exchange. Use 0 if you are not using replica exchange")
-    quit()
+    quit(1)
   if not 'nreps' in alf_info:
     print("Error: need nreps key in prep/alf_info.py. nreps is for replica exchange. Use 1 if you are not using replica exchange")
-    quit()
+    quit(1)
   if not 'nnodes' in alf_info:
     print("Error: need nnodes key in prep/alf_info.py. nnodes = number of nodes for parallelization, 1 is recommended")
-    quit()
+    quit(1)
   if not 'enginepath' in alf_info:
     print("Error: need enginepath key in prep/alf_info.py. enginepath = string of path to molecular dynamics executable")
-    quit()
+    quit(1)
   if not 'temp' in alf_info:
     print("Error: need temp key in prep/alf_info.py. temp = system temperature in Kelvin")
-    quit()
+    quit(1)
 
   # Convert to numpy arrays
   alf_info['nsubs']=np.array(alf_info['nsubs'])
@@ -70,39 +70,39 @@ def initialize_alf_info(engine='charmm'):
   if not 'loss' in alf_info:
     # print("Error: need loss key in prep/alf_info.py. Options are")
     # print(losses)
-    # quit()
+    # quit(1)
     print("Default loss linear2018 added to alf_info")
     alf_info['loss']='linear2018' # default
   if not alf_info['loss'] in losses:
     print("Error: unsupported loss function %s. Options are" % (alf_info['loss'],))
     print(losses)
-    quit()
+    quit(1)
 
   # Check biases
   biases=['bcxs2018','bcxstu2026']
   if not 'bias' in alf_info:
     # print("Error: need bias key in prep/alf_info.py. Options are")
     # print(biases)
-    # quit()
+    # quit(1)
     print("Default bias bcxs2018 added to alf_info")
     alf_info['bias']='bcxs2018' # default
   if not alf_info['bias'] in biases:
     print("Error: unsupported bias function %s. Options are" % (alf_info['bias'],))
     print(biases)
-    quit()
+    quit(1)
 
   # Check implicit constraints
   impconses=['fnex2011','fnexdozen2024','fnpwise2026','custom']
   if not 'impcons' in alf_info:
     # print("Error: need impcons key in prep/alf_info.py. Options are")
     # print(impconses)
-    # quit()
+    # quit(1)
     print("Default implicit constraint fnex2011 added to alf_info")
     alf_info['impcons']='fnex2011' # default
   if not alf_info['impcons'] in impconses:
     print("Error: unsupported implicit constraint %s. Options are" % (alf_info['impcons'],))
     print(impconses)
-    quit()
+    quit(1)
 
   # Set implicit constraint options
   if alf_info['impcons'] in ['fnex2011','fnexdozen2024']:
@@ -134,7 +134,7 @@ def initialize_alf_info(engine='charmm'):
     print('Error: unsupported engine')
     print('Supported engine types are:')
     print(engines)
-    quit()
+    quit(1)
   alf_info['engine']=engine
 
   # Get file extension to copy default flattening and production scripts

@@ -46,7 +46,7 @@ run setvariable fnmcpo res/{sysname}_prod{itt}.res
 run setvariable nsteps {nsteps}
 run setvariable dt 0.002
 run setvariable T {temp}
-run setvariable freqxtc 50000
+run setvariable freqxtc {nsavc}
 run setvariable freqnrg 5000
 run setvariable freqnpt 100
 run setvariable freqlmd 10

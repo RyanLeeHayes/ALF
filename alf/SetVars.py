@@ -488,7 +488,7 @@ def SetVars(alf_info,Step,minimize=False):
     SetVarsPycharmm(alf_info,Step,minimize=minimize)
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
-    quit()
+    quit(1)
 
 
 

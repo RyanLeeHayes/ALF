@@ -199,7 +199,7 @@ def GetSteps(alf_info,fnm):
     return GetStepsBlade(alf_info,fnm)
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
-    quit()
+    quit(1)
 
 def GetStepsAll(alf_info,fnm):
   """

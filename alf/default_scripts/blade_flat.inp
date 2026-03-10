@@ -62,6 +62,7 @@ run setvariable fnmxtc dcd/{sysname}_flat.xtc
 run setvariable fnmnrg dcd/{sysname}_flat.nrg
 run setvariable fnmlmd res/{sysname}_flat.lmd
 run setvariable fnmcpo res/{sysname}_flat.res
+run setvariable fnmcpi res/{sysname}_heat.res
 
 run setvariable nsteps {nsteps}
 run setvariable dt 0.002

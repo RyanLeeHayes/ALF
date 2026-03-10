@@ -186,4 +186,4 @@ def GetLambda(alf_info,fnmout,fnmsin):
     GetLambdaBlade(alf_info,fnmout,fnmsin)
   else:
     print("Error: unsupported engine type %s" % alf_info['engine'])
-    quit()
+    quit(1)

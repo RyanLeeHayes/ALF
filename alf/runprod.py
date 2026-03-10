@@ -1,5 +1,5 @@
 
-def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
+def runprod(step,a,itt0,itt,nsteps=500000,nsavc=50000,engine='charmm',maxtries=None):
   """
   run a longer production run of lambda dynamics
 
@@ -75,9 +75,16 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
       The number of time steps of molecular dynamics simulation in each
       chunk of the simulation. By default the simulation uses 1 ns chunks.
       (default is 500000)
+  nsavc : int, optional
+      The frequency of printing out structures in time steps. (default is
+      50000)
   engine : str, optional
       The molecular dynamics engine string, see help(alf) for allowed
       values. (default is 'charmm')
+  maxtries : int, optional
+      By default, maxtries=None, so ALF tries until it succeeds, which can
+      waste resources if there is an error in the setup. If maxtries is
+      given, ALF will give up after that many failures.
   """
 
   import os, sys, shutil, traceback, time, subprocess, random
@@ -125,7 +132,12 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
 
   for i in range(ibeg,itt+1):
     fnm=('res/%s_prod%d.lmd' % (alf_info['name'],i))
+    tries=0
     while alf.GetStepsAll(alf_info,fnm)!=nlambdasteps:
+      if maxtries is not None and tries >= maxtries:
+        print("Maximum number of tries reached, ALF is exiting")
+        quit(1)
+
       pause=False
       if os.path.exists('output_%d' % i):
         os.rename('output_%d' % i,'failed/output_%d' % i)
@@ -137,30 +149,30 @@ def runprod(step,a,itt0,itt,nsteps=500000,engine='charmm'):
         time.sleep(15) # Give file system time to catch up
 
       try:
-        fpout=open('output_%d' % i,'w')
-        fperr=open('error_%d' % i,'w')
-        if not os.path.exists('../msld_prod.'+fex):
-          print("Error: msld_prod.%s does not exist." % fex)
-        if engine in ['charmm']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--map-by','node',alf_info['enginepath'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
-        elif engine in ['bladelib']:
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'nsteps=%d' % nsteps,'nsavc=10000','seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
-        elif engine in ['blade']:
-          fpin=open('arguments.inp','w')
-          fpin.write("variables set nsteps %d\nvariables set itt %d" % (nsteps,i))
-          fpin.close()
-          subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'../msld_prod.inp'],stdout=fpout,stderr=fperr)
-        elif engine in ['pycharmm']:
-          fpin=open('arguments.py','w')
-          fpin.write("nsteps=%d\nitt=%d" % (nsteps,i))
-          fpin.close()
-          subprocess.call(['python','../msld_prod.py'],stdout=fpout,stderr=fperr)
-        else:
-          print("Error: unsupported engine type %s" % alf_info['engine'])
-          quit()
+        with open('output_%d' % i,'w') as fpout, open('error_%d' % i,'w') as fperr:
+          if not os.path.exists('../msld_prod.'+fex):
+            print("Error: msld_prod.%s does not exist." % fex)
+          if engine in ['charmm']:
+            subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=4','--bind-to','none','--map-by','node',alf_info['enginepath'],'nsteps=%d' % nsteps,'nsavc=%d' % nsavc,'seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
+          elif engine in ['bladelib']:
+            subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'nsteps=%d' % nsteps,'nsavc=%d' % nsavc,'seed=%d' % random.getrandbits(16),'itt=%d' % i,'-i','../msld_prod.inp'],stdout=fpout,stderr=fperr)
+          elif engine in ['blade']:
+            fpin=open('arguments.inp','w')
+            fpin.write("variables set nsteps %d\nvariables set itt %d\nvariables set nsavc %d" % (nsteps,i,nsavc))
+            fpin.close()
+            subprocess.call(['mpirun','-np',str(alf_info['nreps']),'-x','OMP_NUM_THREADS=1','--bind-to','none','--map-by','node',alf_info['enginepath'],'../msld_prod.inp'],stdout=fpout,stderr=fperr)
+          elif engine in ['pycharmm']:
+            fpin=open('arguments.py','w')
+            fpin.write("nsteps=%d\nitt=%d\nnsavc=%d" % (nsteps,i,nsavc))
+            fpin.close()
+            subprocess.call(['python','../msld_prod.py'],stdout=fpout,stderr=fperr)
+          else:
+            print("Error: unsupported engine type %s" % alf_info['engine'])
+            quit(1)
       except Exception:
         sys.stdout.flush()
         sys.stderr.flush()
         traceback.print_exc()
         sys.stdout.flush()
         sys.stderr.flush()
+      tries=tries+1

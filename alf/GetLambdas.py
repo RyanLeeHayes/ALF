@@ -44,17 +44,9 @@ def GetLambdas(alf_info,istep,ndupl=None,begres=None,endres=None):
 
   if ndupl==None:
     production=False
-    # istep=int(sys.argv[1])
     ndupl=1
   else:
     production=True
-    # istep=int(sys.argv[1])
-    # ndupl=int(sys.argv[2])
-    # begres=int(sys.argv[3])
-    # endres=int(sys.argv[4])
-  # else:
-    # print("Error: Need 1 argument for flattening or 4 arguments for production")
-    # quit()
 
   nblocks=alf_info['nblocks']
   nsubs=alf_info['nsubs']

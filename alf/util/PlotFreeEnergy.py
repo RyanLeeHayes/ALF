@@ -27,9 +27,9 @@ def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
   # from prep.alf_info import alf_info
   # alf.initialize('blade')
 
-  Emid=np.arange(1.0/800,1,1.0/400)
-  Emid2=np.arange(1.0/40,1,1.0/20)
-  EmidX,EmidY=np.meshgrid(Emid2,Emid2)
+  # Emid=np.arange(1.0/800,1,1.0/400)
+  # Emid2=np.arange(1.0/40,1,1.0/20)
+  # EmidX,EmidY=np.meshgrid(Emid2,Emid2)
 
   DIR=os.getcwd()
   if directory:
@@ -62,6 +62,8 @@ def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
           LEG.append(str(i+1))
           G1[i+iblock]=np.loadtxt('multisite/G'+str(iG)+'.dat')
           iG=iG+1
+          NEmid=len(G1[i+iblock])
+          Emid=np.arange(1.0/(2*NEmid),1,1.0/NEmid)
           # plot(Emid,G1{i+iblock})
           plt.plot(Emid,G1[i+iblock])
           plt.xlabel('lambda')
@@ -76,6 +78,8 @@ def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
           for j in range((i+1),nsubs[isite]):
             G12[i+iblock][j+iblock]=np.loadtxt('multisite/G'+str(iG)+'.dat')
             iG=iG+1
+            NEmid=len(G12[i+iblock][j+iblock])
+            Emid=np.arange(1.0/(2*NEmid),1,1.0/NEmid)
             # plot(Emid,G12{i+iblock,j+iblock})
             plt.subplot(nsubs[isite]-1,nsubs[isite]-1,i*(nsubs[isite]-1)+j)
             plt.plot(Emid,G12[i+iblock][j+iblock])
@@ -89,8 +93,13 @@ def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
           for i in range(nsubs[isite]):
             G2[i+iblock]={}
             for j in range((i+1),nsubs[isite]):
-              G2[i+iblock][j+iblock]=np.reshape(np.loadtxt('multisite/G'+str(iG)+'.dat'),(20,20))
+              G2[i+iblock][j+iblock]=np.loadtxt('multisite/G'+str(iG)+'.dat')
+              NEmid=len(G2[i+iblock][j+iblock])
+              NEmid2=int(np.sqrt(NEmid))
+              G2[i+iblock][j+iblock]=np.reshape(G2[i+iblock][j+iblock],(NEmid2,NEmid2))
               iG=iG+1
+              Emid2=np.arange(1.0/(2*NEmid2),1,1.0/NEmid2)
+              EmidX,EmidY=np.meshgrid(Emid2,Emid2)
               # surf(Emid2,Emid2,G2{i+iblock,j+iblock})
               pltax=plt.subplot(nsubs[isite]-1,nsubs[isite]-1,i*(nsubs[isite]-1)+j,projection='3d')
               pltax.plot_surface(EmidX,EmidY,G2[i+iblock][j+iblock])
@@ -103,8 +112,13 @@ def PlotFreeEnergy5(directory=None,ntersite=[0,0]):
         for i in range(nsubs[isite]):
           G11[i+iblock]={}
           for j in range(nsubs[jsite]):
-            G11[i+iblock][j+jblock]=np.reshape(np.loadtxt('multisite/G'+str(iG)+'.dat'),(20,20))
+            G11[i+iblock][j+jblock]=np.loadtxt('multisite/G'+str(iG)+'.dat')
+            NEmid=len(G11[i+iblock][j+jblock])
+            NEmid2=int(np.sqrt(NEmid))
+            G11[i+iblock][j+jblock]=np.reshape(G11[i+iblock][j+jblock],(20,20))
             iG=iG+1
+            Emid2=np.arange(1.0/(2*NEmid2),1,1.0/NEmid2)
+            EmidX,EmidY=np.meshgrid(Emid2,Emid2)
             # surf(Emid2,Emid2,G11{i+iblock,j+jblock})
             pltax=plt.subplot(nsubs[isite],nsubs[jsite],i*nsubs[jsite]+j+1,projection='3d')
             pltax.plot_surface(EmidX,EmidY,G11[i+iblock][j+jblock])

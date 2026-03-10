@@ -43,7 +43,7 @@ def SetupDCA(i,NF,FREQ,engine='charmm'):
   np.savetxt('dca%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
   if not os.path.exists('analysis%d' % i):
     print("Error: analysis%d does not exist, run alf.postprocess first" % i)
-    quit()
+    quit(1)
   if os.path.isfile('analysis%d/b_corr.dat' % i):
     shutil.copy('analysis%d/b_corr.dat' % i,'dca%d/b_corr.dat' % i)
   if not os.path.exists('dca%d/data' % i):

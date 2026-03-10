@@ -84,7 +84,7 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',ntersite=[0,0],l
     np.savetxt('analysis%d/nsubs' % i,np.array(alf_info['nsubs']).reshape((1,-1)),fmt=' %d')
     if not os.path.exists('G_imp'):
       print("Error, G_imp directory does not exist")
-      quit()
+      quit(1)
     if not os.path.islink('analysis%d/G_imp' % i):
       os.symlink('../G_imp','analysis%d/G_imp' % i)
     os.chdir('analysis%d' % i)
@@ -92,17 +92,16 @@ def postprocess(i,eqS,S,N,skipE=1,boolflat=True,engine='charmm',ntersite=[0,0],l
     # Run the analysis
     alf.GetLambdas(alf_info,i,N,eqS,S)
     alf.GetEnergy(alf_info,i,i,N=N,skipE=skipE)
-    fpout=open('output','w')
-    fperr=open('error','w')
-    if alf_info['loss']=='linear2018':
-      alf.linear2018(alf_info,N,ntersite,fpout,fperr)
-      alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
-    elif alf_info['loss']=='nonlinear2024':
-      alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
-      alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
-    else:
-      print("Error, unrecognized loss function")
-      quit()
+    with open('output','w') as fpout, open('error','w') as fperr:
+      if alf_info['loss']=='linear2018':
+        alf.linear2018(alf_info,N,ntersite,fpout,fperr)
+        alf.GetFreeEnergy5(alf_info,ntersite[0],ntersite[1])
+      elif alf_info['loss']=='nonlinear2024':
+        alf.nonlinear2024(alf_info,N,ntersite,fpout,fperr)
+        alf.GetFreeEnergyLM(alf_info,ntersite[0],ntersite[1])
+      else:
+        print("Error, unrecognized loss function")
+        quit(1)
 
     alf.SetVars(alf_info,i+1)
     alf.GetVolumes(alf_info,i,N,eqS,S)
