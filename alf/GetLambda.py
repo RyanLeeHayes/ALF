@@ -127,8 +127,8 @@ def GetLambdaBlade(alf_info,fnmout,fnmsin):
 
   import sys, os
   import numpy as np
-  from xdrlib import Unpacker
-  from xdrlib import Packer
+  from mda_xdrlib.xdrlib import Unpacker
+  from mda_xdrlib.xdrlib import Packer
 
   nblocks=alf_info['nblocks']
   Lambdas=np.zeros((0,nblocks))
