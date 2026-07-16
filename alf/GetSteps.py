@@ -140,8 +140,8 @@ def GetStepsBlade(alf_info,fnm):
   """
 
   import numpy as np
-  from xdrlib import Unpacker
-  from xdrlib import Packer
+  from mda_xdrlib.xdrlib import Unpacker
+  from mda_xdrlib.xdrlib import Packer
 
   nblocks=alf_info['nblocks']
 
