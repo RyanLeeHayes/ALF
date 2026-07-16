@@ -20,6 +20,11 @@ install(TARGETS
 set(ALF_STAGE_DIR "${CMAKE_BINARY_DIR}/python")
 set(ALF_LIBEXEC_DIR "${CMAKE_INSTALL_PREFIX}/libexec/alf")
 
+# Drop any stale setuptools build cache from a previous install before
+# restaging — otherwise pip's build backend can silently reuse the cached
+# build/lib/alf/* files instead of the freshly copied source below.
+file(REMOVE_RECURSE "${ALF_STAGE_DIR}/build")
+
 file(COPY
   "${CMAKE_SOURCE_DIR}/alf"
   "${CMAKE_SOURCE_DIR}/pyproject.toml"

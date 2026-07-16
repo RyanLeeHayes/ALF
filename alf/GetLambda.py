@@ -125,35 +125,25 @@ def GetLambdaBlade(alf_info,fnmout,fnmsin):
       A list of the filenames of the binary input files
   """
 
-  import sys, os
+  import os
   import numpy as np
-  from xdrlib import Unpacker
-  from xdrlib import Packer
 
   nblocks=alf_info['nblocks']
   Lambdas=np.zeros((0,nblocks))
 
-  p=Packer()
-  p.pack_int(0)
-  for j in range(0,nblocks):
-    p.pack_float(0)
-  linewidth=len(p.get_buffer())
+  # BLaDE writes each record as XDR: one big-endian int32 index followed by
+  # nblocks big-endian float32 lambda values, with no padding between fields.
+  dtype=np.dtype([('index','>i4'),('lambdas','>f4',(nblocks,))])
 
   for fnmin in fnmsin:
     if not os.path.exists(fnmin):
       print('Error, %s does not exist, molecular dynamics probably failed, check run output and run error for clues' % (fnmin,))
-    # Lambda=np.loadtxt(sys.argv[ifp])
     fp=open(fnmin,"rb")
     fpdata=fp.read()
-    lines=len(fpdata)//linewidth
     fp.close()
-    Lambda=np.zeros((lines,nblocks))
-    p=Unpacker(fpdata)
-    for i in range(0,lines):
-      p.unpack_int()
-      for j in range(0,nblocks):
-        Lambda[i,j]=p.unpack_float()
-    Lambdas=np.concatenate((Lambdas,Lambda),axis=0)
+    lines=len(fpdata)//dtype.itemsize
+    records=np.frombuffer(fpdata,dtype=dtype,count=lines)
+    Lambdas=np.concatenate((Lambdas,records['lambdas'].astype(np.float64)),axis=0)
 
   np.savetxt(fnmout,Lambdas,fmt="%10.6f")
 
