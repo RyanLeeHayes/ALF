@@ -37,12 +37,22 @@ structure shake hbond
 run setvariable gamma 0.1
 
 
+if eq {nreps} 1
 run setvariable fnmxtc dcd/{sysname}_heat.xtc
 run setvariable fnmnrg dcd/{sysname}_heat.nrg
 run setvariable fnmlmd res/{sysname}_heat.lmd
 run setvariable fnmcpo res/{sysname}_heat.res
 if not eq {restartfile} null
   run setvariable fnmcpi {restartfile}
+endif
+else
+run setvariable fnmxtc dcd/{sysname}_heat.xtc_{rexrank}
+run setvariable fnmnrg dcd/{sysname}_heat.nrg_{rexrank}
+run setvariable fnmlmd res/{sysname}_heat.lmd_{rexrank}
+run setvariable fnmcpo res/{sysname}_heat.res_{rexrank}
+if not eq {restartfile} null
+  run setvariable fnmcpi {restartfile}_{rexrank}
+endif
 endif
 
 run setvariable nsteps {esteps}
@@ -58,11 +68,19 @@ run dynamics
 
 
 !! Production run of 100 ps / 1 ns
+if eq {nreps} 1
 run setvariable fnmxtc dcd/{sysname}_flat.xtc
 run setvariable fnmnrg dcd/{sysname}_flat.nrg
 run setvariable fnmlmd res/{sysname}_flat.lmd
 run setvariable fnmcpo res/{sysname}_flat.res
 run setvariable fnmcpi res/{sysname}_heat.res
+else
+run setvariable fnmxtc dcd/{sysname}_flat.xtc_{rexrank}
+run setvariable fnmnrg dcd/{sysname}_flat.nrg_{rexrank}
+run setvariable fnmlmd res/{sysname}_flat.lmd_{rexrank}
+run setvariable fnmcpo res/{sysname}_flat.res_{rexrank}
+run setvariable fnmcpi res/{sysname}_heat.res_{rexrank}
+endif
 
 run setvariable nsteps {nsteps}
 run setvariable dt 0.002

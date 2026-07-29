@@ -35,6 +35,7 @@ run setvariable gamma 0.1
 
 variables calculate ittm1 int - {itt} 1
 
+if eq {nreps} 1
 run setvariable fnmxtc dcd/{sysname}_prod{itt}.xtc
 run setvariable fnmnrg dcd/{sysname}_prod{itt}.nrg
 run setvariable fnmlmd res/{sysname}_prod{itt}.lmd
@@ -42,6 +43,15 @@ if > {itt} 1
   run setvariable fnmcpi res/{sysname}_prod{ittm1}.res
 endif
 run setvariable fnmcpo res/{sysname}_prod{itt}.res
+else
+run setvariable fnmxtc dcd/{sysname}_prod{itt}.xtc_{rexrank}
+run setvariable fnmnrg dcd/{sysname}_prod{itt}.nrg_{rexrank}
+run setvariable fnmlmd res/{sysname}_prod{itt}.lmd_{rexrank}
+if > {itt} 1
+  run setvariable fnmcpi res/{sysname}_prod{ittm1}.res_{rexrank}
+endif
+run setvariable fnmcpo res/{sysname}_prod{itt}.res_{rexrank}
+endif
 
 run setvariable nsteps {nsteps}
 run setvariable dt 0.002
