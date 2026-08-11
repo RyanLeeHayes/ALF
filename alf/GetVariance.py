@@ -38,14 +38,55 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
       The lambda cutoff for the histogram estimator (default is 0.99)
   """
 
-  import sys, os, os.path
+  import sys, os, os.path, re, glob
   import numpy as np
   import copy
+
+  # --- Added: build residue letter+number labels (e.g. "N74") for Result.txt ---
+  def get_residue_labels(nsubs):
+    # Parse "set resid<site> = <resid>" / "variables set resid<site> <resid>"
+    # and "set s<site>seq<sub> = <letter> [!<letter>]" / "variables set
+    # s<site>seq<sub> <letter> [!<letter>]" lines out of the prep/*.inp files
+    # used to build the system (CHARMM and BLaDE engine styles both use an
+    # optional "variables" prefix and an optional "=" separator), so
+    # Result.txt can report a residue letter+number label alongside the
+    # substituent index.
+    resid={}
+    seq={}
+    for fname in glob.glob('../prep/*.inp'):
+      with open(fname) as fp:
+        for line in fp:
+          m=re.match(r'\s*(?:variables\s+)?set\s+resid(\d+)\s*=?\s*(\S+)',line,re.IGNORECASE)
+          if m:
+            resid[int(m.group(1))]=m.group(2)
+            continue
+          m=re.match(r'\s*(?:variables\s+)?set\s+s(\d+)seq(\d+)\s*=?\s*(\S+)\s*(?:!\s*(\S+))?',line,re.IGNORECASE)
+          if m:
+            isite=int(m.group(1)); isub=int(m.group(2))
+            value=m.group(3); comment=m.group(4)
+            letter=comment if (value=='0' and comment) else value
+            seq[(isite,isub)]=letter.upper()
+    labels=[]
+    for isite in range(0,len(nsubs)):
+      site_labels=[]
+      for isub in range(0,nsubs[isite]):
+        key=(isite+1,isub+1)
+        if key in seq and (isite+1) in resid:
+          site_labels.append('%s%s' % (seq[key],resid[isite+1]))
+        else:
+          # No amino-acid resid/seq info (e.g. MSLD ligand prep, whose
+          # substituents are chemical fragments, not residue identities) -
+          # fall back to the site/substituent index used in the
+          # site<site>_sub<sub>_frag.pdb / _pres.rtf filenames.
+          site_labels.append('s%d_%d' % (isite+1,isub+1))
+      labels.append(site_labels)
+    return labels
 
   nblocks=alf_info['nblocks']
   nsubs=alf_info['nsubs']
   nreps=alf_info['nreps']
   nlig=np.prod(nsubs)
+  reslabels=get_residue_labels(nsubs)  # Added: site -> substituent -> label lookup
 
   b=np.loadtxt('b_prev.dat')
   if os.path.isfile('b_corr.dat'):
@@ -141,6 +182,8 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
     for i in range(0,nlig):
       for j in range(0,len(nsubs)):
         fp.write('%2d ' % ind[i,j])
+      for j in range(0,len(nsubs)):
+        fp.write('%6s ' % reslabels[j][ind[i,j]])  # Added: residue letter+number column
       fp.write('%8.3f +/- %5.3f\n' % (Value[i],Error[i]))
 
     fp.close()
@@ -172,6 +215,8 @@ def GetVariance(alf_info,NF,NBS=50,lc=0.99):
   for i in range(0,nlig):
     for j in range(0,len(nsubs)):
       fp.write('%2d ' % ind[i,j])
+    for j in range(0,len(nsubs)):
+      fp.write('%6s ' % reslabels[j][ind[i,j]])  # Added: residue letter+number column
     fp.write('%8.3f +/- %5.3f\n' % (Value[i],Error[i]))
 
   fp.close()
