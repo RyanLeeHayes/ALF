@@ -304,7 +304,7 @@ def PLMDCA(i,iBS,NF,FREQ,NBS=50,engine='charmm'):
   if iBS==NBS:
     fnmout1='data/h.PLM.dat'
     fnmout2='data/J.PLM.dat'
-    bsindices=np.arrange(NF,dtype='int')
+    bsindices=np.arange(NF,dtype='int')
   else:
     fnmout1=('data/h.bs%d.PLM.dat' % iBS)
     fnmout2=('data/J.bs%d.PLM.dat' % iBS)
